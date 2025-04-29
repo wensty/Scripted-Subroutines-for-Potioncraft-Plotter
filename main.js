@@ -1,24 +1,24 @@
 import { pointDistance } from "@potionous/common";
 
 import {
-	addIngredient,
-	addSunSalt,
-	addMoonSalt,
-	addRotationSalt,
-	addHeatVortex,
-	addStirCauldron,
-	addPourSolvent,
-	createStirCauldron,
-	createPourSolvent,
-	addSetPosition,
+  addIngredient,
+  addSunSalt,
+  addMoonSalt,
+  addRotationSalt,
+  addHeatVortex,
+  addStirCauldron,
+  addPourSolvent,
+  createStirCauldron,
+  createPourSolvent,
+  addSetPosition,
 } from "@potionous/instructions";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";
 import {
-	startingPlot,
-	currentPlot,
-	computePlot,
-	currentRecipeItems,
+  startingPlot,
+  currentPlot,
+  computePlot,
+  currentRecipeItems,
 } from "@potionous/plot";
 
 const SaltAngle = (2 * Math.PI) / 1000.0;
@@ -29,12 +29,12 @@ const SaltAngle = (2 * Math.PI) / 1000.0;
  * @returns {boolean} True if the entity type is a danger zone, false otherwise.
  */
 function isDangerZone(x) {
-	const { entityType } = x;
-	return [
-		"StrongDangerZonePart",
-		"WeakDangerZonePart",
-		"DangerZonePart",
-	].includes(entityType);
+  const { entityType } = x;
+  return [
+    "StrongDangerZonePart",
+    "WeakDangerZonePart",
+    "DangerZonePart",
+  ].includes(entityType);
 }
 
 /**
@@ -43,8 +43,8 @@ function isDangerZone(x) {
  * @returns {boolean} True if the entity type is a Vortex, false otherwise.
  */
 function isVortex(x) {
-	const { entityType } = x;
-	return ["Vortex"].includes(entityType);
+  const { entityType } = x;
+  return ["Vortex"].includes(entityType);
 }
 
 /**
@@ -61,49 +61,49 @@ function isVortex(x) {
  * already in a vortex, or no vortex is found during the process.
  */
 function stirIntoVortex() {
-	const pendingPoints = currentPlot.pendingPoints;
-	if (pendingPoints.length < 3) {
-		console.log("Error while stirring into vortex: not enough points.");
-		throw EvalError;
-	}
-	const currentPoint = pendingPoints[0];
-	const entities = currentPoint.bottleCollisions;
-	const result = entities.find(isVortex);
-	if (result != undefined) {
-		console.log("Error while stirring into vortex: bottle in a vortex.");
-		throw EvalError;
-	}
-	let stirLength = 0.0;
-	let i;
-	for (i = 2; i < pendingPoints.length; i++) {
-		const currentPoint = pendingPoints[i];
-		const entities = currentPoint.bottleCollisions;
-		if (!entities.some(isVortex)) {
-			stirLength += pointDistance(pendingPoints[i - 1], pendingPoints[i]);
-		} else {
-			break;
-		}
-	}
-	if (i == pendingPoints.length) {
-		console.log("Error while stirring into vortex: no vortex found.");
-		throw EvalError;
-	}
-	let left = stirLength;
-	let right =
-		stirLength + pointDistance(pendingPoints[i - 1], pendingPoints[i]);
-	while (right - left > 0.001) {
-		const mid = left + (right - left) / 2;
-		const plot = computePlot(
-			currentRecipeItems.concat([createStirCauldron(mid)])
-		);
-		const entities = plot.pendingPoints[0].bottleCollisions;
-		if (entities.some(isVortex)) {
-			left = mid;
-		} else {
-			right = mid;
-		}
-	}
-	addStirCauldron(right);
+  const pendingPoints = currentPlot.pendingPoints;
+  if (pendingPoints.length < 3) {
+    console.log("Error while stirring into vortex: not enough points.");
+    throw EvalError;
+  }
+  const currentPoint = pendingPoints[0];
+  const entities = currentPoint.bottleCollisions;
+  const result = entities.find(isVortex);
+  if (result != undefined) {
+    console.log("Error while stirring into vortex: bottle in a vortex.");
+    throw EvalError;
+  }
+  let stirLength = 0.0;
+  let i;
+  for (i = 2; i < pendingPoints.length; i++) {
+    const currentPoint = pendingPoints[i];
+    const entities = currentPoint.bottleCollisions;
+    if (!entities.some(isVortex)) {
+      stirLength += pointDistance(pendingPoints[i - 1], pendingPoints[i]);
+    } else {
+      break;
+    }
+  }
+  if (i == pendingPoints.length) {
+    console.log("Error while stirring into vortex: no vortex found.");
+    throw EvalError;
+  }
+  let left = stirLength;
+  let right =
+    stirLength + pointDistance(pendingPoints[i - 1], pendingPoints[i]);
+  while (right - left > 0.001) {
+    const mid = left + (right - left) / 2;
+    const plot = computePlot(
+      currentRecipeItems.concat([createStirCauldron(mid)]),
+    );
+    const entities = plot.pendingPoints[0].bottleCollisions;
+    if (entities.some(isVortex)) {
+      left = mid;
+    } else {
+      right = mid;
+    }
+  }
+  addStirCauldron(right);
 }
 
 /**
@@ -117,74 +117,74 @@ function stirIntoVortex() {
  * @throws {EvalError} If the operation is attempted outside of a vortex.
  */
 function stirToEdge() {
-	const pendingPoints = currentPlot.pendingPoints;
-	const result = pendingPoints[0].bottleCollisions.find(isVortex);
-	let vortexX;
-	let vortexY;
-	let stirLength = 0.0;
-	if (result === undefined) {
-		console.log("Error while stirring to edge: bottle not in a vortex.");
-		throw EvalError;
-	} else {
-		vortexX = result.x;
-		vortexY = result.y;
-	}
-	let pendingNPoint = pendingPoints.length;
-	if (pendingNPoint <= 2) {
-		console.log("Error while stirring to edge: not enough pending points.");
-		throw EvalError;
-	}
-	let i;
-	/**
-	 * Currently pendingPoints always have 1 or at least 3 elements.
-	 * If it has at least 3 elements, the first 2 are always same, i.e. the current point.
-	 */
-	for (i = 2; i != pendingNPoint; i++) {
-		let isSameVortex = true;
-		const result = pendingPoints[i].bottleCollisions.find(isVortex);
-		if (result === undefined) {
-			isSameVortex = false;
-		} else {
-			if (result.x != vortexX || result.y != vortexY) {
-				isSameVortex = false;
-			}
-		}
-		if (!isSameVortex) {
-			break;
-		} else {
-			stirLength += pointDistance(pendingPoints[i - 1], pendingPoints[i]);
-		}
-	}
-	if (i == pendingNPoint) {
-		console.log(
-			"Error while stirring to edge: bottle is in a vortex, but no edge found."
-		);
-		throw EvalError;
-	}
-	let left = stirLength;
-	let right =
-		stirLength + pointDistance(pendingPoints[i - 1], pendingPoints[i]);
-	while (right - left > 0.001) {
-		const mid = left + (right - left) / 2;
-		const plot = computePlot(
-			currentRecipeItems.concat(createStirCauldron(mid))
-		);
-		const result = plot.pendingPoints[0].bottleCollisions.find(isVortex);
-		let isSameVortex = true;
-		if (result === undefined) {
-			isSameVortex = false;
-		} else {
-			if (result.x != vortexX || result.y != vortexY) {
-				isSameVortex = false;
-			}
-		}
-		if (isSameVortex) {
-			left = mid;
-		} else {
-			right = mid;
-		}
-	}
-	addStirCauldron(left);
+  const pendingPoints = currentPlot.pendingPoints;
+  const result = pendingPoints[0].bottleCollisions.find(isVortex);
+  let vortexX;
+  let vortexY;
+  let stirLength = 0.0;
+  if (result === undefined) {
+    console.log("Error while stirring to edge: bottle not in a vortex.");
+    throw EvalError;
+  } else {
+    vortexX = result.x;
+    vortexY = result.y;
+  }
+  let pendingNPoint = pendingPoints.length;
+  if (pendingNPoint <= 2) {
+    console.log("Error while stirring to edge: not enough pending points.");
+    throw EvalError;
+  }
+  let i;
+  /**
+   * Currently pendingPoints always have 1 or at least 3 elements.
+   * If it has at least 3 elements, the first 2 are always same, i.e. the current point.
+   */
+  for (i = 2; i != pendingNPoint; i++) {
+    let isSameVortex = true;
+    const result = pendingPoints[i].bottleCollisions.find(isVortex);
+    if (result === undefined) {
+      isSameVortex = false;
+    } else {
+      if (result.x != vortexX || result.y != vortexY) {
+        isSameVortex = false;
+      }
+    }
+    if (!isSameVortex) {
+      break;
+    } else {
+      stirLength += pointDistance(pendingPoints[i - 1], pendingPoints[i]);
+    }
+  }
+  if (i == pendingNPoint) {
+    console.log(
+      "Error while stirring to edge: bottle is in a vortex, but no edge found.",
+    );
+    throw EvalError;
+  }
+  let left = stirLength;
+  let right =
+    stirLength + pointDistance(pendingPoints[i - 1], pendingPoints[i]);
+  while (right - left > 0.001) {
+    const mid = left + (right - left) / 2;
+    const plot = computePlot(
+      currentRecipeItems.concat(createStirCauldron(mid)),
+    );
+    const result = plot.pendingPoints[0].bottleCollisions.find(isVortex);
+    let isSameVortex = true;
+    if (result === undefined) {
+      isSameVortex = false;
+    } else {
+      if (result.x != vortexX || result.y != vortexY) {
+        isSameVortex = false;
+      }
+    }
+    if (isSameVortex) {
+      left = mid;
+    } else {
+      right = mid;
+    }
+  }
+  addStirCauldron(left);
 }
 
 /**
@@ -196,45 +196,45 @@ function stirToEdge() {
  * @throws {EvalError} If the operation is attempted outside of a vortex.
  */
 function pourToEdge() {
-	const pendingPoints = currentPlot.pendingPoints;
-	let currentPoint = pendingPoints[0];
-	const entities = currentPoint.bottleCollisions;
-	const result = entities.find(isVortex);
-	if (result === undefined) {
-		console.log("Error while pouring to edge: bottle not in a vortex.");
-		throw EvalError;
-	} // In case this is called outside a vortex.
-	const vortexX = result.x;
-	const vortexY = result.y;
+  const pendingPoints = currentPlot.pendingPoints;
+  let currentPoint = pendingPoints[0];
+  const entities = currentPoint.bottleCollisions;
+  const result = entities.find(isVortex);
+  if (result === undefined) {
+    console.log("Error while pouring to edge: bottle not in a vortex.");
+    throw EvalError;
+  } // In case this is called outside a vortex.
+  const vortexX = result.x;
+  const vortexY = result.y;
 
-	let left = 0.0; // If we do not pour solvent the bottle should be in a vortex.
-	let right = 5.0; // At least 5 pouring can pull the bottle out of the same vortex.
-	let mid;
-	let isSameVortex;
-	while (right - left > 0.001) {
-		mid = left + (right - left) / 2;
-		const plot = computePlot(
-			currentRecipeItems.concat([createPourSolvent(mid)])
-		);
-		const pendingPoints = plot.pendingPoints;
-		const currentPoint = pendingPoints[0];
-		const entities = currentPoint.bottleCollisions;
-		isSameVortex = true;
-		const result = entities.find(isVortex);
-		if (result === undefined) {
-			isSameVortex = false;
-		} else {
-			if (result.x != vortexX || result.y != vortexY) {
-				isSameVortex = false;
-			}
-		}
-		if (isSameVortex) {
-			left = mid;
-		} else {
-			right = mid;
-		}
-	}
-	addPourSolvent(left);
+  let left = 0.0; // If we do not pour solvent the bottle should be in a vortex.
+  let right = 5.0; // At least 5 pouring can pull the bottle out of the same vortex.
+  let mid;
+  let isSameVortex;
+  while (right - left > 0.001) {
+    mid = left + (right - left) / 2;
+    const plot = computePlot(
+      currentRecipeItems.concat([createPourSolvent(mid)]),
+    );
+    const pendingPoints = plot.pendingPoints;
+    const currentPoint = pendingPoints[0];
+    const entities = currentPoint.bottleCollisions;
+    isSameVortex = true;
+    const result = entities.find(isVortex);
+    if (result === undefined) {
+      isSameVortex = false;
+    } else {
+      if (result.x != vortexX || result.y != vortexY) {
+        isSameVortex = false;
+      }
+    }
+    if (isSameVortex) {
+      left = mid;
+    } else {
+      right = mid;
+    }
+  }
+  addPourSolvent(left);
 }
 
 /**
@@ -252,39 +252,39 @@ function pourToEdge() {
  */
 
 function continuousPourToEdge(
-	initialLength,
-	lengthDecay,
-	numberEdgings,
-	vortexRadius = 2.39
+  initialLength,
+  lengthDecay,
+  numberEdgings,
+  vortexRadius = 2.39,
 ) {
-	const pendingPoints = currentPlot.pendingPoints;
-	const result = pendingPoints[0].bottleCollisions.find(isVortex);
-	if (result === undefined) {
-		console.log("Error while pouring to edge: bottle not in a vortex.");
-		throw EvalError;
-	}
-	const vortexX = result.x;
-	const vortexY = result.y;
-	let i;
-	let _length = initialLength;
-	for (i = 0; i < numberEdgings; i++) {
-		pourToEdge();
+  const pendingPoints = currentPlot.pendingPoints;
+  const result = pendingPoints[0].bottleCollisions.find(isVortex);
+  if (result === undefined) {
+    console.log("Error while pouring to edge: bottle not in a vortex.");
+    throw EvalError;
+  }
+  const vortexX = result.x;
+  const vortexY = result.y;
+  let i;
+  let _length = initialLength;
+  for (i = 0; i < numberEdgings; i++) {
+    pourToEdge();
 
-		_length = _length * lengthDecay;
-		const pendingPoints = currentPlot.pendingPoints;
-		const x = pendingPoints[0].x;
-		const y = pendingPoints[0].y;
-		const vortexAngle = getAngleByDirection(
-			-x,
-			-y,
-			getAngleByDirection(vortexX - x, vortexY - y)
-		);
-		const maxLength = vortexRadius * (vortexAngle - Math.PI / 2) * 0.33;
-		if (_length > maxLength) {
-			_length = maxLength;
-		}
-		addHeatVortex(_length);
-	}
+    _length = _length * lengthDecay;
+    const pendingPoints = currentPlot.pendingPoints;
+    const x = pendingPoints[0].x;
+    const y = pendingPoints[0].y;
+    const vortexAngle = getAngleByDirection(
+      -x,
+      -y,
+      getAngleByDirection(vortexX - x, vortexY - y),
+    );
+    const maxLength = vortexRadius * (vortexAngle - Math.PI / 2) * 0.33;
+    if (_length > maxLength) {
+      _length = maxLength;
+    }
+    addHeatVortex(_length);
+  }
 }
 
 /**
@@ -302,57 +302,57 @@ function continuousPourToEdge(
  */
 
 function derotateToAngle(targetAngle) {
-	const pendingPoints = currentPlot.pendingPoints;
-	const x = pendingPoints[0].x || 0.0;
-	const y = pendingPoints[0].y || 0.0;
-	let derotateType = "none";
-	if (x == 0.0 || y == 0.0) {
-		derotateType = "origin";
-	} else {
-		const result = pendingPoints[0].bottleCollisions.find(isVortex);
-		if (result != undefined) {
-			derotateType = "vortex";
-		}
-	}
-	if (derotateType == "none") {
-		console.log(
-			"Error while derotating: Cannot derotate outside origin or vortex."
-		);
-		throw EvalError;
-	} else {
-		const currentAngle = -pendingPoints[0].angle;
-		if (
-			currentAngle * targetAngle >= 0 &&
-			Math.abs(currentAngle) >= Math.abs(targetAngle)
-		) {
-			if (derotateType == "vortex") {
-				addSetPosition(0, 0);
-			}
-			let left = 0.0;
-			let right = 100.0;
-			while (right - left > 0.0001) {
-				const mid = left + (right - left) / 2;
-				const plot = computePlot(
-					currentRecipeItems.concat(createPourSolvent(mid))
-				);
-				const angle = -plot.pendingPoints[0].angle;
-				if (Math.abs(angle) > targetAngle) {
-					left = mid;
-				} else {
-					right = mid;
-				}
-			}
-			addPourSolvent(left + (right - left) / 2);
-			if (derotateType == "vortex") {
-				addSetPosition(x, y);
-			}
-		} else {
-			console.log(
-				"Error while derotating: Cannot derotate to larger or reversed angle."
-			);
-			throw EvalError;
-		}
-	}
+  const pendingPoints = currentPlot.pendingPoints;
+  const x = pendingPoints[0].x || 0.0;
+  const y = pendingPoints[0].y || 0.0;
+  let derotateType = "none";
+  if (x == 0.0 || y == 0.0) {
+    derotateType = "origin";
+  } else {
+    const result = pendingPoints[0].bottleCollisions.find(isVortex);
+    if (result != undefined) {
+      derotateType = "vortex";
+    }
+  }
+  if (derotateType == "none") {
+    console.log(
+      "Error while derotating: Cannot derotate outside origin or vortex.",
+    );
+    throw EvalError;
+  } else {
+    const currentAngle = -pendingPoints[0].angle;
+    if (
+      currentAngle * targetAngle >= 0 &&
+      Math.abs(currentAngle) >= Math.abs(targetAngle)
+    ) {
+      if (derotateType == "vortex") {
+        addSetPosition(0, 0);
+      }
+      let left = 0.0;
+      let right = 100.0;
+      while (right - left > 0.0001) {
+        const mid = left + (right - left) / 2;
+        const plot = computePlot(
+          currentRecipeItems.concat(createPourSolvent(mid)),
+        );
+        const angle = -plot.pendingPoints[0].angle;
+        if (Math.abs(angle) > targetAngle) {
+          left = mid;
+        } else {
+          right = mid;
+        }
+      }
+      addPourSolvent(left + (right - left) / 2);
+      if (derotateType == "vortex") {
+        addSetPosition(x, y);
+      }
+    } else {
+      console.log(
+        "Error while derotating: Cannot derotate to larger or reversed angle.",
+      );
+      throw EvalError;
+    }
+  }
 }
 
 /**
@@ -361,7 +361,7 @@ function derotateToAngle(targetAngle) {
  * @returns {number} The radians equivalent of the given degrees
  */
 function degToRad(deg) {
-	return (deg * Math.PI) / 180.0;
+  return (deg * Math.PI) / 180.0;
 }
 
 /**
@@ -370,7 +370,7 @@ function degToRad(deg) {
  * @returns {number} The degrees equivalent of the given radians
  */
 function radToDeg(rad) {
-	return (rad * 180.0) / Math.PI;
+  return (rad * 180.0) / Math.PI;
 }
 
 /**
@@ -379,14 +379,14 @@ function radToDeg(rad) {
  */
 
 function degToSalt(deg) {
-	let salt;
-	if (deg > 0) {
-		salt = "sun";
-	} else {
-		salt = "moon";
-	}
-	const grains = (Math.abs(deg) * 500.0) / 180.0;
-	return [salt, grains];
+  let salt;
+  if (deg > 0) {
+    salt = "sun";
+  } else {
+    salt = "moon";
+  }
+  const grains = (Math.abs(deg) * 500.0) / 180.0;
+  return [salt, grains];
 }
 
 /**
@@ -394,14 +394,14 @@ function degToSalt(deg) {
  * @param {number} rad The radians to convert
  */
 function radToSalt(rad) {
-	let salt;
-	if (rad > 0) {
-		salt = "sun";
-	} else {
-		salt = "moon";
-	}
-	const grains = (Math.abs(rad) * 500.0) / Math.PI;
-	return [salt, grains];
+  let salt;
+  if (rad > 0) {
+    salt = "sun";
+  } else {
+    salt = "moon";
+  }
+  const grains = (Math.abs(rad) * 500.0) / Math.PI;
+  return [salt, grains];
 }
 
 /**
@@ -412,16 +412,16 @@ function radToSalt(rad) {
  * @throws {Error} If the salt is not "moon" or "sun"
  */
 function saltToDeg(salt, grains) {
-	if (salt == "moon") {
-		return (-grains * 180.0) / 500.0;
-	} else if (salt == "sun") {
-		return (grains * 180.0) / 500.0;
-	} else {
-		console.log(
-			"Error while converting salt to degree: salt must be moon or sun."
-		);
-		throw EvalError;
-	}
+  if (salt == "moon") {
+    return (-grains * 180.0) / 500.0;
+  } else if (salt == "sun") {
+    return (grains * 180.0) / 500.0;
+  } else {
+    console.log(
+      "Error while converting salt to degree: salt must be moon or sun.",
+    );
+    throw EvalError;
+  }
 }
 
 /**
@@ -432,16 +432,16 @@ function saltToDeg(salt, grains) {
  * @throws {Error} If the salt is not "moon" or "sun"
  */
 function saltToRad(salt, grains) {
-	if (salt == "moon") {
-		return (-grains * Math.PI) / 500.0;
-	} else if (salt == "sun") {
-		return (grains * Math.PI) / 500.0;
-	} else {
-		console.log(
-			"Error while converting salt to radian: salt must be moon or sun."
-		);
-		throw EvalError;
-	}
+  if (salt == "moon") {
+    return (-grains * Math.PI) / 500.0;
+  } else if (salt == "sun") {
+    return (grains * Math.PI) / 500.0;
+  } else {
+    console.log(
+      "Error while converting salt to radian: salt must be moon or sun.",
+    );
+    throw EvalError;
+  }
 }
 
 /**
@@ -449,9 +449,9 @@ function saltToRad(salt, grains) {
  * @param {number} baseAngle 0 for top.
  */
 function getDirectionByAngle(angle, baseAngle = 0.0) {
-	let x = Math.sin(baseAngle + angle);
-	let y = Math.cos(baseAngle + angle);
-	return [x, y];
+  let x = Math.sin(baseAngle + angle);
+  let y = Math.cos(baseAngle + angle);
+  return [x, y];
 }
 
 /**
@@ -462,12 +462,12 @@ function getDirectionByAngle(angle, baseAngle = 0.0) {
  * @throws {Error} If the vector is a zero vector
  */
 function getUnit(x, y) {
-	if (Math.abs(x) < 1e-6 && Math.abs(y) < 1e-6) {
-		console.log("Error while getting unit: zero vector.");
-		throw EvalError;
-	} else {
-		return [x / Math.sqrt(x ** 2 + y ** 2), y / Math.sqrt(x ** 2 + y ** 2)];
-	}
+  if (Math.abs(x) < 1e-6 && Math.abs(y) < 1e-6) {
+    console.log("Error while getting unit: zero vector.");
+    throw EvalError;
+  } else {
+    return [x / Math.sqrt(x ** 2 + y ** 2), y / Math.sqrt(x ** 2 + y ** 2)];
+  }
 }
 
 /**
@@ -482,20 +482,20 @@ function getUnit(x, y) {
  * @throws {Error} If the vector is a zero vector
  */
 function getAngleByDirection(x, y, baseAngle = 0.0) {
-	const _xy = getUnit(x, y);
-	const _x = _xy[0];
-	const _y = _xy[1];
-	const relX = _x * Math.cos(baseAngle) - _y * Math.sin(baseAngle);
-	const relY = _y * Math.cos(baseAngle) + _x * Math.sin(baseAngle);
-	let angle = Math.asin(relX);
-	if (relY < 0) {
-		if (angle >= 0) {
-			angle = Math.PI - angle;
-		} else {
-			angle = -Math.PI - angle;
-		}
-	}
-	return angle;
+  const _xy = getUnit(x, y);
+  const _x = _xy[0];
+  const _y = _xy[1];
+  const relX = _x * Math.cos(baseAngle) - _y * Math.sin(baseAngle);
+  const relY = _y * Math.cos(baseAngle) + _x * Math.sin(baseAngle);
+  let angle = Math.asin(relX);
+  if (relY < 0) {
+    if (angle >= 0) {
+      angle = Math.PI - angle;
+    } else {
+      angle = -Math.PI - angle;
+    }
+  }
+  return angle;
 }
 
 /**
@@ -505,16 +505,16 @@ function getAngleByDirection(x, y, baseAngle = 0.0) {
  * @throws {Error} If the bottle is not in a stir
  */
 function getCurrentStirAngle() {
-	/** the points have no coordinate at origin */
-	if (currentPlot.pendingPoints.length < 3) {
-		console.log("Error while getting current stir angle: not enough points.");
-		throw EvalError;
-	}
-	const fromX = currentPlot.pendingPoints[1].x || 0.0;
-	const fromY = currentPlot.pendingPoints[1].y || 0.0;
-	const toX = currentPlot.pendingPoints[2].x;
-	const toY = currentPlot.pendingPoints[2].y;
-	return getAngleByDirection(toX - fromX, toY - fromY);
+  /** the points have no coordinate at origin */
+  if (currentPlot.pendingPoints.length < 3) {
+    console.log("Error while getting current stir angle: not enough points.");
+    throw EvalError;
+  }
+  const fromX = currentPlot.pendingPoints[1].x || 0.0;
+  const fromY = currentPlot.pendingPoints[1].y || 0.0;
+  const toX = currentPlot.pendingPoints[2].x;
+  const toY = currentPlot.pendingPoints[2].y;
+  return getAngleByDirection(toX - fromX, toY - fromY);
 }
 
 /**
@@ -534,166 +534,166 @@ function getCurrentStirAngle() {
  */
 
 function straighten(
-	maxStirDistance,
-	direction,
-	salt = "moon",
-	maxGrains = 999999,
-	ignoreReverse = true
+  maxStirDistance,
+  direction,
+  salt = "moon",
+  maxGrains = 999999,
+  ignoreReverse = true,
 ) {
-	if (salt != "moon" && salt != "sun") {
-		console.log("Error while straightening: salt must be moon or sun.");
-		throw EvalError;
-	}
-	let distanceStirred = 0.0;
-	let nextDistance = 0.0;
-	let totalGrains = 0;
-	let i = 1;
-	let pendingPoints = currentPlot.pendingPoints;
-	while (true) {
-		if (distanceStirred >= maxStirDistance) {
-			break;
-		}
-		if (pendingPoints.length <= i + 2) {
-			break;
-		}
-		const currentX = pendingPoints[i].x;
-		const currentY = pendingPoints[i].y;
-		const nextX = pendingPoints[i + 1].x;
-		const nextY = pendingPoints[i + 1].y;
-		const nextDirection = getAngleByDirection(
-			nextX - currentX,
-			nextY - currentY,
-			direction
-		);
-		let grains;
-		if (salt == "moon") {
-			if (nextDirection < -SaltAngle / 2) {
-				if (!ignoreReverse) {
-					console.log(nextDirection);
-					break;
-				}
-				grains = 0;
-			} else {
-				grains = Math.round(nextDirection / SaltAngle);
-			}
-		} else {
-			if (nextDirection > SaltAngle / 2) {
-				if (!ignoreReverse) {
-					console.log(nextDirection);
-					break;
-				}
-				grains = 0;
-			} else {
-				grains = Math.round(-nextDirection / SaltAngle);
-			}
-		}
-		if (
-			grains != 0 ||
-			nextDistance + distanceStirred >= maxStirDistance ||
-			totalGrains + grains >= maxGrains
-		) {
-			/**
-			 * 0.0001 is here to avoid zero vector error.
-			 * Or the potion may stop just before some node and cause zero vector error.
-			 */
-			addStirCauldron(nextDistance + 0.0001);
-			distanceStirred += nextDistance + 0.0001;
-			if (totalGrains + grains >= maxGrains) {
-				grains = maxGrains - totalGrains;
-				totalGrains += grains;
-				addRotationSalt(salt, grains);
-				break;
-			}
-			if (nextDistance + distanceStirred >= maxStirDistance) {
-				nextDistance = maxStirDistance - distanceStirred;
-				totalGrains += grains;
-				addRotationSalt(salt, grains);
-				break;
-			}
-			totalGrains += grains;
-			addRotationSalt(salt, grains);
-			nextDistance = 0.0;
-			i = 1;
-			pendingPoints = currentPlot.pendingPoints;
-		} else {
-			nextDistance += pointDistance(pendingPoints[i], pendingPoints[i + 1]);
-			i = i + 1;
-			if (nextDistance + distanceStirred >= maxStirDistance) {
-				nextDistance = maxStirDistance - distanceStirred;
-			}
-		}
-	}
-	console.log("Total grains:" + totalGrains);
+  if (salt != "moon" && salt != "sun") {
+    console.log("Error while straightening: salt must be moon or sun.");
+    throw EvalError;
+  }
+  let distanceStirred = 0.0;
+  let nextDistance = 0.0;
+  let totalGrains = 0;
+  let i = 1;
+  let pendingPoints = currentPlot.pendingPoints;
+  while (true) {
+    if (distanceStirred >= maxStirDistance) {
+      break;
+    }
+    if (pendingPoints.length <= i + 2) {
+      break;
+    }
+    const currentX = pendingPoints[i].x;
+    const currentY = pendingPoints[i].y;
+    const nextX = pendingPoints[i + 1].x;
+    const nextY = pendingPoints[i + 1].y;
+    const nextDirection = getAngleByDirection(
+      nextX - currentX,
+      nextY - currentY,
+      direction,
+    );
+    let grains;
+    if (salt == "moon") {
+      if (nextDirection < -SaltAngle / 2) {
+        if (!ignoreReverse) {
+          console.log(nextDirection);
+          break;
+        }
+        grains = 0;
+      } else {
+        grains = Math.round(nextDirection / SaltAngle);
+      }
+    } else {
+      if (nextDirection > SaltAngle / 2) {
+        if (!ignoreReverse) {
+          console.log(nextDirection);
+          break;
+        }
+        grains = 0;
+      } else {
+        grains = Math.round(-nextDirection / SaltAngle);
+      }
+    }
+    if (
+      grains != 0 ||
+      nextDistance + distanceStirred >= maxStirDistance ||
+      totalGrains + grains >= maxGrains
+    ) {
+      /**
+       * 0.0001 is here to avoid zero vector error.
+       * Or the potion may stop just before some node and cause zero vector error.
+       */
+      addStirCauldron(nextDistance + 0.0001);
+      distanceStirred += nextDistance + 0.0001;
+      if (totalGrains + grains >= maxGrains) {
+        grains = maxGrains - totalGrains;
+        totalGrains += grains;
+        addRotationSalt(salt, grains);
+        break;
+      }
+      if (nextDistance + distanceStirred >= maxStirDistance) {
+        nextDistance = maxStirDistance - distanceStirred;
+        totalGrains += grains;
+        addRotationSalt(salt, grains);
+        break;
+      }
+      totalGrains += grains;
+      addRotationSalt(salt, grains);
+      nextDistance = 0.0;
+      i = 1;
+      pendingPoints = currentPlot.pendingPoints;
+    } else {
+      nextDistance += pointDistance(pendingPoints[i], pendingPoints[i + 1]);
+      i = i + 1;
+      if (nextDistance + distanceStirred >= maxStirDistance) {
+        nextDistance = maxStirDistance - distanceStirred;
+      }
+    }
+  }
+  console.log("Total grains:" + totalGrains);
 }
 
 function main43MoonSwiftness() {
-	addIngredient(Ingredients.RainbowCap, 1);
-	addStirCauldron(14.4);
-	addPourSolvent(100);
-	console.log("Current stir angle: " + radToDeg(getCurrentStirAngle()));
-	addStirCauldron(3.8);
-	let currentStirAngle = getCurrentStirAngle();
-	console.log("Current stir angle: " + radToDeg(currentStirAngle));
-	// straighten(10, getAngleByDirection(-5.49,5.76), "moon", 43)
-	straighten(10, currentStirAngle, "moon", 43);
+  addIngredient(Ingredients.RainbowCap, 1);
+  addStirCauldron(14.4);
+  addPourSolvent(100);
+  console.log("Current stir angle: " + radToDeg(getCurrentStirAngle()));
+  addStirCauldron(3.8);
+  let currentStirAngle = getCurrentStirAngle();
+  console.log("Current stir angle: " + radToDeg(currentStirAngle));
+  // straighten(10, getAngleByDirection(-5.49,5.76), "moon", 43)
+  straighten(10, currentStirAngle, "moon", 43);
 }
 
 function mainUnrollingGoldthorn() {
-	addIngredient(Ingredients.Goldthorn, 1);
-	addStirCauldron(0.1);
-	console.log("Current stir angle: " + radToDeg(getCurrentStirAngle()));
-	let currntStirAngle = getCurrentStirAngle();
-	straighten(30, currntStirAngle, "sun", 9999);
+  addIngredient(Ingredients.Goldthorn, 1);
+  addStirCauldron(0.1);
+  console.log("Current stir angle: " + radToDeg(getCurrentStirAngle()));
+  let currntStirAngle = getCurrentStirAngle();
+  straighten(30, currntStirAngle, "sun", 9999);
 }
 
 function mainUnrollingRainbowCap() {
-	addIngredient(Ingredients.RainbowCap, 1);
-	addStirCauldron(0.4);
-	console.log("Current stir angle: " + radToDeg(getCurrentStirAngle()));
-	let currntStirAngle = getCurrentStirAngle();
-	straighten(50, degToRad(-90), "moon", 9999);
+  addIngredient(Ingredients.RainbowCap, 1);
+  addStirCauldron(0.4);
+  console.log("Current stir angle: " + radToDeg(getCurrentStirAngle()));
+  let currntStirAngle = getCurrentStirAngle();
+  straighten(50, degToRad(-90), "moon", 9999);
 }
 
 function mainStirToEdgeTest() {
-	addIngredient(Ingredients.PhantomSkirt, 1);
-	addSetPosition(-5, 5);
-	stirToEdge();
+  addIngredient(Ingredients.PhantomSkirt, 1);
+  addSetPosition(-5, 5);
+  stirToEdge();
 }
 
 function mainAntiMagic() {
-	addSunSalt(38);
-	addSunSalt(138);
-	addIngredient(Ingredients.PhantomSkirt, 1);
-	derotateToAngle(saltToDeg("sun", 38));
-	stirIntoVortex();
-	addHeatVortex(Infinity);
-	straighten(5, degToRad(17.1), "sun", 9999, true);
-	addStirCauldron(4);
-	let direction = getAngleByDirection(
-		29.63 - currentPlot.pendingPoints[0].x,
-		21.91 - currentPlot.pendingPoints[0].y
-	);
-	addSunSalt(37);
-	addStirCauldron(3.3);
-	straighten(Infinity, direction, "sun", 375, false);
-	addStirCauldron(0.05);
-	addSunSalt(24);
-	stirIntoVortex();
-	continuousPourToEdge(0.07, 1, 40);
-	addMoonSalt(23);
-	addHeatVortex(2.91);
-	addStirCauldron(1.73);
-	direction = getAngleByDirection(
-		32.77 - currentPlot.pendingPoints[0].x,
-		29.94 - currentPlot.pendingPoints[0].y
-	);
-	straighten(0.85, direction, "sun", 204, true);
+  addSunSalt(38);
+  addSunSalt(138);
+  addIngredient(Ingredients.PhantomSkirt, 1);
+  derotateToAngle(saltToDeg("sun", 38));
+  stirIntoVortex();
+  addHeatVortex(Infinity);
+  straighten(5, degToRad(17.1), "sun", 9999, true);
+  addStirCauldron(4);
+  let direction = getAngleByDirection(
+    29.63 - currentPlot.pendingPoints[0].x,
+    21.91 - currentPlot.pendingPoints[0].y,
+  );
+  addSunSalt(37);
+  addStirCauldron(3.3);
+  straighten(Infinity, direction, "sun", 375, false);
+  addStirCauldron(0.05);
+  addSunSalt(24);
+  stirIntoVortex();
+  continuousPourToEdge(0.07, 1, 40);
+  addMoonSalt(23);
+  addHeatVortex(2.91);
+  addStirCauldron(1.73);
+  direction = getAngleByDirection(
+    32.77 - currentPlot.pendingPoints[0].x,
+    29.94 - currentPlot.pendingPoints[0].y,
+  );
+  straighten(0.85, direction, "sun", 204, true);
 }
 
 try {
-	mainAntiMagic();
-	// mainStirToEdgeTest()
-	// mainUnrollingRainbowCap()
+  mainAntiMagic();
+  // mainStirToEdgeTest()
+  // mainUnrollingRainbowCap()
 } catch (e) {
-	console.log(e);
+  console.log(e);
 }
