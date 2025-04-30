@@ -532,7 +532,6 @@ function getCurrentStirAngle() {
  * @param {boolean} [ignoreReverse=true] - Whether to ignore reverse directions.
  * @throws {EvalError} If the salt is neither "moon" nor "sun".
  */
-
 function straighten(
   maxStirDistance,
   direction,
@@ -550,12 +549,6 @@ function straighten(
   let i = 1;
   let pendingPoints = currentPlot.pendingPoints;
   while (true) {
-    if (distanceStirred >= maxStirDistance) {
-      break;
-    }
-    if (pendingPoints.length <= i + 2) {
-      break;
-    }
     const currentX = pendingPoints[i].x;
     const currentY = pendingPoints[i].y;
     const nextX = pendingPoints[i + 1].x;
@@ -566,10 +559,11 @@ function straighten(
       direction,
     );
     let grains;
+
     if (salt == "moon") {
       if (nextDirection < -SaltAngle / 2) {
         if (!ignoreReverse) {
-          console.log(nextDirection);
+          console.log("Detected reversed direction:" + nextDirection);
           break;
         }
         grains = 0;
@@ -579,7 +573,7 @@ function straighten(
     } else {
       if (nextDirection > SaltAngle / 2) {
         if (!ignoreReverse) {
-          console.log(nextDirection);
+          console.log("Detected reversed direction:" + nextDirection);
           break;
         }
         grains = 0;
@@ -587,39 +581,46 @@ function straighten(
         grains = Math.round(-nextDirection / SaltAngle);
       }
     }
-    if (
-      grains != 0 ||
-      nextDistance + distanceStirred >= maxStirDistance ||
-      totalGrains + grains >= maxGrains
-    ) {
+    if (grains > 0) {
       /**
        * 0.0001 is here to avoid zero vector error.
        * Or the potion may stop just before some node and cause zero vector error.
        */
+      if (nextDistance > 0.0) {
       addStirCauldron(nextDistance + 0.0001);
       distanceStirred += nextDistance + 0.0001;
+      }
+      i = 1;
+      nextDistance = 0.0;
       if (totalGrains + grains >= maxGrains) {
+        /** If the salt is capped, then straightening should terminate. */
         grains = maxGrains - totalGrains;
         totalGrains += grains;
         addRotationSalt(salt, grains);
+        console.log("Straignten terminated by maximal grains of salt added.");
         break;
-      }
-      if (nextDistance + distanceStirred >= maxStirDistance) {
-        nextDistance = maxStirDistance - distanceStirred;
+      } else {
         totalGrains += grains;
         addRotationSalt(salt, grains);
-        break;
+        /** Calculate the new plotter after stir and salt. */
+        pendingPoints = currentPlot.pendingPoints;
       }
-      totalGrains += grains;
-      addRotationSalt(salt, grains);
-      nextDistance = 0.0;
-      i = 1;
-      pendingPoints = currentPlot.pendingPoints;
     } else {
       nextDistance += pointDistance(pendingPoints[i], pendingPoints[i + 1]);
-      i = i + 1;
+      // console.log(nextDistance)
       if (nextDistance + distanceStirred >= maxStirDistance) {
+        /** If the distance is capped, stir the remaining path and terminate. */
         nextDistance = maxStirDistance - distanceStirred;
+        addStirCauldron(nextDistance);
+        console.log("Straignten terminated by maximal length stirred.");
+        break;
+      } else {
+        i = i + 1;
+        if (pendingPoints.length < i + 2) {
+          console.log("Straignten terminated by end of path.");
+          addStirCauldron(nextDistance);
+          break;
+        }
       }
     }
   }
@@ -661,33 +662,29 @@ function mainStirToEdgeTest() {
 }
 
 function mainAntiMagic() {
-  addSunSalt(38);
+  addSunSalt(29);
   addSunSalt(138);
   addIngredient(Ingredients.PhantomSkirt, 1);
-  derotateToAngle(saltToDeg("sun", 38));
+  derotateToAngle(saltToDeg("sun", 29));
   stirIntoVortex();
   addHeatVortex(Infinity);
-  straighten(5, degToRad(17.1), "sun", 9999, true);
-  addStirCauldron(4);
+  straighten(3, degToRad(17.6), "sun", 9999, true);
+  addStirCauldron(6);
   let direction = getAngleByDirection(
     29.63 - currentPlot.pendingPoints[0].x,
     21.91 - currentPlot.pendingPoints[0].y,
   );
   addSunSalt(37);
   addStirCauldron(3.3);
-  straighten(Infinity, direction, "sun", 375, false);
-  addStirCauldron(0.05);
-  addSunSalt(24);
-  stirIntoVortex();
-  continuousPourToEdge(0.07, 1, 40);
-  addMoonSalt(23);
-  addHeatVortex(2.91);
-  addStirCauldron(1.73);
-  direction = getAngleByDirection(
-    32.77 - currentPlot.pendingPoints[0].x,
-    29.94 - currentPlot.pendingPoints[0].y,
-  );
-  straighten(0.85, direction, "sun", 204, true);
+  straighten(Infinity, direction+degToRad(0.0), "sun", 400, false);
+  straighten(Infinity,direction+degToRad(0.0),"moon",20,true)
+  stirIntoVortex()
+  continuousPourToEdge(0.2, 1, 13);
+  addHeatVortex(2.5);
+  straighten(4, degToRad(11.6) , "sun", 208, true);
+  addStirCauldron(0.78)
+  addSunSalt(1)
+  addStirCauldron(3.758)
 }
 
 try {

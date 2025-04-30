@@ -1,5 +1,5 @@
-import { derotateToAngle, stirIntoVortex, straighten } from "../main.js";
-import { degToRad } from "../main.js";
+import { derotateToAngle, stirIntoVortex, straighten } from '../main.js';
+import { degToRad } from '../main.js';
 
 import {
   addIngredient,
@@ -7,42 +7,33 @@ import {
   addMoonSalt,
   addHeatVortex,
   addStirCauldron,
-} from "@potionous/instructions";
+} from '@potionous/instructions';
 
-import { Ingredients } from "@potionous/dataset";
-import { currentPlot } from "@potionous/plot";
+import { Ingredients } from '@potionous/dataset';
+import { currentPlot } from '@potionous/plot';
 
 function main() {
-  addSunSalt(38);
+  addSunSalt(29);
   addSunSalt(138);
   addIngredient(Ingredients.PhantomSkirt, 1);
-  derotateToAngle(saltToDeg("sun", 38));
+  derotateToAngle(saltToDeg('sun', 29));
   stirIntoVortex();
   addHeatVortex(Infinity);
-  straighten(5, degToRad(17.1), "sun", 9999, true);
-  addStirCauldron(4);
-  /** The centor of the vortex near antimagic effect. */
+  straighten(3, degToRad(17.6), 'sun', 9999, true);
+  addStirCauldron(6);
   let direction = getAngleByDirection(
     29.63 - currentPlot.pendingPoints[0].x,
-    21.91 - currentPlot.pendingPoints[0].y,
+    21.91 - currentPlot.pendingPoints[0].y
   );
   addSunSalt(37);
   addStirCauldron(3.3);
-  straighten(Infinity, direction, "sun", 375, false);
-  addStirCauldron(0.05);
-  addSunSalt(24);
+  straighten(Infinity, direction + degToRad(0.0), 'sun', 400, false);
+  straighten(Infinity, direction + degToRad(0.0), 'moon', 20, true);
   stirIntoVortex();
-  continuousPourToEdge(0.07, 1, 40);
-  addMoonSalt(23);
-  addHeatVortex(2.91);
-  addStirCauldron(1.73);
-  /** The centor of the antimagic effect*/
-  direction = getAngleByDirection(
-    32.77 - currentPlot.pendingPoints[0].x,
-    29.94 - currentPlot.pendingPoints[0].y,
-  );
-  straighten(0.85, direction, "sun", 204, true);
-  addStirCauldron(0.92);
+  continuousPourToEdge(0.2, 1, 13);
+  addHeatVortex(2.5);
+  straighten(4, degToRad(11.6), 'sun', 208, true);
+  addStirCauldron(0.78);
   addSunSalt(1);
-  addStirCauldron(3.751);
+  addStirCauldron(3.758);
 }
