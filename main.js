@@ -22,6 +22,127 @@ import {
 } from "@potionous/plot";
 
 const SaltAngle = (2 * Math.PI) / 1000.0;
+let Display = false; // Macro to switch instruction display.
+let Step = 1;
+
+/**
+ * Logs the addition of an ingredient and adds it to the current plot.
+ * @param {import("@potionous/dataset").IngredientId} ingredientId The ID of the ingredient to add.
+ * @param {number} grindPercent The percentage of the ingredient to grind.
+ * If `display` is not given, the value of `Display` is used.
+ */
+function logAddIngredient(ingredientId, grindPercent, display = Display) {
+  if (display) {
+    console.log(
+      "Step " + Step + ": Adding " + grindPercent * 100 + "% of " + ingredientId
+    );
+    Step += 1;
+  }
+  addIngredient(ingredientId, grindPercent);
+}
+
+/**
+ * Logs the addition of sun salt and adds it to the current plot.
+ * @param {number} grains The amount of sun salt to add in grains.
+ * If `display` is not given, the value of `Display` is used.
+ */
+function logAddSunSalt(grains) {
+  if (Display) {
+    console.log("Step " + Step + ": Adding " + grains + " grains of sun salt");
+    Step += 1;
+  }
+  addSunSalt(grains);
+}
+
+/**
+ * Logs the addition of moon salt and adds it to the current plot.
+ * @param {number} grains The amount of moon salt to add in grains.
+ * If `display` is not given, the value of `Display` is used.
+ */
+function logAddMoonSalt(grains) {
+  if (Display) {
+    console.log("Step " + Step + ": Adding " + grains + " grains of moon salt");
+    Step += 1;
+  }
+  addMoonSalt(grains);
+}
+
+/**
+ * Logs the addition of rotation salt and adds it to the current plot.
+ * @param {string} salt The type of rotation salt to add ("sun" or "moon").
+ * @param {number} grains The amount of salt to add in grains.
+ * If "display" is not given, the value of "Display" is used.
+ */
+
+function logAddRotationSalt(salt, grains) {
+  if (salt != "moon" && salt != "sun") {
+    console.log("Error while adding rotation salt: salt must be moon or sun.");
+    throw EvalError;
+  }
+  if (Display) {
+    console.log(
+      "Step " + Step + ": Adding " + grains + " grains of " + salt + " salt"
+    );
+    Step += 1;
+  }
+  addRotationSalt(salt, grains);
+}
+
+/**
+ * Logs the addition of heat to a vortex and adds it to the current plot.
+ * @param {number} length The amount of heat to add to the vortex in PotionCraft units.
+ * If "display" is not given, the value of "Display" is used.
+ */
+function logAddHeatVortex(length) {
+  if (Display) {
+    console.log(
+      "Step " + Step + ": Heat the vortex by " + length + " distance."
+    );
+    Step += 1;
+  }
+  addHeatVortex(length);
+}
+
+/**
+ * Logs the addition of a stir cauldron instruction and adds it to the current plot.
+ * @param {number} length The amount of stirring to add in PotionCraft units.
+ * If "display" is not given, the value of "Display" is used.
+ */
+function logAddStirCauldron(length) {
+  if (Display) {
+    console.log(
+      "Step " + Step + ": Stir the cauldron by " + length + " distance."
+    );
+    Step += 1;
+  }
+  addStirCauldron(length);
+}
+/**
+ * Logs the addition of a pour solvent instruction and adds it to the current plot.
+ * @param {number} length The amount of solvent to pour in PotionCraft units.
+ * If "display" is not given, the value of "Display" is used.
+ */
+function logAddPourSolvent(length) {
+  if (Display) {
+    console.log("Step " + Step + ": Pour solvent by " + length + " distance");
+    Step += 1;
+  }
+  addPourSolvent(length);
+}
+
+/**
+ * Logs the addition of a set position instruction and adds it to the current plot.
+ * @param {number} x The x coordinate to set
+ * @param {number} y The y coordinate to set
+ * If "display" is not given, the value of "Display" is used.
+ */
+function logAddSetPosition(x, y) {
+  if (Display) {
+    console.log("Step " + Step + ": teleporing to (" + x + ", " + y + ")");
+    Step += 1;
+  }
+  addSetPosition(x, y);
+}
 
 /**
  * Checks if the given point is a danger zone.
@@ -91,10 +212,10 @@ function stirIntoVortex() {
   let left = stirLength;
   let right =
     stirLength + pointDistance(pendingPoints[i - 1], pendingPoints[i]);
-  while (right - left > 0.001) {
+  while (right - left > 0.0001) {
     const mid = left + (right - left) / 2;
     const plot = computePlot(
-      currentRecipeItems.concat([createStirCauldron(mid)]),
+      currentRecipeItems.concat([createStirCauldron(mid)])
     );
     const entities = plot.pendingPoints[0].bottleCollisions;
     if (entities.some(isVortex)) {
@@ -103,7 +224,7 @@ function stirIntoVortex() {
       right = mid;
     }
   }
-  addStirCauldron(right);
+  logAddStirCauldron(right);
 }
 
 /**
@@ -157,17 +278,17 @@ function stirToEdge() {
   }
   if (i == pendingNPoint) {
     console.log(
-      "Error while stirring to edge: bottle is in a vortex, but no edge found.",
+      "Error while stirring to edge: bottle is in a vortex, but no edge found."
     );
     throw EvalError;
   }
   let left = stirLength;
   let right =
     stirLength + pointDistance(pendingPoints[i - 1], pendingPoints[i]);
-  while (right - left > 0.001) {
+  while (right - left > 0.0001) {
     const mid = left + (right - left) / 2;
     const plot = computePlot(
-      currentRecipeItems.concat(createStirCauldron(mid)),
+      currentRecipeItems.concat(createStirCauldron(mid))
     );
     const result = plot.pendingPoints[0].bottleCollisions.find(isVortex);
     let isSameVortex = true;
@@ -184,7 +305,7 @@ function stirToEdge() {
       right = mid;
     }
   }
-  addStirCauldron(left);
+  logAddStirCauldron(left);
 }
 
 /**
@@ -211,10 +332,10 @@ function pourToEdge() {
   let right = 5.0; // At least 5 pouring can pull the bottle out of the same vortex.
   let mid;
   let isSameVortex;
-  while (right - left > 0.001) {
+  while (right - left > 0.0001) {
     mid = left + (right - left) / 2;
     const plot = computePlot(
-      currentRecipeItems.concat([createPourSolvent(mid)]),
+      currentRecipeItems.concat([createPourSolvent(mid)])
     );
     const pendingPoints = plot.pendingPoints;
     const currentPoint = pendingPoints[0];
@@ -234,7 +355,7 @@ function pourToEdge() {
       right = mid;
     }
   }
-  addPourSolvent(left);
+  logAddPourSolvent(left);
 }
 
 /**
@@ -255,7 +376,7 @@ function continuousPourToEdge(
   initialLength,
   lengthDecay,
   numberEdgings,
-  vortexRadius = 2.39,
+  vortexRadius = 2.39
 ) {
   const pendingPoints = currentPlot.pendingPoints;
   const result = pendingPoints[0].bottleCollisions.find(isVortex);
@@ -268,8 +389,6 @@ function continuousPourToEdge(
   let i;
   let _length = initialLength;
   for (i = 0; i < numberEdgings; i++) {
-    pourToEdge();
-
     _length = _length * lengthDecay;
     const pendingPoints = currentPlot.pendingPoints;
     const x = pendingPoints[0].x;
@@ -277,13 +396,14 @@ function continuousPourToEdge(
     const vortexAngle = getAngleByDirection(
       -x,
       -y,
-      getAngleByDirection(vortexX - x, vortexY - y),
+      getAngleByDirection(vortexX - x, vortexY - y)
     );
     const maxLength = vortexRadius * (vortexAngle - Math.PI / 2) * 0.33;
     if (_length > maxLength) {
       _length = maxLength;
     }
-    addHeatVortex(_length);
+    logAddHeatVortex(_length);
+    pourToEdge();
   }
 }
 
@@ -316,7 +436,7 @@ function derotateToAngle(targetAngle) {
   }
   if (derotateType == "none") {
     console.log(
-      "Error while derotating: Cannot derotate outside origin or vortex.",
+      "Error while derotating: Cannot derotate outside origin or vortex."
     );
     throw EvalError;
   } else {
@@ -326,14 +446,14 @@ function derotateToAngle(targetAngle) {
       Math.abs(currentAngle) >= Math.abs(targetAngle)
     ) {
       if (derotateType == "vortex") {
-        addSetPosition(0, 0);
+        logAddSetPosition(0, 0);
       }
       let left = 0.0;
       let right = 100.0;
       while (right - left > 0.0001) {
         const mid = left + (right - left) / 2;
         const plot = computePlot(
-          currentRecipeItems.concat(createPourSolvent(mid)),
+          currentRecipeItems.concat(createPourSolvent(mid))
         );
         const angle = -plot.pendingPoints[0].angle;
         if (Math.abs(angle) > targetAngle) {
@@ -342,13 +462,13 @@ function derotateToAngle(targetAngle) {
           right = mid;
         }
       }
-      addPourSolvent(left + (right - left) / 2);
+      logAddPourSolvent(left + (right - left) / 2);
       if (derotateType == "vortex") {
-        addSetPosition(x, y);
+        logAddSetPosition(x, y);
       }
     } else {
       console.log(
-        "Error while derotating: Cannot derotate to larger or reversed angle.",
+        "Error while derotating: Cannot derotate to larger or reversed angle."
       );
       throw EvalError;
     }
@@ -418,7 +538,7 @@ function saltToDeg(salt, grains) {
     return (grains * 180.0) / 500.0;
   } else {
     console.log(
-      "Error while converting salt to degree: salt must be moon or sun.",
+      "Error while converting salt to degree: salt must be moon or sun."
     );
     throw EvalError;
   }
@@ -438,7 +558,7 @@ function saltToRad(salt, grains) {
     return (grains * Math.PI) / 500.0;
   } else {
     console.log(
-      "Error while converting salt to radian: salt must be moon or sun.",
+      "Error while converting salt to radian: salt must be moon or sun."
     );
     throw EvalError;
   }
@@ -537,7 +657,7 @@ function straighten(
   direction,
   salt = "moon",
   maxGrains = 999999,
-  ignoreReverse = true,
+  ignoreReverse = true
 ) {
   if (salt != "moon" && salt != "sun") {
     console.log("Error while straightening: salt must be moon or sun.");
@@ -556,7 +676,7 @@ function straighten(
     const nextDirection = getAngleByDirection(
       nextX - currentX,
       nextY - currentY,
-      direction,
+      direction
     );
     let grains;
 
@@ -587,8 +707,8 @@ function straighten(
        * Or the potion may stop just before some node and cause zero vector error.
        */
       if (nextDistance > 0.0) {
-      addStirCauldron(nextDistance + 0.0001);
-      distanceStirred += nextDistance + 0.0001;
+        logAddStirCauldron(nextDistance + 0.0001);
+        distanceStirred += nextDistance + 0.0001;
       }
       i = 1;
       nextDistance = 0.0;
@@ -596,12 +716,12 @@ function straighten(
         /** If the salt is capped, then straightening should terminate. */
         grains = maxGrains - totalGrains;
         totalGrains += grains;
-        addRotationSalt(salt, grains);
+        logAddRotationSalt(salt, grains);
         console.log("Straignten terminated by maximal grains of salt added.");
         break;
       } else {
         totalGrains += grains;
-        addRotationSalt(salt, grains);
+        logAddRotationSalt(salt, grains);
         /** Calculate the new plotter after stir and salt. */
         pendingPoints = currentPlot.pendingPoints;
       }
@@ -611,14 +731,14 @@ function straighten(
       if (nextDistance + distanceStirred >= maxStirDistance) {
         /** If the distance is capped, stir the remaining path and terminate. */
         nextDistance = maxStirDistance - distanceStirred;
-        addStirCauldron(nextDistance);
+        logAddStirCauldron(nextDistance);
         console.log("Straignten terminated by maximal length stirred.");
         break;
       } else {
         i = i + 1;
         if (pendingPoints.length < i + 2) {
           console.log("Straignten terminated by end of path.");
-          addStirCauldron(nextDistance);
+          logAddStirCauldron(nextDistance);
           break;
         }
       }
@@ -628,11 +748,11 @@ function straighten(
 }
 
 function main43MoonSwiftness() {
-  addIngredient(Ingredients.RainbowCap, 1);
-  addStirCauldron(14.4);
-  addPourSolvent(100);
+  logAddIngredient(Ingredients.RainbowCap, 1);
+  logAddStirCauldron(14.4);
+  logAddPourSolvent(100);
   console.log("Current stir angle: " + radToDeg(getCurrentStirAngle()));
-  addStirCauldron(3.8);
+  logAddStirCauldron(3.8);
   let currentStirAngle = getCurrentStirAngle();
   console.log("Current stir angle: " + radToDeg(currentStirAngle));
   // straighten(10, getAngleByDirection(-5.49,5.76), "moon", 43)
@@ -640,54 +760,55 @@ function main43MoonSwiftness() {
 }
 
 function mainUnrollingGoldthorn() {
-  addIngredient(Ingredients.Goldthorn, 1);
-  addStirCauldron(0.1);
+  logAddIngredient(Ingredients.Goldthorn, 1);
+  logAddStirCauldron(0.1);
   console.log("Current stir angle: " + radToDeg(getCurrentStirAngle()));
   let currntStirAngle = getCurrentStirAngle();
   straighten(30, currntStirAngle, "sun", 9999);
 }
 
 function mainUnrollingRainbowCap() {
-  addIngredient(Ingredients.RainbowCap, 1);
-  addStirCauldron(0.4);
+  logAddIngredient(Ingredients.RainbowCap, 1);
+  logAddStirCauldron(0.4);
   console.log("Current stir angle: " + radToDeg(getCurrentStirAngle()));
   let currntStirAngle = getCurrentStirAngle();
   straighten(50, degToRad(-90), "moon", 9999);
 }
 
 function mainStirToEdgeTest() {
-  addIngredient(Ingredients.PhantomSkirt, 1);
-  addSetPosition(-5, 5);
+  logAddIngredient(Ingredients.PhantomSkirt, 1);
+  logAddSetPosition(-5, 5);
   stirToEdge();
 }
 
 function mainAntiMagic() {
-  addSunSalt(29);
-  addSunSalt(138);
-  addIngredient(Ingredients.PhantomSkirt, 1);
+  logAddSunSalt(29);
+  logAddSunSalt(138);
+  logAddIngredient(Ingredients.PhantomSkirt, 1);
   derotateToAngle(saltToDeg("sun", 29));
   stirIntoVortex();
-  addHeatVortex(Infinity);
+  logAddHeatVortex(Infinity);
   straighten(3, degToRad(17.6), "sun", 9999, true);
-  addStirCauldron(6);
+  logAddStirCauldron(6);
   let direction = getAngleByDirection(
     29.63 - currentPlot.pendingPoints[0].x,
-    21.91 - currentPlot.pendingPoints[0].y,
+    21.91 - currentPlot.pendingPoints[0].y
   );
-  addSunSalt(37);
-  addStirCauldron(3.3);
-  straighten(Infinity, direction+degToRad(0.0), "sun", 400, false);
-  straighten(Infinity,direction+degToRad(0.0),"moon",20,true)
-  stirIntoVortex()
-  continuousPourToEdge(0.2, 1, 13);
-  addHeatVortex(2.5);
-  straighten(4, degToRad(11.6) , "sun", 208, true);
-  addStirCauldron(0.78)
-  addSunSalt(1)
-  addStirCauldron(3.758)
+  logAddSunSalt(37);
+  logAddStirCauldron(3.3);
+  straighten(Infinity, direction + degToRad(0.0), "sun", 400, false);
+  straighten(Infinity, direction + degToRad(0.0), "moon", 20, true);
+  stirIntoVortex();
+  continuousPourToEdge(0.2, 1, 12);
+  logAddHeatVortex(2.7);
+  straighten(4, degToRad(11.6), "sun", 208, true);
+  logAddStirCauldron(0.78);
+  logAddSunSalt(1);
+  logAddStirCauldron(3.758);
 }
 
 try {
+  Display = true;
   mainAntiMagic();
   // mainStirToEdgeTest()
   // mainUnrollingRainbowCap()
