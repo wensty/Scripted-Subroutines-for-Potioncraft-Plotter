@@ -1,4 +1,4 @@
-// Subroutins defined in main script.
+// Subroutines defined in main script.
 import { derotateToAngle, stirIntoVortex, straighten } from "../main.js";
 // utility functions defined in main script.
 import { degToRad } from "../main.js";
