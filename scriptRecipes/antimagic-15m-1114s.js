@@ -15,7 +15,7 @@ function main() {
   derotateToAngle(saltToDeg("sun", 29));
   stirIntoVortex();
   logAddHeatVortex(Infinity);
-  straighten(3, degToRad(17.4), "sun", 9999, true);
+  straighten(3, degToRad(17.4), "sun");
   logAddStirCauldron(6);
   let direction = getAngleByDirection(
     29.63 - currentPlot.pendingPoints[0].x,
