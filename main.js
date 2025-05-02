@@ -19,6 +19,39 @@ import { startingPlot, currentPlot, computePlot, currentRecipeItems } from "@pot
 const SaltAngle = (2 * Math.PI) / 1000.0;
 let Display = false; // Macro to switch instruction display.
 let Step = 1;
+let TotalSun = 0;
+let TotalMoon = 0;
+
+/**
+ * Terminate the program by tricking the TypeScript type checker.
+ * The function deliberately contains a type error to terminate the program.
+ */
+function terminate() {
+  // Dirty way to terminate the program.
+  const terminator = 0;
+  // @ts-ignore
+  terminator = 1;
+}
+
+/**
+ * Checks if the currentpotion base is the given expected base.
+ * @param {"water"|"oil"|"wine"} expectedBase The expected base name.
+ */
+function checkBase(expectedBase) {
+  if (!["water", "oil", "wine"].includes(expectedBase)) {
+    console.log("Unknown expected base: " + expectedBase + ".");
+    terminate();
+    throw EvalError;
+  } else {
+    const currentBase = PotionBases.current.id;
+    if (currentBase != expectedBase) {
+      console.log("" + currentBase + " is not the expected base " + expectedBase + ".");
+      terminate();
+      throw EvalError;
+    }
+  }
+  return;
+}
 
 /**
  * Logs the addition of an ingredient and adds it to the current plot.
@@ -44,6 +77,7 @@ function logAddSunSalt(grains) {
     console.log("Step " + Step + ": Adding " + grains + " grains of sun salt");
     Step += 1;
   }
+  TotalSun += grains;
   addSunSalt(grains);
 }
 
@@ -57,12 +91,13 @@ function logAddMoonSalt(grains) {
     console.log("Step " + Step + ": Adding " + grains + " grains of moon salt");
     Step += 1;
   }
+  TotalMoon += grains;
   addMoonSalt(grains);
 }
 
 /**
  * Logs the addition of rotation salt and adds it to the current plot.
- * @param {string} salt The type of rotation salt to add ("sun" or "moon").
+ * @param {"moon"|"sun"} salt The type of rotation salt to add ("sun" or "moon").
  * @param {number} grains The amount of salt to add in grains.
  * If "display" is not given, the value of "Display" is used.
  */
@@ -70,11 +105,17 @@ function logAddMoonSalt(grains) {
 function logAddRotationSalt(salt, grains) {
   if (salt != "moon" && salt != "sun") {
     console.log("Error while adding rotation salt: salt must be moon or sun.");
+    terminate();
     throw EvalError;
   }
   if (Display) {
     console.log("Step " + Step + ": Adding " + grains + " grains of " + salt + " salt");
     Step += 1;
+  }
+  if (salt == "moon") {
+    TotalMoon += grains;
+  } else {
+    TotalSun += grains;
   }
   addRotationSalt(salt, grains);
 }
@@ -125,7 +166,7 @@ function logAddPourSolvent(length) {
  */
 function logAddSetPosition(x, y) {
   if (Display) {
-    console.log("Step " + Step + ": teleporing to (" + x + ", " + y + ")");
+    console.log("Step " + Step + ": teleporting to (" + x + ", " + y + ")");
     Step += 1;
   }
   addSetPosition(x, y);
@@ -168,6 +209,7 @@ function stirIntoVortex() {
   const pendingPoints = currentPlot.pendingPoints;
   if (pendingPoints.length < 3) {
     console.log("Error while stirring into vortex: not enough points.");
+    terminate();
     throw EvalError;
   }
   const currentPoint = pendingPoints[0];
@@ -175,23 +217,26 @@ function stirIntoVortex() {
   const result = entities.find(isVortex);
   if (result != undefined) {
     console.log("Error while stirring into vortex: bottle in a vortex.");
+    terminate();
     throw EvalError;
   }
   let stirLength = 0.0;
   let i;
-  for (i = 2; i < pendingPoints.length; i++) {
+  for (i = 1; i + 1 < pendingPoints.length; i++) {
     const currentPoint = pendingPoints[i];
     const entities = currentPoint.bottleCollisions;
     if (!entities.some(isVortex)) {
-      stirLength += pointDistance(pendingPoints[i - 1], pendingPoints[i]);
+      stirLength += pointDistance(pendingPoints[i], pendingPoints[i + 1]);
     } else {
       break;
     }
   }
   if (i == pendingPoints.length) {
     console.log("Error while stirring into vortex: no vortex found.");
+    terminate();
     throw EvalError;
   }
+  // Find the node into the vortex.
   let left = stirLength;
   let right = stirLength + pointDistance(pendingPoints[i - 1], pendingPoints[i]);
   while (right - left > 0.0001) {
@@ -225,6 +270,7 @@ function stirToEdge() {
   let stirLength = 0.0;
   if (result === undefined) {
     console.log("Error while stirring to edge: bottle not in a vortex.");
+    terminate();
     throw EvalError;
   } else {
     vortexX = result.x;
@@ -233,6 +279,7 @@ function stirToEdge() {
   let pendingNPoint = pendingPoints.length;
   if (pendingNPoint <= 2) {
     console.log("Error while stirring to edge: not enough pending points.");
+    terminate();
     throw EvalError;
   }
   let i;
@@ -240,7 +287,7 @@ function stirToEdge() {
    * Currently pendingPoints always have 1 or at least 3 elements.
    * If it has at least 3 elements, the first 2 are always same, i.e. the current point.
    */
-  for (i = 2; i != pendingNPoint; i++) {
+  for (i = 1; i < pendingNPoint; i++) {
     let isSameVortex = true;
     const result = pendingPoints[i].bottleCollisions.find(isVortex);
     if (result === undefined) {
@@ -253,11 +300,12 @@ function stirToEdge() {
     if (!isSameVortex) {
       break;
     } else {
-      stirLength += pointDistance(pendingPoints[i - 1], pendingPoints[i]);
+      stirLength += pointDistance(pendingPoints[i], pendingPoints[i + 1]);
     }
   }
   if (i == pendingNPoint) {
     console.log("Error while stirring to edge: bottle is in a vortex, but no edge found.");
+    terminate();
     throw EvalError;
   }
   let left = stirLength;
@@ -298,6 +346,7 @@ function pourToEdge() {
   const result = entities.find(isVortex);
   if (result === undefined) {
     console.log("Error while pouring to edge: bottle not in a vortex.");
+    terminate();
     throw EvalError;
   } // In case this is called outside a vortex.
   const vortexX = result.x;
@@ -340,29 +389,29 @@ function pourToEdge() {
  *
  * @param {number} initialLength - The initial length of solvent to pour in each step.
  * @param {number} lengthDecay - The factor by which the length of pouring decreases in each step.
- * @param {number} numberEdgings - The number of times to edge closer to the vortex.
+ * @param {number} numbersToPour - The number of times to edge closer to the vortex.
  * @param {number} [vortexRadius=2.39] - The radius of the vortex; used to compute the maximum pouring length.
  * @throws {EvalError} If the operation is attempted outside of a vortex.
  */
-
-function continuousPourToEdge(initialLength, lengthDecay, numberEdgings, vortexRadius = 2.39) {
+function continuousPourToEdge(initialLength, lengthDecay, numbersToPour, vortexRadius = 2.39) {
   const pendingPoints = currentPlot.pendingPoints;
   const result = pendingPoints[0].bottleCollisions.find(isVortex);
   if (result === undefined) {
     console.log("Error while pouring to edge: bottle not in a vortex.");
+    terminate();
     throw EvalError;
   }
   const vortexX = result.x;
   const vortexY = result.y;
   let i;
   let _length = initialLength;
-  for (i = 0; i < numberEdgings; i++) {
+  for (i = 0; i < numbersToPour; i++) {
     _length = _length * lengthDecay;
     const pendingPoints = currentPlot.pendingPoints;
     const x = pendingPoints[0].x;
     const y = pendingPoints[0].y;
     const vortexAngle = getAngleByDirection(-x, -y, getAngleByDirection(vortexX - x, vortexY - y));
-    const maxLength = vortexRadius * (vortexAngle - Math.PI / 2) * 0.33;
+    const maxLength = vortexRadius * (vortexAngle - Math.PI / 2) * 0.25;
     if (_length > maxLength) {
       _length = maxLength;
     }
@@ -400,10 +449,12 @@ function derotateToAngle(targetAngle) {
   }
   if (derotateType == "none") {
     console.log("Error while derotating: Cannot derotate outside origin or vortex.");
+    terminate();
     throw EvalError;
   } else {
     const currentAngle = -pendingPoints[0].angle;
-    if (currentAngle * targetAngle >= 0 && Math.abs(currentAngle) >= Math.abs(targetAngle)) {
+    // if (currentAngle * targetAngle >= 0 && Math.abs(currentAngle) >= Math.abs(targetAngle)) {
+    if (targetAngle * (targetAngle - currentAngle) <= 0) {
       if (derotateType == "vortex") {
         logAddSetPosition(0, 0);
       }
@@ -413,7 +464,7 @@ function derotateToAngle(targetAngle) {
         const mid = left + (right - left) / 2;
         const plot = computePlot(currentRecipeItems.concat(createPourSolvent(mid)));
         const angle = -plot.pendingPoints[0].angle;
-        if (Math.abs(angle) > targetAngle) {
+        if (Math.abs(angle) > Math.abs(targetAngle)) {
           left = mid;
         } else {
           right = mid;
@@ -425,6 +476,7 @@ function derotateToAngle(targetAngle) {
       }
     } else {
       console.log("Error while derotating: Cannot derotate to larger or reversed angle.");
+      terminate();
       throw EvalError;
     }
   }
@@ -481,7 +533,7 @@ function radToSalt(rad) {
 
 /**
  * Converts salt to degree.
- * @param {string} salt The salt type ("moon" or "sun")
+ * @param {"moon"|"sun"} salt The salt type ("moon" or "sun")
  * @param {number} grains The number of grains of salt
  * @returns {number} The degree equivalent of the given salt and grains
  * @throws {Error} If the salt is not "moon" or "sun"
@@ -493,13 +545,14 @@ function saltToDeg(salt, grains) {
     return (grains * 180.0) / 500.0;
   } else {
     console.log("Error while converting salt to degree: salt must be moon or sun.");
+    terminate();
     throw EvalError;
   }
 }
 
 /**
  * Converts salt to radian.
- * @param {string} salt The salt type ("moon" or "sun")
+ * @param {"moon"|"sun"} salt The salt type ("moon" or "sun")
  * @param {number} grains The number of grains of salt
  * @returns {number} The radian equivalent of the given salt and grains
  * @throws {Error} If the salt is not "moon" or "sun"
@@ -511,6 +564,7 @@ function saltToRad(salt, grains) {
     return (grains * Math.PI) / 500.0;
   } else {
     console.log("Error while converting salt to radian: salt must be moon or sun.");
+    terminate();
     throw EvalError;
   }
 }
@@ -535,6 +589,7 @@ function getDirectionByAngle(angle, baseAngle = 0.0) {
 function getUnit(x, y) {
   if (Math.abs(x) < 1e-6 && Math.abs(y) < 1e-6) {
     console.log("Error while getting unit: zero vector.");
+    terminate();
     throw EvalError;
   } else {
     return [x / Math.sqrt(x ** 2 + y ** 2), y / Math.sqrt(x ** 2 + y ** 2)];
@@ -575,16 +630,24 @@ function getAngleByDirection(x, y, baseAngle = 0.0) {
  * @returns {number} The angle of the current stir in radians
  * @throws {Error} If the bottle is not in a stir
  */
-function getCurrentStirAngle() {
+function getCurrentStirDirection() {
   /** the points have no coordinate at origin */
-  if (currentPlot.pendingPoints.length < 3) {
-    console.log("Error while getting current stir angle: not enough points.");
-    throw EvalError;
+  const fromX = currentPlot.pendingPoints[0].x || 0.0;
+  const fromY = currentPlot.pendingPoints[0].y || 0.0;
+  let nextIndex = 1;
+  while (nextIndex < currentPlot.pendingPoints.length) {
+    if (pointDistance(currentPlot.pendingPoints[0], currentPlot.pendingPoints[nextIndex]) > 1e-4) {
+      break;
+    }
+    nextIndex += 1;
   }
-  const fromX = currentPlot.pendingPoints[1].x || 0.0;
-  const fromY = currentPlot.pendingPoints[1].y || 0.0;
-  const toX = currentPlot.pendingPoints[2].x;
-  const toY = currentPlot.pendingPoints[2].y;
+  if (nextIndex >= currentPlot.pendingPoints.length) {
+    console.log("Error while getting current stir direction: no next point.");
+    terminate();
+    throw EvalError;
+  } // Did not find a pendingPoints that is not the current point.
+  const toX = currentPlot.pendingPoints[nextIndex].x || 0.0;
+  const toY = currentPlot.pendingPoints[nextIndex].y || 0.0;
   return getAngleByDirection(toX - fromX, toY - fromY);
 }
 
@@ -598,8 +661,8 @@ function getCurrentStirAngle() {
  *
  * @param {number} maxStirDistance - The maximum distance to stir in PotionCraft units.
  * @param {number} direction - The initial direction in radians to align the stirring.
- * @param {string} [salt="moon"] - The type of rotation salt to use ("moon" or "sun").
- * @param {number} [maxGrains=999999] - The maximum grains of salt that can be used.
+ * @param {"moon"|"sun"} [salt="moon"] - The type of rotation salt to use ("moon" or "sun").
+ * @param {number} [maxGrains=Infinity] - The maximum grains of salt that can be used.
  * @param {boolean} [ignoreReverse=true] - Whether to ignore reverse directions.
  * @throws {EvalError} If the salt is neither "moon" nor "sun".
  */
@@ -607,23 +670,37 @@ function straighten(
   maxStirDistance,
   direction,
   salt = "moon",
-  maxGrains = 999999,
+  maxGrains = Infinity,
   ignoreReverse = true
 ) {
   if (salt != "moon" && salt != "sun") {
     console.log("Error while straightening: salt must be moon or sun.");
+    terminate();
     throw EvalError;
   }
+  const Buffer = 1e-12;
+
   let distanceStirred = 0.0;
   let nextDistance = 0.0;
+  let nextSegmentDistance = 0.0;
   let totalGrains = 0;
-  let i = 1;
+  let currentIndex = 0;
   let pendingPoints = currentPlot.pendingPoints;
   while (true) {
-    const currentX = pendingPoints[i].x;
-    const currentY = pendingPoints[i].y;
-    const nextX = pendingPoints[i + 1].x;
-    const nextY = pendingPoints[i + 1].y;
+    const currentX = pendingPoints[currentIndex].x;
+    const currentY = pendingPoints[currentIndex].y;
+    let nextIndex = currentIndex;
+    // Find the "real" next point by skipping "too close" points.
+    while (true) {
+      nextSegmentDistance += pointDistance(pendingPoints[nextIndex], pendingPoints[nextIndex + 1]);
+      nextIndex += 1;
+      // Threshold to decide two points to be different.
+      if (nextSegmentDistance > 1e-4) {
+        break;
+      }
+    }
+    const nextX = pendingPoints[nextIndex].x;
+    const nextY = pendingPoints[nextIndex].y;
     const nextDirection = getAngleByDirection(nextX - currentX, nextY - currentY, direction);
     let grains;
 
@@ -654,10 +731,11 @@ function straighten(
        * Or the potion may stop just before some node and cause zero vector error.
        */
       if (nextDistance > 0.0) {
-        logAddStirCauldron(nextDistance + 0.0001);
-        distanceStirred += nextDistance + 0.0001;
+        logAddStirCauldron(nextDistance + Buffer);
+        distanceStirred += nextDistance + Buffer;
       }
-      i = 1;
+      currentIndex = 0;
+      nextSegmentDistance = 0.0;
       nextDistance = 0.0;
       if (totalGrains + grains >= maxGrains) {
         /** If the salt is capped, then straightening should terminate. */
@@ -673,7 +751,8 @@ function straighten(
         pendingPoints = currentPlot.pendingPoints;
       }
     } else {
-      nextDistance += pointDistance(pendingPoints[i], pendingPoints[i + 1]);
+      nextDistance += nextSegmentDistance;
+      nextSegmentDistance = 0.0;
       // console.log(nextDistance)
       if (nextDistance + distanceStirred >= maxStirDistance) {
         /** If the distance is capped, stir the remaining path and terminate. */
@@ -682,8 +761,8 @@ function straighten(
         console.log("Straignten terminated by maximal length stirred.");
         break;
       } else {
-        i = i + 1;
-        if (pendingPoints.length < i + 2) {
+        currentIndex = nextIndex;
+        if (pendingPoints.length < currentIndex + 2) {
           console.log("Straignten terminated by end of path.");
           logAddStirCauldron(nextDistance);
           break;
@@ -698,9 +777,9 @@ function main43MoonSwiftness() {
   logAddIngredient(Ingredients.RainbowCap, 1);
   logAddStirCauldron(14.4);
   logAddPourSolvent(100);
-  console.log("Current stir angle: " + radToDeg(getCurrentStirAngle()));
+  console.log("Current stir angle: " + radToDeg(getCurrentStirDirection()));
   logAddStirCauldron(3.8);
-  let currentStirAngle = getCurrentStirAngle();
+  let currentStirAngle = getCurrentStirDirection();
   console.log("Current stir angle: " + radToDeg(currentStirAngle));
   // straighten(10, getAngleByDirection(-5.49,5.76), "moon", 43)
   straighten(10, currentStirAngle, "moon", 43);
@@ -709,16 +788,16 @@ function main43MoonSwiftness() {
 function mainUnrollingGoldthorn() {
   logAddIngredient(Ingredients.Goldthorn, 1);
   logAddStirCauldron(0.1);
-  console.log("Current stir angle: " + radToDeg(getCurrentStirAngle()));
-  let currntStirAngle = getCurrentStirAngle();
+  console.log("Current stir angle: " + radToDeg(getCurrentStirDirection()));
+  let currntStirAngle = getCurrentStirDirection();
   straighten(30, currntStirAngle, "sun", 9999);
 }
 
 function mainUnrollingRainbowCap() {
   logAddIngredient(Ingredients.RainbowCap, 1);
   logAddStirCauldron(0.4);
-  console.log("Current stir angle: " + radToDeg(getCurrentStirAngle()));
-  let currntStirAngle = getCurrentStirAngle();
+  console.log("Current stir angle: " + radToDeg(getCurrentStirDirection()));
+  let currntStirAngle = getCurrentStirDirection();
   straighten(50, degToRad(-90), "moon", 9999);
 }
 
@@ -729,36 +808,36 @@ function mainStirToEdgeTest() {
 }
 
 function mainAntiMagic() {
+  checkBase("oil");
   logAddSunSalt(29);
-  logAddSunSalt(138);
+  logAddSunSalt(137);
   logAddIngredient(Ingredients.PhantomSkirt, 1);
   derotateToAngle(saltToDeg("sun", 29));
   stirIntoVortex();
   logAddHeatVortex(Infinity);
-  straighten(3, degToRad(17.6), "sun", 9999, true);
+  straighten(3, degToRad(17.4), "sun", 9999, true);
   logAddStirCauldron(6);
   let direction = getAngleByDirection(
     29.63 - currentPlot.pendingPoints[0].x,
     21.91 - currentPlot.pendingPoints[0].y
   );
-  logAddSunSalt(37);
+  logAddSunSalt(36);
   logAddStirCauldron(3.3);
-  straighten(Infinity, direction + degToRad(0.0), "sun", 400, false);
-  straighten(Infinity, direction + degToRad(0.0), "moon", 20, true);
+  straighten(Infinity, direction + degToRad(+0.2), "sun", 402, false);
+  straighten(Infinity, direction + degToRad(+0.2), "moon", 15, true);
   stirIntoVortex();
-  continuousPourToEdge(0.2, 1, 12);
-  logAddHeatVortex(2.7);
-  straighten(4, degToRad(11.6), "sun", 208, true);
-  logAddStirCauldron(0.78);
+  continuousPourToEdge(0.1, 1, 33);
+  logAddHeatVortex(2.273);
+  derotateToAngle(saltToDeg("moon", 201 + 33));
+  straighten(4, degToRad(11), "sun", 200, true);
+  logAddStirCauldron(1.095);
   logAddSunSalt(1);
-  logAddStirCauldron(3.758);
+  logAddStirCauldron(Infinity);
 }
 
-try {
-  Display = true;
-  mainAntiMagic();
-  // mainStirToEdgeTest()
-  // mainUnrollingRainbowCap()
-} catch (e) {
-  console.log(e);
-}
+Display = true;
+mainAntiMagic();
+// mainStirToEdgeTest()
+// mainUnrollingRainbowCap()
+console.log("Total moon salt added: " + TotalMoon);
+console.log("Total sun salt added: " + TotalSun);
