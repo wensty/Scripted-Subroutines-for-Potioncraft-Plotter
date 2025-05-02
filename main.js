@@ -14,12 +14,7 @@ import {
 } from "@potionous/instructions";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";
-import {
-  startingPlot,
-  currentPlot,
-  computePlot,
-  currentRecipeItems,
-} from "@potionous/plot";
+import { startingPlot, currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
 
 const SaltAngle = (2 * Math.PI) / 1000.0;
 let Display = false; // Macro to switch instruction display.
@@ -33,9 +28,7 @@ let Step = 1;
  */
 function logAddIngredient(ingredientId, grindPercent, display = Display) {
   if (display) {
-    console.log(
-      "Step " + Step + ": Adding " + grindPercent * 100 + "% of " + ingredientId
-    );
+    console.log("Step " + Step + ": Adding " + grindPercent * 100 + "% of " + ingredientId);
     Step += 1;
   }
   addIngredient(ingredientId, grindPercent);
@@ -80,9 +73,7 @@ function logAddRotationSalt(salt, grains) {
     throw EvalError;
   }
   if (Display) {
-    console.log(
-      "Step " + Step + ": Adding " + grains + " grains of " + salt + " salt"
-    );
+    console.log("Step " + Step + ": Adding " + grains + " grains of " + salt + " salt");
     Step += 1;
   }
   addRotationSalt(salt, grains);
@@ -95,9 +86,7 @@ function logAddRotationSalt(salt, grains) {
  */
 function logAddHeatVortex(length) {
   if (Display) {
-    console.log(
-      "Step " + Step + ": Heat the vortex by " + length + " distance."
-    );
+    console.log("Step " + Step + ": Heat the vortex by " + length + " distance.");
     Step += 1;
   }
   addHeatVortex(length);
@@ -110,9 +99,7 @@ function logAddHeatVortex(length) {
  */
 function logAddStirCauldron(length) {
   if (Display) {
-    console.log(
-      "Step " + Step + ": Stir the cauldron by " + length + " distance."
-    );
+    console.log("Step " + Step + ": Stir the cauldron by " + length + " distance.");
     Step += 1;
   }
   addStirCauldron(length);
@@ -151,11 +138,7 @@ function logAddSetPosition(x, y) {
  */
 function isDangerZone(x) {
   const { entityType } = x;
-  return [
-    "StrongDangerZonePart",
-    "WeakDangerZonePart",
-    "DangerZonePart",
-  ].includes(entityType);
+  return ["StrongDangerZonePart", "WeakDangerZonePart", "DangerZonePart"].includes(entityType);
 }
 
 /**
@@ -210,13 +193,10 @@ function stirIntoVortex() {
     throw EvalError;
   }
   let left = stirLength;
-  let right =
-    stirLength + pointDistance(pendingPoints[i - 1], pendingPoints[i]);
+  let right = stirLength + pointDistance(pendingPoints[i - 1], pendingPoints[i]);
   while (right - left > 0.0001) {
     const mid = left + (right - left) / 2;
-    const plot = computePlot(
-      currentRecipeItems.concat([createStirCauldron(mid)])
-    );
+    const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
     const entities = plot.pendingPoints[0].bottleCollisions;
     if (entities.some(isVortex)) {
       left = mid;
@@ -277,19 +257,14 @@ function stirToEdge() {
     }
   }
   if (i == pendingNPoint) {
-    console.log(
-      "Error while stirring to edge: bottle is in a vortex, but no edge found."
-    );
+    console.log("Error while stirring to edge: bottle is in a vortex, but no edge found.");
     throw EvalError;
   }
   let left = stirLength;
-  let right =
-    stirLength + pointDistance(pendingPoints[i - 1], pendingPoints[i]);
+  let right = stirLength + pointDistance(pendingPoints[i - 1], pendingPoints[i]);
   while (right - left > 0.0001) {
     const mid = left + (right - left) / 2;
-    const plot = computePlot(
-      currentRecipeItems.concat(createStirCauldron(mid))
-    );
+    const plot = computePlot(currentRecipeItems.concat(createStirCauldron(mid)));
     const result = plot.pendingPoints[0].bottleCollisions.find(isVortex);
     let isSameVortex = true;
     if (result === undefined) {
@@ -334,9 +309,7 @@ function pourToEdge() {
   let isSameVortex;
   while (right - left > 0.0001) {
     mid = left + (right - left) / 2;
-    const plot = computePlot(
-      currentRecipeItems.concat([createPourSolvent(mid)])
-    );
+    const plot = computePlot(currentRecipeItems.concat([createPourSolvent(mid)]));
     const pendingPoints = plot.pendingPoints;
     const currentPoint = pendingPoints[0];
     const entities = currentPoint.bottleCollisions;
@@ -372,12 +345,7 @@ function pourToEdge() {
  * @throws {EvalError} If the operation is attempted outside of a vortex.
  */
 
-function continuousPourToEdge(
-  initialLength,
-  lengthDecay,
-  numberEdgings,
-  vortexRadius = 2.39
-) {
+function continuousPourToEdge(initialLength, lengthDecay, numberEdgings, vortexRadius = 2.39) {
   const pendingPoints = currentPlot.pendingPoints;
   const result = pendingPoints[0].bottleCollisions.find(isVortex);
   if (result === undefined) {
@@ -393,11 +361,7 @@ function continuousPourToEdge(
     const pendingPoints = currentPlot.pendingPoints;
     const x = pendingPoints[0].x;
     const y = pendingPoints[0].y;
-    const vortexAngle = getAngleByDirection(
-      -x,
-      -y,
-      getAngleByDirection(vortexX - x, vortexY - y)
-    );
+    const vortexAngle = getAngleByDirection(-x, -y, getAngleByDirection(vortexX - x, vortexY - y));
     const maxLength = vortexRadius * (vortexAngle - Math.PI / 2) * 0.33;
     if (_length > maxLength) {
       _length = maxLength;
@@ -435,16 +399,11 @@ function derotateToAngle(targetAngle) {
     }
   }
   if (derotateType == "none") {
-    console.log(
-      "Error while derotating: Cannot derotate outside origin or vortex."
-    );
+    console.log("Error while derotating: Cannot derotate outside origin or vortex.");
     throw EvalError;
   } else {
     const currentAngle = -pendingPoints[0].angle;
-    if (
-      currentAngle * targetAngle >= 0 &&
-      Math.abs(currentAngle) >= Math.abs(targetAngle)
-    ) {
+    if (currentAngle * targetAngle >= 0 && Math.abs(currentAngle) >= Math.abs(targetAngle)) {
       if (derotateType == "vortex") {
         logAddSetPosition(0, 0);
       }
@@ -452,9 +411,7 @@ function derotateToAngle(targetAngle) {
       let right = 100.0;
       while (right - left > 0.0001) {
         const mid = left + (right - left) / 2;
-        const plot = computePlot(
-          currentRecipeItems.concat(createPourSolvent(mid))
-        );
+        const plot = computePlot(currentRecipeItems.concat(createPourSolvent(mid)));
         const angle = -plot.pendingPoints[0].angle;
         if (Math.abs(angle) > targetAngle) {
           left = mid;
@@ -467,9 +424,7 @@ function derotateToAngle(targetAngle) {
         logAddSetPosition(x, y);
       }
     } else {
-      console.log(
-        "Error while derotating: Cannot derotate to larger or reversed angle."
-      );
+      console.log("Error while derotating: Cannot derotate to larger or reversed angle.");
       throw EvalError;
     }
   }
@@ -537,9 +492,7 @@ function saltToDeg(salt, grains) {
   } else if (salt == "sun") {
     return (grains * 180.0) / 500.0;
   } else {
-    console.log(
-      "Error while converting salt to degree: salt must be moon or sun."
-    );
+    console.log("Error while converting salt to degree: salt must be moon or sun.");
     throw EvalError;
   }
 }
@@ -557,9 +510,7 @@ function saltToRad(salt, grains) {
   } else if (salt == "sun") {
     return (grains * Math.PI) / 500.0;
   } else {
-    console.log(
-      "Error while converting salt to radian: salt must be moon or sun."
-    );
+    console.log("Error while converting salt to radian: salt must be moon or sun.");
     throw EvalError;
   }
 }
@@ -673,11 +624,7 @@ function straighten(
     const currentY = pendingPoints[i].y;
     const nextX = pendingPoints[i + 1].x;
     const nextY = pendingPoints[i + 1].y;
-    const nextDirection = getAngleByDirection(
-      nextX - currentX,
-      nextY - currentY,
-      direction
-    );
+    const nextDirection = getAngleByDirection(nextX - currentX, nextY - currentY, direction);
     let grains;
 
     if (salt == "moon") {
