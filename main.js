@@ -202,6 +202,18 @@ function isVortex(x) {
  * Subroutines related to stirring.
  */
 
+/**
+ * Stirs the potion until it enters a vortex.
+ *
+ * This function calculates the distance required to stir the potion
+ * from its current position into a vortex, ensuring that the stir
+ * path reaches the vortex's edge without overshooting. If the potion
+ * is already within a vortex, it will attempt to reach a different
+ * vortex. If no vortex is found, an error is thrown.
+ *
+ * @throws {EvalError} If no vortex is found or if the potion fails to
+ * enter a vortex after stirring.
+ */
 function stirIntoVortex() {
   const pendingPoints = currentPlot.pendingPoints;
   const currentPoint = pendingPoints[0];
