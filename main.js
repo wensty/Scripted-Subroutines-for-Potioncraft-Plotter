@@ -202,40 +202,24 @@ function isVortex(x) {
  * Subroutines related to stirring.
  */
 
-/**
- * Stirs the potion into a vortex by determining the optimal stirring
- * length required to reach the vortex edge and adding a stir instruction.
- *
- * This function checks if the current plot's pending points are sufficient
- * and ensures the bottle is not already within a vortex before proceeding
- * to compute the stir length. If a vortex is encountered during the process,
- * it calculates the precise stir length needed to approach the vortex edge
- * using binary search and adds this instruction to the recipe.
- *
- * @throws {EvalError} If there are insufficient points, the bottle is
- * already in a vortex, or no vortex is found during the process.
- */
 function stirIntoVortex() {
   const pendingPoints = currentPlot.pendingPoints;
-  if (pendingPoints.length < 3) {
-    console.log("Error while stirring into vortex: not enough points.");
-    terminate();
-    throw EvalError;
-  }
   const currentPoint = pendingPoints[0];
   const entities = currentPoint.bottleCollisions;
   const result = entities.find(isVortex);
+  let currentVortexX = undefined;
+  let currentVortexY = undefined;
   if (result != undefined) {
-    console.log("Error while stirring into vortex: bottle in a vortex.");
-    terminate();
-    throw EvalError;
+    currentVortexX = result.x;
+    currentVortexY = result.y;
   }
   let stirLength = 0.0;
   let i;
   for (i = 1; i + 1 < pendingPoints.length; i++) {
     const currentPoint = pendingPoints[i];
     const entities = currentPoint.bottleCollisions;
-    if (!entities.some(isVortex)) {
+    const result = entities.find(isVortex);
+    if (result === undefined || (result.x == currentVortexX && result.y == currentVortexY)) {
       stirLength += pointDistance(pendingPoints[i], pendingPoints[i + 1]);
     } else {
       break;
@@ -330,7 +314,7 @@ function stirToEdge() {
  * @param {number} [stirBuffer=1e-12] - To prevent weird bugs.
  * @throws {EvalError} - When next node do not exists.
  */
-function stirToTurn(directionBuffer = 20 * SaltAngle, stirBuffer = 1e-12) {
+function stirToTurn(directionBuffer = 20 * SaltAngle, stirBuffer = 0.0) {
   const pendingPoints = currentPlot.pendingPoints;
   let currentDirection = getCurrentStirDirection();
   let currentIndex = 0;
@@ -418,7 +402,7 @@ function stirToSafeZone(dangerBuffer = 0.02) {
     /**
      * Find the exact point of heal and find the least health.
      */
-    let leastHealth = currentHealth;
+    let leastHealth = pendingPoints[nextIndex - 1].health;
     let left = stirDistance;
     let right =
       stirDistance + pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
@@ -510,7 +494,13 @@ function continuousPourToEdge(initLength, decay, numbersToPour, vortexRadius = 2
     const x = pendingPoints[0].x;
     const y = pendingPoints[0].y;
     const vortexAngle = getAngleByDirection(-x, -y, getAngleByDirection(vortexX - x, vortexY - y));
-    const maxLength = vortexRadius * (vortexAngle - Math.PI / 2) * 0.25; // Do not heat over 90 degrees.
+    let maxLength = Infinity;
+    if (vortexAngle > Math.PI / 2) {
+      /**
+       * Do not heat over 90 degrees.
+       */
+      maxLength = vortexRadius * (vortexAngle - Math.PI / 2) * 0.25;
+    }
     if (length > maxLength) {
       length = maxLength;
     }
@@ -783,7 +773,11 @@ function straighten(
     terminate();
     throw EvalError;
   }
-  const Buffer = 1e-12; // to avoid weird bugs of plotter.
+  /**
+   * To avoid weird bugs of plotter.
+   * Can be set to 0 with current beta with new bug fixes.
+   */
+  const Buffer = 0.0;
   let distanceStirred = 0.0;
   let nextDistance = 0.0;
   let nextSegmentDistance = 0.0;
