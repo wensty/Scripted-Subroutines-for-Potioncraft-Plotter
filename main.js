@@ -16,7 +16,7 @@ import {
 import { Ingredients, PotionBases } from "@potionous/dataset";
 import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
 
-const SaltAngle = (2 * Math.PI) / 1000.0;
+const SaltAngle = (2 * Math.PI) / 1000.0; // angle per salt in radian.
 let Display = false; // Macro to switch instruction display.
 let Step = 1;
 let TotalSun = 0;
@@ -50,7 +50,6 @@ function checkBase(expectedBase) {
       throw EvalError;
     }
   }
-  return;
 }
 
 /**
@@ -308,6 +307,123 @@ function stirToEdge() {
     }
   }
   logAddStirCauldron(left);
+}
+
+/**
+ * Computes the length of the stir from the current point to the point where the bottle starts to
+ * turn, and adds a stir instruction to the recipe for this length.
+ *
+ * @param {number} [directionBuffer=degToRad(20 * SaltAngle)] - The buffer value before the bottle
+ *   is considered to start turning.
+ * @param {number} [stirBuffer=1e-12] - To prevent weird bugs.
+ * @throws {EvalError} - When next node do not exists.
+ */
+function stirToTurn(directionBuffer = 20 * SaltAngle, stirBuffer = 1e-12) {
+  const pendingPoints = currentPlot.pendingPoints;
+  let currentDirection = getCurrentStirDirection();
+  let currentIndex = 0;
+  let nextIndex;
+  let stirDistance = 0.0;
+  let nextStirSegmentDistance = 0.0;
+  while (true) {
+    nextIndex = currentIndex;
+    while (true) {
+      nextStirSegmentDistance += pointDistance(
+        pendingPoints[nextIndex],
+        pendingPoints[nextIndex + 1]
+      );
+      nextIndex += 1;
+      if (nextStirSegmentDistance > 1e-4) {
+        break;
+      }
+    }
+    if (nextIndex >= pendingPoints.length) {
+      console.log("Error while stirring to turn: no next node.");
+      terminate();
+      throw EvalError;
+    } // Did not find a node that is not the current point.
+    const nextDirection = getAngleByDirection(
+      pendingPoints[nextIndex].x - pendingPoints[currentIndex].x,
+      pendingPoints[nextIndex].y - pendingPoints[currentIndex].y
+      // currentDirection
+    );
+    const nextRelativeDirection = getAngleByDirection(
+      pendingPoints[nextIndex].x - pendingPoints[currentIndex].x,
+      pendingPoints[nextIndex].y - pendingPoints[currentIndex].y,
+      currentDirection
+    );
+    if (Math.abs(nextRelativeDirection) > directionBuffer) {
+      break;
+    } else {
+      stirDistance += nextStirSegmentDistance;
+      nextStirSegmentDistance = 0.0;
+      currentIndex = nextIndex;
+      currentDirection = nextDirection;
+    }
+  }
+  logAddStirCauldron(stirDistance + stirBuffer);
+}
+
+/**
+ * Stir the potion to the safe zone.
+ *
+ * This function tries to stir the potion into a safe zone by binary search.
+ * If the bottle is not in a danger zone, it does nothing.
+ * This operation is not supported for wine base because of its unique properties.
+ *
+ * @param {number} [dangerBuffer=0.02] - The buffer value before the bottle is considered in danger.
+ * @returns {number|undefined} The least health of the bottle during the process.
+ * @throws {EvalError} If the base is wine, or if no safe zone is found.
+ */
+function stirToSafeZone(dangerBuffer = 0.02) {
+  const base = PotionBases.current.id;
+  if (base == "wine") {
+    console.log("Stir to safe zone is not supported for wine base.");
+    terminate();
+    throw EvalError;
+  }
+  const pendingPoints = currentPlot.pendingPoints;
+  const currentHealth = pendingPoints[0].health;
+  if (currentHealth > 1 - dangerBuffer) {
+    console.log("Bottle not in danger zone.");
+  } else {
+    let stirDistance = 0.0;
+    let nextIndex = 0;
+    while (true) {
+      nextIndex += 1;
+      if (nextIndex == pendingPoints.length) {
+        console.log("Error while stirring to safe zone: no safe zone found.");
+        terminate();
+        throw EvalError;
+      }
+      const health = pendingPoints[nextIndex].health;
+      if (health > currentHealth) {
+        break;
+      } else {
+        stirDistance += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
+      }
+    }
+    /**
+     * Find the exact point of heal and find the least health.
+     */
+    let leastHealth = currentHealth;
+    let left = stirDistance;
+    let right =
+      stirDistance + pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
+    while (right - left > 0.0001) {
+      const mid = left + (right - left) / 2;
+      const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
+      const health = plot.pendingPoints[0].health;
+      if (health > currentHealth) {
+        right = mid;
+      } else {
+        left = mid;
+        leastHealth = health;
+      }
+    }
+    logAddStirCauldron(right);
+    return leastHealth;
+  }
 }
 
 /**

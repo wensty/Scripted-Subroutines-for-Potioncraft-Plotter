@@ -1,7 +1,5 @@
 // Subroutines defined in main script.
 import { derotateToAngle, continuousPourToEdge, stirIntoVortex, straighten } from "../main.js";
-// utility functions defined in main script.
-import { degToRad } from "../main.js";
 // wrapped instructions defined in main script to implement statistics.
 import {
   logAddIngredient,
@@ -10,6 +8,8 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
 } from "../main.js";
+// utility functions defined in main script.
+import { checkBase, degToRad } from "../main.js";
 
 import { Ingredients } from "@potionous/dataset";
 
