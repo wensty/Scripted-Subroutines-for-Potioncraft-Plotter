@@ -5,13 +5,10 @@ import { degToRad } from "../main.js";
 // wrapped instructions defined in main script to implement statistics.
 import {
   logAddIngredient,
-  logAddMoonSalt,
   logAddSunSalt,
-  logaddRotationSalt,
   logAddHeatVortex,
   logAddStirCauldron,
   logAddPourSolvent,
-  logaddSetPosition,
 } from "../main.js";
 
 import { Ingredients } from "@potionous/dataset";

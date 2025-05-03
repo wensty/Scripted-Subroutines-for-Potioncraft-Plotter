@@ -13,8 +13,8 @@ import {
   addSetPosition,
 } from "@potionous/instructions";
 
-import { Ingredients, PotionBases } from "@potionous/dataset";
-import { startingPlot, currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
+import { PotionBases } from "@potionous/dataset";
+import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
 
 const SaltAngle = (2 * Math.PI) / 1000.0;
 let Display = false; // Macro to switch instruction display.
@@ -334,7 +334,6 @@ export function pourToEdge() {
   let left = 0.0; // If we do not pour solvent the bottle should be in a vortex.
   let right = 5.0; // At least 5 pouring can pull the bottle out of the same vortex.
   let mid;
-  let isSameVortex;
   while (right - left > 0.0001) {
     mid = left + (right - left) / 2;
     const plot = computePlot(currentRecipeItems.concat([createPourSolvent(mid)]));
@@ -737,11 +736,14 @@ export function straighten(
   console.log("Total grains:" + totalGrains);
 }
 
+/**
+ * Put actual script here.
+ */
 function main() {
   return;
 }
 
-Display = true;
+Display = true; //Display the actual instructions added.
 main();
 console.log("Total moon salt added: " + TotalMoon);
 console.log("Total sun salt added: " + TotalSun);
