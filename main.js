@@ -26,7 +26,7 @@ let TotalMoon = 0;
  * Terminate the program by tricking the TypeScript type checker.
  * The function deliberately contains a type error to terminate the program.
  */
-function terminate() {
+export function terminate() {
   // Dirty way to terminate the program.
   const terminator = 0;
   // @ts-ignore
@@ -37,7 +37,7 @@ function terminate() {
  * Checks if the currentpotion base is the given expected base.
  * @param {"water"|"oil"|"wine"} expectedBase The expected base name.
  */
-function checkBase(expectedBase) {
+export function checkBase(expectedBase) {
   if (!["water", "oil", "wine"].includes(expectedBase)) {
     console.log("Unknown expected base: " + expectedBase + ".");
     terminate();
@@ -59,7 +59,7 @@ function checkBase(expectedBase) {
  * @param {number} grindPercent The percentage of the ingredient to grind.
  * If `display` is not given, the value of `Display` is used.
  */
-function logAddIngredient(ingredientId, grindPercent, display = Display) {
+export function logAddIngredient(ingredientId, grindPercent, display = Display) {
   if (display) {
     console.log("Step " + Step + ": Adding " + grindPercent * 100 + "% of " + ingredientId);
     Step += 1;
@@ -72,7 +72,7 @@ function logAddIngredient(ingredientId, grindPercent, display = Display) {
  * @param {number} grains The amount of sun salt to add in grains.
  * If `display` is not given, the value of `Display` is used.
  */
-function logAddSunSalt(grains) {
+export function logAddSunSalt(grains) {
   if (Display) {
     console.log("Step " + Step + ": Adding " + grains + " grains of sun salt");
     Step += 1;
@@ -86,7 +86,7 @@ function logAddSunSalt(grains) {
  * @param {number} grains The amount of moon salt to add in grains.
  * If `display` is not given, the value of `Display` is used.
  */
-function logAddMoonSalt(grains) {
+export function logAddMoonSalt(grains) {
   if (Display) {
     console.log("Step " + Step + ": Adding " + grains + " grains of moon salt");
     Step += 1;
@@ -101,7 +101,7 @@ function logAddMoonSalt(grains) {
  * @param {number} grains The amount of salt to add in grains.
  * If "display" is not given, the value of "Display" is used.
  */
-function logAddRotationSalt(salt, grains) {
+export function logAddRotationSalt(salt, grains) {
   if (salt != "moon" && salt != "sun") {
     console.log("Error while adding rotation salt: salt must be moon or sun.");
     terminate();
@@ -124,7 +124,7 @@ function logAddRotationSalt(salt, grains) {
  * @param {number} length The amount of heat to add to the vortex in PotionCraft units.
  * If "display" is not given, the value of "Display" is used.
  */
-function logAddHeatVortex(length) {
+export function logAddHeatVortex(length) {
   if (Display) {
     console.log("Step " + Step + ": Heat the vortex by " + length + " distance.");
     Step += 1;
@@ -137,7 +137,7 @@ function logAddHeatVortex(length) {
  * @param {number} length The amount of stirring to add in PotionCraft units.
  * If "display" is not given, the value of "Display" is used.
  */
-function logAddStirCauldron(length) {
+export function logAddStirCauldron(length) {
   if (Display) {
     console.log("Step " + Step + ": Stir the cauldron by " + length + " distance.");
     Step += 1;
@@ -149,7 +149,7 @@ function logAddStirCauldron(length) {
  * @param {number} length The amount of solvent to pour in PotionCraft units.
  * If "display" is not given, the value of "Display" is used.
  */
-function logAddPourSolvent(length) {
+export function logAddPourSolvent(length) {
   if (Display) {
     console.log("Step " + Step + ": Pour solvent by " + length + " distance");
     Step += 1;
@@ -163,7 +163,7 @@ function logAddPourSolvent(length) {
  * @param {number} y The y coordinate to set
  * If "display" is not given, the value of "Display" is used.
  */
-function logAddSetPosition(x, y) {
+export function logAddSetPosition(x, y) {
   if (Display) {
     console.log("Step " + Step + ": teleporting to (" + x + ", " + y + ")");
     Step += 1;
@@ -176,7 +176,7 @@ function logAddSetPosition(x, y) {
  * @param {import("@potionous/dataset").PotionBaseEntity} x A point with an entityType property.
  * @returns {boolean} True if the entity type is a danger zone, false otherwise.
  */
-function isDangerZone(x) {
+export function isDangerZone(x) {
   const { entityType } = x;
   return ["StrongDangerZonePart", "WeakDangerZonePart", "DangerZonePart"].includes(entityType);
 }
@@ -186,7 +186,7 @@ function isDangerZone(x) {
  * @param {import("@potionous/dataset").PotionBaseEntity} x A point with an entityType property.
  * @returns {boolean} True if the entity type is a Vortex, false otherwise.
  */
-function isVortex(x) {
+export function isVortex(x) {
   const { entityType } = x;
   return ["Vortex"].includes(entityType);
 }
@@ -204,7 +204,7 @@ function isVortex(x) {
  * @throws {EvalError} If there are insufficient points, the bottle is
  * already in a vortex, or no vortex is found during the process.
  */
-function stirIntoVortex() {
+export function stirIntoVortex() {
   const pendingPoints = currentPlot.pendingPoints;
   if (pendingPoints.length < 3) {
     console.log("Error while stirring into vortex: not enough points.");
@@ -261,7 +261,7 @@ function stirIntoVortex() {
  *
  * @throws {EvalError} If the operation is attempted outside of a vortex.
  */
-function stirToEdge() {
+export function stirToEdge() {
   const pendingPoints = currentPlot.pendingPoints;
   const result = pendingPoints[0].bottleCollisions.find(isVortex);
   let vortexX;
@@ -318,7 +318,7 @@ function stirToEdge() {
  *
  * @throws {EvalError} If the operation is attempted outside of a vortex.
  */
-function pourToEdge() {
+export function pourToEdge() {
   const pendingPoints = currentPlot.pendingPoints;
   let currentPoint = pendingPoints[0];
   const entities = currentPoint.bottleCollisions;
@@ -361,7 +361,7 @@ function pourToEdge() {
  * @param {number} [vortexRadius=2.39] - The radius of the vortex; used to compute the maximum pouring length.
  * @throws {EvalError} If the operation is attempted outside of a vortex.
  */
-function continuousPourToEdge(initLength, decay, numbersToPour, vortexRadius = 2.39) {
+export function continuousPourToEdge(initLength, decay, numbersToPour, vortexRadius = 2.39) {
   const pendingPoints = currentPlot.pendingPoints;
   const result = pendingPoints[0].bottleCollisions.find(isVortex);
   if (result === undefined) {
@@ -401,7 +401,7 @@ function continuousPourToEdge(initLength, decay, numbersToPour, vortexRadius = 2
  *                     if the target angle cannot be achieved from the
  *                     current angle.
  */
-function derotateToAngle(targetAngle) {
+export function derotateToAngle(targetAngle) {
   const pendingPoints = currentPlot.pendingPoints;
   const x = pendingPoints[0].x || 0.0;
   const y = pendingPoints[0].y || 0.0;
@@ -454,7 +454,7 @@ function derotateToAngle(targetAngle) {
  * @param {number} deg The degrees to convert
  * @returns {number} The radians equivalent of the given degrees
  */
-function degToRad(deg) {
+export function degToRad(deg) {
   return (deg * Math.PI) / 180.0;
 }
 
@@ -463,7 +463,7 @@ function degToRad(deg) {
  * @param {number} rad The radians to convert
  * @returns {number} The degrees equivalent of the given radians
  */
-function radToDeg(rad) {
+export function radToDeg(rad) {
   return (rad * 180.0) / Math.PI;
 }
 
@@ -471,7 +471,7 @@ function radToDeg(rad) {
  * Converts degrees to salt.
  * @param {number} deg The degrees to convert
  */
-function degToSalt(deg) {
+export function degToSalt(deg) {
   let salt;
   if (deg > 0) {
     salt = "sun";
@@ -486,7 +486,7 @@ function degToSalt(deg) {
  * Converts radians to salt.
  * @param {number} rad The radians to convert
  */
-function radToSalt(rad) {
+export function radToSalt(rad) {
   let salt;
   if (rad > 0) {
     salt = "sun";
@@ -504,7 +504,7 @@ function radToSalt(rad) {
  * @returns {number} The degree equivalent of the given salt and grains
  * @throws {Error} If the salt is not "moon" or "sun"
  */
-function saltToDeg(salt, grains) {
+export function saltToDeg(salt, grains) {
   if (salt == "moon") {
     return (-grains * 180.0) / 500.0;
   } else if (salt == "sun") {
@@ -523,7 +523,7 @@ function saltToDeg(salt, grains) {
  * @returns {number} The radian equivalent of the given salt and grains
  * @throws {Error} If the salt is not "moon" or "sun"
  */
-function saltToRad(salt, grains) {
+export function saltToRad(salt, grains) {
   if (salt == "moon") {
     return (-grains * Math.PI) / 500.0;
   } else if (salt == "sun") {
@@ -539,7 +539,7 @@ function saltToRad(salt, grains) {
  * @param {number} angle positive for clock-wise.
  * @param {number} baseAngle 0 for top.
  */
-function getDirectionByAngle(angle, baseAngle = 0.0) {
+export function getDirectionByAngle(angle, baseAngle = 0.0) {
   let x = Math.sin(baseAngle + angle);
   let y = Math.cos(baseAngle + angle);
   return [x, y];
@@ -552,7 +552,7 @@ function getDirectionByAngle(angle, baseAngle = 0.0) {
  * @returns {Array.<number>} The unit vector of the given vector
  * @throws {Error} If the vector is a zero vector
  */
-function getUnit(x, y) {
+export function getUnit(x, y) {
   if (Math.abs(x) < 1e-6 && Math.abs(y) < 1e-6) {
     console.log("Error while getting unit: zero vector.");
     terminate();
@@ -573,7 +573,7 @@ function getUnit(x, y) {
  * @returns {number} The angle of the vector in radians
  * @throws {Error} If the vector is a zero vector
  */
-function getAngleByDirection(x, y, baseAngle = 0.0) {
+export function getAngleByDirection(x, y, baseAngle = 0.0) {
   const _xy = getUnit(x, y);
   const _x = _xy[0];
   const _y = _xy[1];
@@ -596,7 +596,7 @@ function getAngleByDirection(x, y, baseAngle = 0.0) {
  * @returns {number} The angle of the current stir in radians
  * @throws {Error} If the bottle is not in a stir
  */
-function getCurrentStirDirection() {
+export function getCurrentStirDirection() {
   /** the points have no coordinate at origin */
   const fromX = currentPlot.pendingPoints[0].x || 0.0;
   const fromY = currentPlot.pendingPoints[0].y || 0.0;
@@ -632,7 +632,7 @@ function getCurrentStirDirection() {
  * @param {boolean} [ignoreReverse=true] - Whether to ignore reverse directions.
  * @throws {EvalError} If the salt is neither "moon" nor "sun".
  */
-function straighten(
+export function straighten(
   maxStirDistance,
   direction,
   salt = "moon",
@@ -737,72 +737,11 @@ function straighten(
   console.log("Total grains:" + totalGrains);
 }
 
-function main43MoonSwiftness() {
-  logAddIngredient(Ingredients.RainbowCap, 1);
-  logAddStirCauldron(14.4);
-  logAddPourSolvent(100);
-  console.log("Current stir angle: " + radToDeg(getCurrentStirDirection()));
-  logAddStirCauldron(3.8);
-  let currentStirAngle = getCurrentStirDirection();
-  console.log("Current stir angle: " + radToDeg(currentStirAngle));
-  straighten(10, currentStirAngle, "moon", 43);
-}
-
-function mainUnrollingGoldthorn() {
-  logAddIngredient(Ingredients.Goldthorn, 1);
-  logAddStirCauldron(0.1);
-  console.log("Current stir angle: " + radToDeg(getCurrentStirDirection()));
-  let currntStirAngle = getCurrentStirDirection();
-  straighten(30, currntStirAngle, "sun", 9999);
-}
-
-function mainUnrollingRainbowCap() {
-  logAddIngredient(Ingredients.RainbowCap, 1);
-  logAddStirCauldron(0.4);
-  console.log("Current stir angle: " + radToDeg(getCurrentStirDirection()));
-  straighten(50, degToRad(-90), "moon", 9999);
-}
-
-function mainStirToEdgeTest() {
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
-  logAddSetPosition(-5, 5);
-  stirToEdge();
-}
-
-function mainAntiMagic() {
-  checkBase("oil");
-  logAddSunSalt(29);
-  logAddSunSalt(137);
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
-  derotateToAngle(saltToDeg("sun", 29));
-  stirIntoVortex();
-  logAddHeatVortex(Infinity);
-  straighten(3, degToRad(17.4), "sun"); // Distance specified straightening.
-  logAddStirCauldron(6);
-  let direction = getAngleByDirection(
-    29.63 - currentPlot.pendingPoints[0].x,
-    21.91 - currentPlot.pendingPoints[0].y
-  );
-  logAddSunSalt(36);
-  logAddStirCauldron(3.3);
-  /**
-   * Salt specified straightening.
-   */
-  straighten(Infinity, direction + degToRad(+0.2), "sun", 402, false);
-  straighten(Infinity, direction + degToRad(+0.2), "moon", 15, true);
-  stirIntoVortex();
-  continuousPourToEdge(0.1, 1, 33);
-  logAddHeatVortex(2.273);
-  derotateToAngle(saltToDeg("moon", 201 + 33));
-  straighten(4, degToRad(11), "sun", 200, true);
-  logAddStirCauldron(1.095);
-  logAddSunSalt(1);
-  logAddStirCauldron(Infinity);
+function main() {
+  return;
 }
 
 Display = true;
-mainAntiMagic();
-// mainStirToEdgeTest()
-// mainUnrollingRainbowCap()
+main();
 console.log("Total moon salt added: " + TotalMoon);
 console.log("Total sun salt added: " + TotalSun);

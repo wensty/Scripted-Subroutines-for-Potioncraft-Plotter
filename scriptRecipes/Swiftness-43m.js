@@ -17,20 +17,12 @@ import {
 import { Ingredients } from "@potionous/dataset";
 
 function main() {
-  checkBase("water");
-  logAddSunSalt(87);
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
-  logAddSunSalt(21);
-  logAddStirCauldron(3);
-  straighten(Infinity, 1.82, "sun", 253 - 21, true);
-  logAddStirCauldron(12.245);
-  logAddHeatVortex(2);
-  derotateToAngle(0);
-  continuousPourToEdge(0.3, 1, 20);
-  logAddHeatVortex(5.9);
-  straighten(Infinity, degToRad(129), "sun", 67, true);
-  stirIntoVortex();
-  logAddHeatVortex(5.12);
-  derotateToAngle(0);
-  logAddPourSolvent(4.129);
+  logAddIngredient(Ingredients.RainbowCap, 1);
+  logAddStirCauldron(14.4);
+  logAddPourSolvent(100);
+  console.log("Current stir angle: " + radToDeg(getCurrentStirDirection()));
+  logAddStirCauldron(3.8);
+  let currentStirAngle = getCurrentStirDirection();
+  console.log("Current stir angle: " + radToDeg(currentStirAngle));
+  straighten(10, currentStirAngle, "moon", 43);
 }
