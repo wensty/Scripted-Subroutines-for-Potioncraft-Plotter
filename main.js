@@ -53,6 +53,10 @@ function checkBase(expectedBase) {
 }
 
 /**
+ * Logging function to display the current step and the action taken.
+ */
+
+/**
  * Logs the addition of an ingredient and adds it to the current plot.
  * @param {import("@potionous/dataset").IngredientId} ingredientId The ID of the ingredient to add.
  * @param {number} grindPercent The percentage of the ingredient to grind.
@@ -171,6 +175,10 @@ function logAddSetPosition(x, y) {
 }
 
 /**
+ * Detection functions for different entity types.
+ */
+
+/**
  * Checks if the given point is a danger zone.
  * @param {import("@potionous/dataset").PotionBaseEntity} x A point with an entityType property.
  * @returns {boolean} True if the entity type is a danger zone, false otherwise.
@@ -189,6 +197,10 @@ function isVortex(x) {
   const { entityType } = x;
   return ["Vortex"].includes(entityType);
 }
+
+/**
+ * Subroutines related to stirring.
+ */
 
 /**
  * Stirs the potion into a vortex by determining the optimal stirring
@@ -427,6 +439,10 @@ function stirToSafeZone(dangerBuffer = 0.02) {
 }
 
 /**
+ * Subroutines related to pouring solvent.
+ */
+
+/**
  * Pours solvent to the edge of a vortex.
  *
  * This function attempts to pour solvent until the bottle is about to leave the same vortex.
@@ -563,6 +579,10 @@ function derotateToAngle(targetAngle) {
     }
   }
 }
+
+/**
+ * Utilities for angle conversion and direction calculation.
+ */
 
 /**
  * Converts degrees to radians.
@@ -733,6 +753,10 @@ function getCurrentStirDirection() {
 }
 
 /**
+ * Complex subroutines: straighten the potion path.
+ */
+
+/**
  * Straightens the potion path by adjusting the stirring direction using rotation salt.
  *
  * This function iteratively adjusts the stirring direction of the potion based on the specified
@@ -853,12 +877,15 @@ function straighten(
 }
 
 /**
- * Put actual script here.
+ * Main function. Put actual scripts here.
  */
 function main() {
   return;
 }
 
+/**
+ * Main function call running the script.
+ */
 Display = true; //Display the actual instructions added.
 main();
 console.log("Total moon salt added: " + TotalMoon);
