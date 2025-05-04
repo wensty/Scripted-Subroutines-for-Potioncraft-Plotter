@@ -1,14 +1,19 @@
-// Subroutines defined in main script.
-import { derotateToAngle, continuousPourToEdge, stirIntoVortex, straighten } from "../main.js";
-// wrapped instructions defined in main script to implement statistics.
-import {
-  logAddIngredient,
-  logAddSunSalt,
-  logAddHeatVortex,
-  logAddStirCauldron,
-  logAddPourSolvent,
-} from "../main.js";
-// utility functions defined in main script.
+// Wrapped ingredient and salt instructions.
+import { logAddIngredient, logAddSunSalt } from "../main";
+// Wrapped operation instructions.
+import { logAddHeatVortex, logAddStirCauldron } from "../main";
+import { logAddPourSolvent } from "../main";
+// Stirring subroutinees.
+import { stirIntoVortex } from "../main";
+// Pouring subroutines.
+import { heatAndPourToEdge, derotateToAngle } from "../main";
+// Angle conversions.
+import { degToRad } from "../main";
+// Utilities.
+import { checkBase } from "../main";
+// Complex subroutines.
+import { straighten } from "../main";
+
 import { checkBase, degToRad } from "../main.js";
 
 import { Ingredients } from "@potionous/dataset";
@@ -23,7 +28,7 @@ function main() {
   logAddStirCauldron(12.245);
   logAddHeatVortex(2);
   derotateToAngle(0);
-  continuousPourToEdge(0.3, 1, 20);
+  heatAndPourToEdge(0.3, 20);
   logAddHeatVortex(5.9);
   straighten(Infinity, degToRad(129), "sun", 67, true);
   stirIntoVortex();

@@ -1,9 +1,23 @@
 // Subroutines defined in main script.
-import { derotateToAngle, continuousPourToEdge, stirIntoVortex, straighten } from "../main.js";
 // wrapped instructions defined in main script to implement statistics.
-import { logAddIngredient, logAddSunSalt, logAddStirCauldron, logAddHeatVortex } from "../main.js";
 // utility functions defined in main script.
-import { checkBase, degToRad } from "../main.js";
+
+// Wrapped ingredient and salt instructions.
+import { logAddIngredient, logAddSunSalt } from "../main";
+// Wrapped operation instructions.
+import { logAddHeatVortex, logAddStirCauldron } from "../main";
+// Stirring subroutinees.
+import { stirIntoVortex } from "../main";
+// Pouring subroutines.
+import { heatAndPourToEdge, derotateToAngle } from "../main";
+// Angle conversions.
+import { degToRad, saltToDeg } from "../main";
+// Angle extractions.
+import { getDirectionByVector } from "../main";
+// Utilities.
+import { checkBase } from "../main";
+// Complex subroutines.
+import { straighten } from "../main";
 
 import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
@@ -18,7 +32,7 @@ function main() {
   logAddHeatVortex(Infinity);
   straighten(3, degToRad(17.4), "sun"); // Distance specified straightening.
   logAddStirCauldron(6);
-  let direction = getAngleByDirection(
+  let direction = getDirectionByVector(
     29.63 - currentPlot.pendingPoints[0].x,
     21.91 - currentPlot.pendingPoints[0].y
   );
@@ -30,7 +44,7 @@ function main() {
   straighten(Infinity, direction + degToRad(+0.0), "sun", 400, false);
   straighten(Infinity, direction + degToRad(+0.0), "moon", 15, true);
   stirIntoVortex();
-  continuousPourToEdge(0.1, 1, 33);
+  heatAndPourToEdge(0.1, 33);
   logAddHeatVortex(2.283);
   derotateToAngle(saltToDeg("moon", 202 + 33));
   straighten(4, degToRad(11), "sun", 201, true);

@@ -1,16 +1,20 @@
-// Subroutines defined in main script.
-import { derotateToAngle, continuousPourToEdge, stirIntoVortex, straighten } from "../main.js";
-// wrapped instructions defined in main script to implement statistics.
-import {
-  logAddIngredient,
-  logAddMoonSalt,
-  logAddSunSalt,
-  logAddStirCauldron,
-  logAddHeatVortex,
-  logAddPourSolvent,
-} from "../main.js";
-// utility functions defined in main script.
-import { checkBase, degToRad, radToDeg, getAngleByDirection } from "../main.js";
+// Wrapped ingredient and salt instructions.
+import { logAddIngredient, logAddMoonSalt, logAddSunSalt } from "../main";
+// Wrapped operation instructions.
+import { logAddHeatVortex, logAddStirCauldron } from "../main";
+import { logAddPourSolvent } from "../main";
+// Stirring subroutinees.
+import { stirIntoVortex, stirToTurn } from "../main";
+// Pouring subroutines.
+import { pourToEdge, heatAndPourToEdge, derotateToAngle } from "../main";
+// Angle conversions.
+import { degToRad, radToDeg, saltToDeg } from "../main";
+// Angle extractions.
+import { getDirectionByVector } from "../main";
+// Utilities.
+import { checkBase } from "../main";
+// Complex subroutines.
+import { straighten } from "../main";
 
 import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
@@ -35,7 +39,7 @@ function main() {
 
   let x = currentPlot.pendingPoints[0].x;
   let y = currentPlot.pendingPoints[0].y;
-  console.log(radToDeg(getAngleByDirection(x + 9.08, y - 23.51)));
+  console.log(radToDeg(getDirectionByVector(x + 9.08, y - 23.51)));
 
   derotateToAngle(saltToDeg("sun", 200 - 0.99 - 48));
   logAddHeatVortex(Infinity);
@@ -50,7 +54,7 @@ function main() {
   logAddSunSalt(41);
   logAddHeatVortex(3);
   pourToEdge();
-  continuousPourToEdge(0.4, 1, 10);
+  heatAndPourToEdge(0.4, 10);
   logAddHeatVortex(3.62);
   derotateToAngle(-61.2);
   stirIntoVortex();

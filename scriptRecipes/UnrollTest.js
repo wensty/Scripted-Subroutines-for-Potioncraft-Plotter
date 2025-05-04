@@ -1,9 +1,15 @@
-// Subroutines defined in main script.
-import { straighten } from "../main.js";
-// wrapped instructions defined in main script to implement statistics.
-import { logAddIngredient, logAddStirCauldron } from "../main.js";
-// utility functions defined in main script.
-import { checkBase, degToRad } from "../main.js";
+// Wrapped ingredient and salt instructions.
+import { logAddIngredient } from "../main";
+// Wrapped operation instructions.
+import { logAddStirCauldron } from "../main";
+// Angle conversions.
+import { degToRad, radToDeg } from "../main";
+// Angle extractions.
+import { getCurrentStirDirection } from "../main";
+// Utilities.
+import { checkBase } from "../main";
+// Complex subroutines.
+import { straighten } from "../main";
 
 import { Ingredients } from "@potionous/dataset";
 

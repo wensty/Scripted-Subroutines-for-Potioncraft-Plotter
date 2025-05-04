@@ -203,16 +203,13 @@ function isVortex(x) {
  */
 
 /**
- * Stirs the potion until it enters a vortex.
+ * Computes the length of the stir from the current point to the first vortex,
+ * and adds a stir instruction to the recipe for this length.
  *
- * This function calculates the distance required to stir the potion
- * from its current position into a vortex, ensuring that the stir
- * path reaches the vortex's edge without overshooting. If the potion
- * is already within a vortex, it will attempt to reach a different
- * vortex. If no vortex is found, an error is thrown.
+ * This function attempts to stir until the bottle is about to enter a vortex.
+ * If the current point is not within a vortex, an error is thrown.
  *
- * @throws {EvalError} If no vortex is found or if the potion fails to
- * enter a vortex after stirring.
+ * @throws {EvalError} If the operation is attempted outside of a vortex.
  */
 function stirIntoVortex() {
   const pendingPoints = currentPlot.pendingPoints;
@@ -259,12 +256,11 @@ function stirIntoVortex() {
 }
 
 /**
- * Computes the length of the stir from the current point to the edge of a vortex
- * that the bottle is currently in, and adds a stir instruction to the recipe for
- * this length.
+ * Computes the length of the stir from the current point to the edge of the vortex containing the current point,
+ * and adds a stir instruction to the recipe for this length.
  *
- * This function attempts to stir until the bottle is about to leave the same
- * vortex. If the current point is not within a vortex, an error is thrown.
+ * This function attempts to stir until the bottle is about to leave the same vortex.
+ * If the current point is not within a vortex, an error is thrown.
  *
  * @throws {EvalError} If the operation is attempted outside of a vortex.
  */
@@ -318,13 +314,14 @@ function stirToEdge() {
 }
 
 /**
- * Computes the length of the stir from the current point to the point where the bottle starts to
- * turn, and adds a stir instruction to the recipe for this length.
+ * Computes the length of the stir to the next direction change point, and adds a stir instruction to the recipe for this length.
  *
- * @param {number} [directionBuffer=degToRad(20 * SaltAngle)] - The buffer value before the bottle
- *   is considered to start turning.
- * @param {number} [stirBuffer=1e-12] - To prevent weird bugs.
- * @throws {EvalError} - When next node do not exists.
+ * This function attempts to stir until the bottle is about to turn in a different direction.
+ * If the current point is not within a direction change, an error is thrown.
+ *
+ * @param {number} [directionBuffer=20 * SaltAngle] - The buffer value before the bottle is considered in a different direction.
+ * @param {number} [stirBuffer=0.0] - The buffer value to add before the bottle is stirred.
+ * @throws {EvalError} If the operation is attempted outside of a direction change.
  */
 function stirToTurn(directionBuffer = 20 * SaltAngle, stirBuffer = 0.0) {
   const pendingPoints = currentPlot.pendingPoints;
@@ -350,12 +347,12 @@ function stirToTurn(directionBuffer = 20 * SaltAngle, stirBuffer = 0.0) {
       terminate();
       throw EvalError;
     } // Did not find a node that is not the current point.
-    const nextDirection = getAngleByDirection(
+    const nextDirection = getDirectionByVector(
       pendingPoints[nextIndex].x - pendingPoints[currentIndex].x,
       pendingPoints[nextIndex].y - pendingPoints[currentIndex].y
       // currentDirection
     );
-    const nextRelativeDirection = getAngleByDirection(
+    const nextRelativeDirection = getDirectionByVector(
       pendingPoints[nextIndex].x - pendingPoints[currentIndex].x,
       pendingPoints[nextIndex].y - pendingPoints[currentIndex].y,
       currentDirection
@@ -476,19 +473,19 @@ function pourToEdge() {
 }
 
 /**
- * Continuously pours solvent to approach the edge of a vortex.
+ * Heats the potion and pours it to the edge of a vortex.
  *
- * This function attempts to pour solvent in multiple steps to move closer to the edge
- * of a vortex while adjusting the pouring length at each step based on a decay factor.
- * If the current point is not within a vortex, an error is thrown.
+ * This function heats the vortex by a specified length and then pours solvent
+ * to move the bottle towards the edge of the vortex. This process is repeated
+ * a specified number of times.
  *
- * @param {number} initLength - The initial length of solvent to pour in each step.
- * @param {number} decay - The factor by which the length of pouring decreases in each step.
- * @param {number} numbersToPour - The number of times to edge closer to the vortex.
- * @param {number} [vortexRadius=2.39] - The radius of the vortex; used to compute the maximum pouring length.
- * @throws {EvalError} If the operation is attempted outside of a vortex.
+ * @param {number} length - The amount of heat to add to the vortex in PotionCraft units.
+ * @param {number} numbersToPour - The number of times the pour-to-edge process should be performed.
+ * @param {number} [vortexRadius=2.39] - The radius of the vortex, used to limit the heating.
+ * @throws {EvalError} If the bottle is not initially within a vortex.
  */
-function continuousPourToEdge(initLength, decay, numbersToPour, vortexRadius = 2.39) {
+
+function heatAndPourToEdge(length, numbersToPour, vortexRadius = 2.39) {
   const pendingPoints = currentPlot.pendingPoints;
   const result = pendingPoints[0].bottleCollisions.find(isVortex);
   if (result === undefined) {
@@ -496,27 +493,17 @@ function continuousPourToEdge(initLength, decay, numbersToPour, vortexRadius = 2
     terminate();
     throw EvalError;
   }
-  const vortexX = result.x;
-  const vortexY = result.y;
-  let i;
-  let length = initLength;
-  for (i = 0; i < numbersToPour; i++) {
-    length = length * decay;
+  for (let i = 0; i < numbersToPour; i++) {
     const pendingPoints = currentPlot.pendingPoints;
     const x = pendingPoints[0].x;
     const y = pendingPoints[0].y;
-    const vortexAngle = getAngleByDirection(-x, -y, getAngleByDirection(vortexX - x, vortexY - y));
+    const vortexAngle = getDirectionByVector(x, y, getCurrentBottleVortexDirection());
     let maxLength = Infinity;
     if (vortexAngle > Math.PI / 2) {
-      /**
-       * Do not heat over 90 degrees.
-       */
+      // Do not heat too much.
       maxLength = vortexRadius * (vortexAngle - Math.PI / 2) * 0.25;
     }
-    if (length > maxLength) {
-      length = maxLength;
-    }
-    logAddHeatVortex(length);
+    logAddHeatVortex(Math.min(length, maxLength));
     pourToEdge();
   }
 }
@@ -558,19 +545,24 @@ function derotateToAngle(targetAngle) {
       if (derotateType == "vortex") {
         logAddSetPosition(0, 0);
       }
-      let left = 0.0;
-      let right = Math.abs(currentAngle) / 9.0; // this pouring at origin fully derotate the bottle.
-      while (right - left > 0.0001) {
-        const mid = left + (right - left) / 2;
-        const plot = computePlot(currentRecipeItems.concat(createPourSolvent(mid)));
-        const angle = -plot.pendingPoints[0].angle;
-        if (Math.abs(angle) > Math.abs(targetAngle)) {
-          left = mid;
-        } else {
-          right = mid;
+      if (targetAngle == 0.0) {
+        // Do not need precision for full derotation.
+        logAddPourSolvent(Infinity);
+      } else {
+        let left = 0.0;
+        let right = Math.abs(currentAngle) / 9.0; // this pouring at origin fully derotate the bottle.
+        while (right - left > 0.0001) {
+          const mid = left + (right - left) / 2;
+          const plot = computePlot(currentRecipeItems.concat(createPourSolvent(mid)));
+          const angle = -plot.pendingPoints[0].angle;
+          if (Math.abs(angle) > Math.abs(targetAngle)) {
+            left = mid;
+          } else {
+            right = mid;
+          }
         }
+        logAddPourSolvent(left + (right - left) / 2);
       }
-      logAddPourSolvent(left + (right - left) / 2);
       if (derotateType == "vortex") {
         logAddSetPosition(x, y);
       }
@@ -639,7 +631,7 @@ function radToSalt(rad) {
  * @param {"moon"|"sun"} salt The salt type ("moon" or "sun")
  * @param {number} grains The number of grains of salt
  * @returns {number} The degree equivalent of the given salt and grains
- * @throws {Error} If the salt is not "moon" or "sun"
+ * @throws {EvalError} If the salt is not "moon" or "sun"
  */
 function saltToDeg(salt, grains) {
   if (salt == "moon") {
@@ -673,12 +665,18 @@ function saltToRad(salt, grains) {
 }
 
 /**
- * @param {number} angle positive for clock-wise.
- * @param {number} baseAngle 0 for top.
+ * Computes a 2D vector from a direction angle and an optional base direction angle.
+ *
+ * The direction angle is from the base direction angle. The base direction angle is
+ * optional and defaults to 0.0, which is the north direction.
+ *
+ * @param {number} direction The direction angle in radians
+ * @param {number} [baseDirection=0.0] The base direction angle in radians
+ * @returns {Array.<number>} The 2D vector from the given direction and base direction
  */
-function getDirectionByAngle(angle, baseAngle = 0.0) {
-  let x = Math.sin(baseAngle + angle);
-  let y = Math.cos(baseAngle + angle);
+function getVectorByDirection(direction, baseDirection = 0.0) {
+  let x = Math.sin(baseDirection + direction);
+  let y = Math.cos(baseDirection + direction);
   return [x, y];
 }
 
@@ -700,22 +698,24 @@ function getUnit(x, y) {
 }
 
 /**
- * Computes the angle of a 2D vector given its x and y components.
+ * Computes the direction angle of a 2D vector relative to a base direction.
  *
- * If no baseAngle is given, a value of 0.0 is used.
+ * This function calculates the angle of the vector (x, y) from the base direction,
+ * considering the orientation in 2D space. The result is the angle in radians.
  *
  * @param {number} x The x component of the vector
  * @param {number} y The y component of the vector
- * @param {number} baseAngle The angle that is treated as up (0 degrees)
- * @returns {number} The angle of the vector in radians
- * @throws {Error} If the vector is a zero vector
+ * @param {number} [baseDirection=0.0] The base direction angle in radians from which
+ *   the vector's direction is calculated
+ * @returns {number} The angle of the vector in radians, relative to the base direction
  */
-function getAngleByDirection(x, y, baseAngle = 0.0) {
+
+function getDirectionByVector(x, y, baseDirection = 0.0) {
   const _xy = getUnit(x, y);
   const _x = _xy[0];
   const _y = _xy[1];
-  const relX = _x * Math.cos(baseAngle) - _y * Math.sin(baseAngle);
-  const relY = _y * Math.cos(baseAngle) + _x * Math.sin(baseAngle);
+  const relX = _x * Math.cos(baseDirection) - _y * Math.sin(baseDirection);
+  const relY = _y * Math.cos(baseDirection) + _x * Math.sin(baseDirection);
   let angle = Math.asin(relX);
   if (relY < 0) {
     if (angle >= 0) {
@@ -751,7 +751,70 @@ function getCurrentStirDirection() {
   } // Did not find a pendingPoints that is not the current point.
   const toX = currentPlot.pendingPoints[nextIndex].x || 0.0;
   const toY = currentPlot.pendingPoints[nextIndex].y || 0.0;
-  return getAngleByDirection(toX - fromX, toY - fromY);
+  return getDirectionByVector(toX - fromX, toY - fromY);
+}
+
+/**
+ * Computes the direction angle of the current bottle position.
+ *
+ * This function calculates the angle from the current position of the bottle to the origin
+ * or vice versa based on the `to` parameter. If the bottle is at the origin, an error is thrown.
+ *
+ * @param {boolean} [toBottle=true] - If true, calculates the direction from the current position to the origin.
+ *                              If false, calculates the direction from the origin to the current position.
+ * @returns {number} The direction angle in radians.
+ * @throws {EvalError} If the bottle is at the origin.
+ */
+function getCurrentBottleDirection(toBottle = true) {
+  const currentPoint = currentPlot.pendingPoints[0];
+  let x = currentPoint.x || 0.0;
+  let y = currentPoint.y || 0.0;
+  if (x == 0.0 && y == 0.0) {
+    console.log("Can not get the direction of origin.");
+    terminate();
+    throw EvalError;
+  }
+  if (!toBottle) {
+    x = -x;
+    y = -y;
+  }
+  return getDirectionByVector(x, y);
+}
+
+/**
+ * Computes the direction angle from the current bottle position to the center of the vortex.
+ *
+ * This function calculates the angle relative to the vortex that the bottle is currently in.
+ * If the bottle is not in a vortex, an error is thrown. If the bottle is at the center of the vortex,
+ * an error is thrown as well.
+ *
+ * @param {boolean} [toBottle=true] - If true, calculates the direction from the current position to the vortex center.
+ *                              If false, calculates the direction from the vortex center to the current position.
+ * @returns {number} The direction angle in radians.
+ * @throws {EvalError} If the bottle is at the center of the vortex or not in a vortex.
+ */
+function getCurrentBottleVortexDirection(toBottle = true) {
+  const currentPoint = currentPlot.pendingPoints[0];
+  const result = currentPoint.bottleCollisions.find(isVortex);
+  if (result === undefined) {
+    console.log("Bottle not in a vortex.");
+    terminate();
+    throw EvalError;
+  }
+  const vortexX = result.x;
+  const vortexY = result.y;
+  let x = (currentPoint.x || 0.0) - vortexX;
+  let y = (currentPoint.y || 0.0) - vortexY;
+  if (Math.abs(x) < 1e-6 && Math.abs(y) < -6) {
+    console.log("Can not get vortex angle at center of vortex.");
+    terminate();
+    throw EvalError;
+  }
+  if (!toBottle) {
+    x = -x;
+    y = -y;
+  }
+  return getDirectionByVector(x, y);
 }
 
 /**
@@ -811,7 +874,7 @@ function straighten(
     }
     const nextX = pendingPoints[nextIndex].x;
     const nextY = pendingPoints[nextIndex].y;
-    const nextDirection = getAngleByDirection(nextX - currentX, nextY - currentY, direction);
+    const nextDirection = getDirectionByVector(nextX - currentX, nextY - currentY, direction);
     let grains;
 
     if (salt == "moon") {
@@ -879,7 +942,7 @@ function straighten(
       }
     }
   }
-  console.log("Total grains:" + totalGrains);
+  console.log("Added " + totalGrains + " grains of " + salt + " salt.");
 }
 
 /**
@@ -888,6 +951,21 @@ function straighten(
 function main() {
   return;
 }
+
+/**
+ * Useful for scripting offline.
+ * Currently plotter do not support exports. Delete these export lines.
+ */
+export { logAddIngredient, logAddMoonSalt, logAddSunSalt, logAddRotationSalt };
+export { logAddHeatVortex, logAddStirCauldron, logAddPourSolvent, logAddSetPosition };
+export { isDangerZone, isVortex };
+export { stirIntoVortex, stirToEdge, stirToTurn, stirToSafeZone };
+export { pourToEdge, heatAndPourToEdge, derotateToAngle };
+export { checkBase, getUnit };
+export { degToRad, radToDeg, degToSalt, radToSalt, saltToDeg, saltToRad };
+export { getDirectionByVector, getVectorByDirection, getCurrentStirDirection };
+export { getCurrentBottleDirection, getCurrentBottleVortexDirection };
+export { straighten };
 
 /**
  * Main function call running the script.
