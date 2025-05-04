@@ -256,7 +256,7 @@ function stirIntoVortex() {
 }
 
 /**
- * Computes the length of the stir from the current point to the edge of the vortex containing the current point,
+ * Computes the length of the stir from the current point to the edge of the vortex,
  * and adds a stir instruction to the recipe for this length.
  *
  * This function attempts to stir until the bottle is about to leave the same vortex.
@@ -278,24 +278,20 @@ function stirToEdge() {
     vortexX = result.x;
     vortexY = result.y;
   }
-  let pendingNPoint = pendingPoints.length;
-  if (pendingNPoint <= 2) {
-    console.log("Error while stirring to edge: not enough pending points.");
-    terminate();
-    throw EvalError;
-  }
-  let index;
-  for (index = 1; index < pendingNPoint; index++) {
+  let index = 0;
+  while (true) {
+    index += 1;
     const result = pendingPoints[index].bottleCollisions.find(isVortex);
-    if (!(result === undefined || result.x != vortexX || result.y != vortexY)) {
+    if (result === undefined || result.x != vortexX || result.y != vortexY) {
       break;
+    } else {
+      if (index == pendingPoints.length) {
+        console.log("Can not reach the edge of the vortex.");
+        terminate();
+        throw EvalError;
+      }
+      stirLength += pointDistance(pendingPoints[index - 1], pendingPoints[index]);
     }
-    stirLength += pointDistance(pendingPoints[index], pendingPoints[index + 1]);
-  }
-  if (index == pendingNPoint) {
-    console.log("Error while stirring to edge: bottle is in a vortex, but no edge found.");
-    terminate();
-    throw EvalError;
   }
   let left = stirLength;
   let right = stirLength + pointDistance(pendingPoints[index - 1], pendingPoints[index]);
