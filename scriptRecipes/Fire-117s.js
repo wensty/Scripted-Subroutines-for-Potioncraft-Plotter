@@ -11,7 +11,7 @@ import { heatAndPourToEdge, derotateToAngle } from "../main";
 import { radToDeg } from "../main";
 // Angle extractions.
 import { getCurrentStirDirection } from "../main";
-import { getCurrentBottleVortexDirection } from "../main";
+import { getBottlePolarAngleByVortex } from "../main";
 // Complex subroutines.
 import { straighten } from "../main";
 
@@ -21,7 +21,7 @@ function main() {
   logAddPourSolvent(Infinity);
   console.log(radToDeg(getCurrentStirDirection()));
   stirIntoVortex();
-  console.log(radToDeg(getCurrentBottleVortexDirection()) - 90);
+  console.log(radToDeg(getBottlePolarAngleByVortex()) - 90);
   logAddHeatVortex(3);
   logAddStirCauldron(4);
   stirToTurn();

@@ -16,8 +16,9 @@ import { pourToEdge, heatAndPourToEdge, derotateToAngle } from "../main";
 // Angle conversions.
 import { degToRad, radToDeg, degToSalt, radToSalt, saltToDeg, saltToRad } from "../main";
 // Angle extractions.
-import { getDirectionByVector, getVectorByDirection, getCurrentStirDirection } from "../main";
-import { getCurrentBottleDirection, getCurrentBottleVortexDirection } from "../main";
+import { getDirectionByVector, getVectorByDirection, getRelativeDirection } from "../main";
+import { getBottlePolarAngle, getBottlePolarAngleByVortex } from "../main";
+import { getCurrentStirDirection, getCurrentPourDirection } from "../main";
 // Utilities.
 import { checkBase, getUnit } from "../main";
 // Complex subroutines.
