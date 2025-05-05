@@ -10,14 +10,13 @@ import { pourToEdge, heatAndPourToEdge, derotateToAngle } from "../main";
 // Angle conversions.
 import { degToRad, radToDeg, saltToDeg } from "../main";
 // Angle extractions.
-import { getDirectionByVector } from "../main";
+import { getBottlePolarAngleByVortex } from "../main";
 // Utilities.
 import { checkBase } from "../main";
 // Complex subroutines.
 import { straighten } from "../main";
 
 import { Ingredients } from "@potionous/dataset";
-import { currentPlot } from "@potionous/plot";
 
 function main() {
   checkBase("water");
@@ -33,13 +32,11 @@ function main() {
   logAddHeatVortex(Infinity);
 
   logAddSunSalt(17);
-  stirToTurn(40 * SaltAngle);
+  stirToTurn();
   straighten(Infinity, degToRad(-7), "sun", 288 - 17);
   stirIntoVortex();
 
-  let x = currentPlot.pendingPoints[0].x;
-  let y = currentPlot.pendingPoints[0].y;
-  console.log(radToDeg(getDirectionByVector(x + 9.08, y - 23.51)));
+  console.log(radToDeg(getBottlePolarAngleByVortex()) - 180);
 
   derotateToAngle(saltToDeg("sun", 200 - 0.99 - 48));
   logAddHeatVortex(Infinity);
