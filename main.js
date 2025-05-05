@@ -8,9 +8,10 @@ import {
   addHeatVortex,
   addStirCauldron,
   addPourSolvent,
+  addSetPosition,
   createStirCauldron,
   createPourSolvent,
-  addSetPosition,
+  createSetPosition,
 } from "@potionous/instructions";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";
@@ -898,32 +899,39 @@ function getCurrentPourDirection(byVortex = true) {
  * Other utilities
  */
 
-// There are only 3 types of vortexes, with radius 2.39,1.99,1.74
-
+/**
+ * Determines the size of the current vortex by testing positions around it.
+ *
+ * This function calculates the radius of the vortex the bottle is currently in
+ * by setting a position near the vortex center and checking if it is still within
+ * the same vortex. It tests positions for small, medium, and large vortex radii
+ * and returns the corresponding radius size. If the bottle is not currently in
+ * a vortex, an error is thrown.
+ *
+ * @returns {number} The radius of the current vortex.
+ * @throws {EvalError} If the bottle is not in a vortex.
+ */
 function getCurrentVortexSize() {
-  console.log("Some bugs of plotter prevents this from functional.");
-  terminate();
-  throw EvalError;
-  // const result = currentPlot.pendingPoints[0].bottleCollisions.find(isVortex);
-  // if (result === undefined) {
-  //   console.log("Error while finding the radius of the current");
-  //   terminate();
-  //   throw EvalError;
-  // }
-  // const vortex = result;
-  // let testSmall = computePlot([
-  //   createSetPosition(Vortex.x + 1.8, Vortex.y),
-  // ]).pendingPoints[0].bottleCollisions.find(isVortex);
-  // if (testSmall === undefined || testSmall.x != vortex.x || testSmall.y != vortex.y) {
-  //   return VortexRadiusSmall;
-  // }
-  // let testMedium = computePlot([
-  //   createSetPosition(Vortex.x + 2.2, Vortex.y),
-  // ]).pendingPoints[0].bottleCollisions.find(isVortex);
-  // if (testMedium === undefined || testMedium.x != Vortex.x || testMedium.y != Vortex.y) {
-  //   return VortexRadiusMedium;
-  // }
-  // return VortexRadiusLarge;
+  const result = currentPlot.pendingPoints[0].bottleCollisions.find(isVortex);
+  if (result === undefined) {
+    console.log("Error while finding the radius of the current");
+    terminate();
+    throw EvalError;
+  }
+  const vortex = result;
+  let testSmall = computePlot([
+    createSetPosition(vortex.x + 1.8, vortex.y),
+  ]).pendingPoints[0].bottleCollisions.find(isVortex);
+  if (testSmall === undefined || testSmall.x != vortex.x || testSmall.y != vortex.y) {
+    return VortexRadiusSmall;
+  }
+  let testMedium = computePlot([
+    createSetPosition(vortex.x + 2.2, vortex.y),
+  ]).pendingPoints[0].bottleCollisions.find(isVortex);
+  if (testMedium === undefined || testMedium.x != vortex.x || testMedium.y != vortex.y) {
+    return VortexRadiusMedium;
+  }
+  return VortexRadiusLarge;
 }
 
 /**
@@ -1070,7 +1078,7 @@ export { logAddHeatVortex, logAddStirCauldron, logAddPourSolvent, logAddSetPosit
 export { isDangerZone, isVortex };
 export { stirIntoVortex, stirToEdge, stirToTurn, stirToSafeZone };
 export { pourToEdge, heatAndPourToEdge, derotateToAngle };
-export { checkBase, getUnit };
+export { checkBase, getUnit, getCurrentVortexSize };
 export { degToRad, radToDeg, degToSalt, radToSalt, saltToDeg, saltToRad };
 export { getDirectionByVector, getVectorByDirection, getRelativeDirection };
 export { getBottlePolarAngle, getBottlePolarAngleByVortex };

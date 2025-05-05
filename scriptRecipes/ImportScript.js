@@ -20,6 +20,6 @@ import { getDirectionByVector, getVectorByDirection, getRelativeDirection } from
 import { getBottlePolarAngle, getBottlePolarAngleByVortex } from "../main";
 import { getCurrentStirDirection, getCurrentPourDirection } from "../main";
 // Utilities.
-import { checkBase, getUnit } from "../main";
+import { checkBase, getUnit, getCurrentVortexSize } from "../main";
 // Complex subroutines.
 import { straighten } from "../main";
