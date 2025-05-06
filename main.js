@@ -423,6 +423,120 @@ function stirToSafeZone(dangerBuffer = 0.02) {
 }
 
 /**
+ * Stirs the potion towards the nearest point to a specified target coordinate.
+ *
+ * This function attempts to adjust the stirring path to approach the target
+ * coordinates (targetX, targetY) as closely as possible. The stirring continues
+ * until the endpoint of the path is reached or the potion begins to turn away
+ * from the target. A binary search is used to fine-tune the stirring distance
+ * when leaving the target.
+ *
+ * @param {number} targetX - The x-coordinate of the target position.
+ * @param {number} targetY - The y-coordinate of the target position.
+ * @param {number} [buffer=1e-4] - The buffer distance used for segment calculations.
+ */
+function stirToNearestTarget(targetX, targetY, buffer = 1e-4) {
+  const pendingPoints = currentPlot.pendingPoints;
+  let preparingIndex = 0; // prepare to binary search from that point.
+  let currentIndex = 0; // the current index to detect a turning away.
+  let currentStirLength = 0.0; // the current stir on the fully analyzed segments.
+  let prepareingStirLength = 0.0; // after the fully analyzed, the part prepared to apply binary search on
+  let prepareingRelativeDirection = undefined; // the relative direction of the preparing segment.
+  let nextSegmentLength = 0.0;
+  const initialX = pendingPoints[0].x || 0.0;
+  const initialY = pendingPoints[0].y || 0.0;
+  // best distance found. Initialized by the distance at the start point.
+  let bestDistance = Math.sqrt((targetX - initialX) ** 2 + (targetY - initialY) ** 2);
+  let bestStir = 0.0; // corresponding stir distance. Initialized by not stirring.
+  let endPath = false; // end of path flag.
+  while (!endPath) {
+    let nextIndex = currentIndex;
+    while (true) {
+      nextIndex += 1;
+      if (nextIndex == pendingPoints.length) {
+        // endpoint.
+        let plot = computePlot(currentRecipeItems.concat([createStirCauldron(Infinity)]));
+        let distance = Math.sqrt(
+          (plot.pendingPoints[0].x - targetX) ** 2 + (plot.pendingPoints[0].y - targetY) ** 2
+        );
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestStir = Infinity;
+        }
+        endPath = true;
+        break;
+      }
+      nextSegmentLength += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
+      if (nextSegmentLength > buffer) {
+        break;
+      }
+    }
+    if (!endPath) {
+      const currentX = pendingPoints[currentIndex].x || 0.0;
+      const currentY = pendingPoints[currentIndex].y || 0.0;
+      const nextX = pendingPoints[nextIndex].x || 0.0;
+      const nextY = pendingPoints[nextIndex].y || 0.0;
+      const nextDirection = getDirectionByVector(nextX - currentX, nextY - currentY);
+      const targetDirection = getDirectionByVector(targetX - currentX, targetY - currentY);
+      const relativeDirection = getRelativeDirection(nextDirection, targetDirection);
+      if (
+        prepareingRelativeDirection != undefined && // not the first segment.
+        Math.abs(prepareingRelativeDirection) < Math.PI / 2 && // previously approaching target.
+        Math.abs(relativeDirection) > Math.PI / 2 //currently leaving target.
+      ) {
+        console.log(relativeDirection);
+        console.log("binary");
+        const distance = Math.sqrt(
+          (currentPlot.pendingPoints[preparingIndex].x - targetX) ** 2 +
+            (currentPlot.pendingPoints[preparingIndex].y - targetY) ** 2
+        );
+        const approximatedLastStir = Math.min(
+          Math.cos(prepareingRelativeDirection) * distance,
+          prepareingStirLength
+        );
+        let left = Math.max(currentStirLength + approximatedLastStir - 0.01, 0.0);
+        let right = Math.min(
+          currentStirLength + approximatedLastStir + 0.01,
+          currentStirLength + prepareingStirLength
+        );
+        let mid;
+        while (right - left > 0.0001) {
+          mid = left + (right - left) / 2;
+          const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
+          const testX = plot.pendingPoints[0].x;
+          const testY = plot.pendingPoints[0].y;
+          const testDistance = Math.sqrt((targetX - testX) ** 2 + (targetY - testY) ** 2);
+          const relativeDirection = getRelativeDirection(
+            getDirectionByVector(currentX - testX, currentY - testY),
+            getDirectionByVector(targetX - testX, targetY - testY)
+          );
+          if (Math.abs(relativeDirection) > Math.PI / 2) {
+            right = mid;
+          } else {
+            left = mid;
+          }
+          if (testDistance < bestDistance) {
+            bestDistance = testDistance;
+            bestStir = mid;
+          }
+          // const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
+          // const testX = plot.pendingPoints[0].x;
+          // const testY = plot.pendingPoints[0].y;
+          // const testDistance = Math.sqrt((targetX - testX) ** 2 + (targetY - testY) ** 2);
+        }
+      }
+      currentStirLength += prepareingStirLength;
+      prepareingStirLength = nextSegmentLength;
+      prepareingRelativeDirection = relativeDirection;
+      nextSegmentLength = 0.0;
+      preparingIndex = currentIndex;
+      currentIndex = nextIndex;
+    }
+  }
+  logAddStirCauldron(bestStir);
+}
+
+/**
  * Subroutines related to pouring solvent.
  */
 
@@ -738,10 +852,10 @@ function getVectorByDirection(direction, baseDirection = 0.0) {
 function getRelativeDirection(direction, baseDirection) {
   let relativeDirection = direction - baseDirection;
   if (relativeDirection < -Math.PI) {
-    relativeDirection += Math.PI;
+    relativeDirection += 2 * Math.PI;
   }
   if (relativeDirection > Math.PI) {
-    relativeDirection -= Math.PI;
+    relativeDirection -= 2 * Math.PI;
   }
   return relativeDirection;
 }
