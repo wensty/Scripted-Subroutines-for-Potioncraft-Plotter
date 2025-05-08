@@ -27,5 +27,4 @@ function main() {
   stirToTurn();
   stirToTurn();
   straighten(Infinity, getCurrentStirDirection(), "sun", 50);
-  return;
 }

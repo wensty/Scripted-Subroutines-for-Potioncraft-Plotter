@@ -46,5 +46,4 @@ function main() {
     stirToEdge();
   }
   logAddHeatVortex(0.032);
-  return;
 }

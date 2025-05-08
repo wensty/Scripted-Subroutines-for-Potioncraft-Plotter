@@ -41,5 +41,4 @@ function main() {
   logAddHeatVortex(3.143);
   logAddStirCauldron(0.832);
   logAddHeatVortex(4.58);
-  return;
 }

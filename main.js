@@ -183,12 +183,20 @@ function logAddSetPosition(x, y) {
 
 /**
  * Checks if the given point is a danger zone.
- * @param {import("@potionous/dataset").PotionBaseEntity} x A point with an entityType property.
+ * @param {import("@potionous/dataset").PotionBaseEntity} x Checked entity.
  * @returns {boolean} True if the entity type is a danger zone, false otherwise.
  */
 function isDangerZone(x) {
-  const { entityType } = x;
-  return ["StrongDangerZonePart", "WeakDangerZonePart", "DangerZonePart"].includes(entityType);
+  return ["StrongDangerZonePart", "WeakDangerZonePart", "DangerZonePart"].includes(x.entityType);
+}
+
+/**
+ * Checks if the given point is a strong danger zone.
+ * @param {import("@potionous/dataset").PotionBaseEntity} x Checked entity.
+ */
+
+function isStrongDangerZone(x) {
+  return ["StrongDangerZonePart", "DangerZonePart"].includes(x.entityType);
 }
 
 /**
@@ -216,43 +224,91 @@ function isVortex(x) {
  */
 function stirIntoVortex() {
   const pendingPoints = currentPlot.pendingPoints;
-  const currentPoint = pendingPoints[0];
-  const entities = currentPoint.bottleCollisions;
-  const currentVortex = entities.find(isVortex);
+  const currentVortex = pendingPoints[0].bottleCollisions.find(isVortex);
   let stirLength = 0.0;
-  let i;
-  for (i = 1; i + 1 < pendingPoints.length; i++) {
-    const currentPoint = pendingPoints[i];
-    const entities = currentPoint.bottleCollisions;
-    const result = entities.find(isVortex);
+  let index = 0;
+  while (true) {
+    index += 1;
+    if (index == pendingPoints.length) {
+      console.log("Error while stirring into vortex: no vortex found.");
+      terminate();
+      throw EvalError;
+    }
+    const result = pendingPoints[index].bottleCollisions.find(isVortex);
     if (
-      result === undefined ||
-      (currentVortex != undefined && result.x == currentVortex.x && result.y == currentVortex.y)
+      result != undefined &&
+      (currentVortex == undefined || result.x != currentVortex.x || result.y != currentVortex.y)
     ) {
-      stirLength += pointDistance(pendingPoints[i], pendingPoints[i + 1]);
-    } else {
+      // Find the node into the vortex.
+      let left = stirLength;
+      let right = stirLength + pointDistance(pendingPoints[index - 1], pendingPoints[index]);
+      while (right - left > 0.0001) {
+        const mid = left + (right - left) / 2;
+        const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
+        const entities = plot.pendingPoints[0].bottleCollisions;
+        if (entities.some(isVortex)) {
+          right = mid;
+        } else {
+          left = mid;
+        }
+      }
+      logAddStirCauldron(right);
+      return;
+    }
+    stirLength += pointDistance(pendingPoints[index - 1], pendingPoints[index]);
+  }
+}
+
+function stirIntoVortex_C(maxStirLength = Infinity) {
+  const initialVortex = currentPlot.pendingPoints[0].bottleCollisions.find(isVortex);
+  const initialCommittedNodes = currentPlot.committedPoints.length;
+  const plot = computePlot(currentRecipeItems.concat(createStirCauldron(maxStirLength)));
+  const initialIndex = Math.max(initialCommittedNodes - 1, 0);
+  const testedCommittedNodes = plot.committedPoints.length;
+  let nextIndex = initialIndex;
+  let stirDistance = 0.0;
+  while (true) {
+    nextIndex += 1;
+    if (nextIndex == testedCommittedNodes) {
       break;
     }
-  }
-  if (i == pendingPoints.length) {
-    console.log("Error while stirring into vortex: no vortex found.");
-    terminate();
-    throw EvalError;
-  }
-  // Find the node into the vortex.
-  let left = stirLength;
-  let right = stirLength + pointDistance(pendingPoints[i - 1], pendingPoints[i]);
-  while (right - left > 0.0001) {
-    const mid = left + (right - left) / 2;
-    const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
-    const entities = plot.pendingPoints[0].bottleCollisions;
-    if (entities.some(isVortex)) {
-      left = mid;
-    } else {
-      right = mid;
+    const nextPoint = plot.committedPoints[nextIndex];
+    const nextResult = nextPoint.bottleCollisions.find(isVortex);
+    if (
+      nextResult != undefined &&
+      (initialVortex == undefined ||
+        initialVortex.x != nextResult.x ||
+        initialVortex.y != nextResult.y)
+    ) {
+      let left = stirDistance;
+      let right =
+        stirDistance +
+        pointDistance(plot.committedPoints[nextIndex - 1], plot.committedPoints[nextIndex]);
+
+      while (right - left > 0.0001) {
+        let mid = left + (right - left) / 2;
+        const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
+        const result = plot.pendingPoints[0].bottleCollisions.find(isVortex);
+        if (
+          result != undefined &&
+          (initialVortex == undefined || initialVortex.x != result.x || initialVortex.y != result.y)
+        ) {
+          right = mid;
+        } else {
+          left = mid;
+        }
+      }
+      logAddStirCauldron(right);
+      return;
     }
+    stirDistance += pointDistance(
+      plot.committedPoints[nextIndex - 1],
+      plot.committedPoints[nextIndex]
+    );
   }
-  logAddStirCauldron(right);
+  console.log("Error while stirring into vortex: no vortex found.");
+  terminate();
+  throw EvalError;
 }
 
 /**
@@ -433,107 +489,97 @@ function stirToSafeZone(dangerBuffer = 0.02) {
  *
  * @param {number} targetX - The x-coordinate of the target position.
  * @param {number} targetY - The y-coordinate of the target position.
- * @param {number} [buffer=1e-4] - The buffer distance used for segment calculations.
+ * @param {number} [segmentBuffer=1e-4] - The buffer distance used for segment calculations.
+ * @param {number} [approximateBuffer=0.01] - The buffer distance to adjust the binary search.
  */
-function stirToNearestTarget(targetX, targetY, buffer = 1e-4) {
+function stirToNearestTarget(targetX, targetY, segmentBuffer = 1e-4, approximateBuffer = 0.01) {
+  function binarySearch() {
+    const distance = Math.sqrt(
+      (currentPlot.pendingPoints[preparingIndex].x - targetX) ** 2 +
+        (currentPlot.pendingPoints[preparingIndex].y - targetY) ** 2
+    );
+    const approximatedLastStir = Math.min(
+      Math.cos(prepareingRelativeDirection) * distance,
+      preparingStirLength
+    ); // approximated last stir distance.
+    let left = Math.max(currentStirLength + approximatedLastStir - approximateBuffer, 0.0);
+    let right = Math.min(
+      currentStirLength + approximatedLastStir + approximateBuffer,
+      currentStirLength + preparingStirLength
+    );
+    while (right - left > 0.0001) {
+      const mid = left + (right - left) / 2;
+      const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
+      const testX = plot.pendingPoints[0].x;
+      const testY = plot.pendingPoints[0].y;
+      const testDistance = Math.sqrt((targetX - testX) ** 2 + (targetY - testY) ** 2);
+      const relativeDirection = getRelativeDirection(
+        getDirectionByVector(currentX - testX, currentY - testY),
+        getDirectionByVector(targetX - testX, targetY - testY)
+      );
+      if (Math.abs(relativeDirection) > Math.PI / 2) {
+        right = mid;
+      } else {
+        left = mid;
+      }
+      if (testDistance < bestDistance) {
+        bestDistance = testDistance;
+        bestStir = mid;
+      }
+    }
+  }
   const pendingPoints = currentPlot.pendingPoints;
   let preparingIndex = 0; // prepare to binary search from that point.
   let currentIndex = 0; // the current index to detect a turning away.
   let currentStirLength = 0.0; // the current stir on the fully analyzed segments.
-  let prepareingStirLength = 0.0; // after the fully analyzed, the part prepared to apply binary search on
-  let prepareingRelativeDirection = undefined; // the relative direction of the preparing segment.
+  let preparingStirLength = 0.0; // after the fully analyzed, the part prepared to apply binary search on
+  // if the first segment is leaving the target, a binary search should be triggered.
+  let prepareingRelativeDirection = 0.0; // the relative direction of the preparing segment.
   let nextSegmentLength = 0.0;
   const initialX = pendingPoints[0].x || 0.0;
   const initialY = pendingPoints[0].y || 0.0;
   // best distance found. Initialized by the distance at the start point.
   let bestDistance = Math.sqrt((targetX - initialX) ** 2 + (targetY - initialY) ** 2);
   let bestStir = 0.0; // corresponding stir distance. Initialized by not stirring.
-  let endPath = false; // end of path flag.
-  while (!endPath) {
+  let currentX = initialX;
+  let currentY = initialY;
+  // console.log("!")
+  while (true) {
     let nextIndex = currentIndex;
+    currentX = pendingPoints[currentIndex].x || 0.0;
+    currentY = pendingPoints[currentIndex].y || 0.0;
     while (true) {
       nextIndex += 1;
       if (nextIndex == pendingPoints.length) {
-        // endpoint.
-        let plot = computePlot(currentRecipeItems.concat([createStirCauldron(Infinity)]));
-        let distance = Math.sqrt(
-          (plot.pendingPoints[0].x - targetX) ** 2 + (plot.pendingPoints[0].y - targetY) ** 2
-        );
-        if (distance < bestDistance) {
-          bestDistance = distance;
-          bestStir = Infinity;
-        }
-        endPath = true;
-        break;
+        // endpoint. Update last time and return.
+        binarySearch();
+        logAddStirCauldron(bestStir);
+        return bestDistance;
       }
       nextSegmentLength += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
-      if (nextSegmentLength > buffer) {
+      if (nextSegmentLength > segmentBuffer) {
         break;
       }
     }
-    if (!endPath) {
-      const currentX = pendingPoints[currentIndex].x || 0.0;
-      const currentY = pendingPoints[currentIndex].y || 0.0;
-      const nextX = pendingPoints[nextIndex].x || 0.0;
-      const nextY = pendingPoints[nextIndex].y || 0.0;
-      const nextDirection = getDirectionByVector(nextX - currentX, nextY - currentY);
-      const targetDirection = getDirectionByVector(targetX - currentX, targetY - currentY);
-      const relativeDirection = getRelativeDirection(nextDirection, targetDirection);
-      if (
-        prepareingRelativeDirection != undefined && // not the first segment.
-        Math.abs(prepareingRelativeDirection) < Math.PI / 2 && // previously approaching target.
-        Math.abs(relativeDirection) > Math.PI / 2 //currently leaving target.
-      ) {
-        console.log(relativeDirection);
-        console.log("binary");
-        const distance = Math.sqrt(
-          (currentPlot.pendingPoints[preparingIndex].x - targetX) ** 2 +
-            (currentPlot.pendingPoints[preparingIndex].y - targetY) ** 2
-        );
-        const approximatedLastStir = Math.min(
-          Math.cos(prepareingRelativeDirection) * distance,
-          prepareingStirLength
-        );
-        let left = Math.max(currentStirLength + approximatedLastStir - 0.01, 0.0);
-        let right = Math.min(
-          currentStirLength + approximatedLastStir + 0.01,
-          currentStirLength + prepareingStirLength
-        );
-        let mid;
-        while (right - left > 0.0001) {
-          mid = left + (right - left) / 2;
-          const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
-          const testX = plot.pendingPoints[0].x;
-          const testY = plot.pendingPoints[0].y;
-          const testDistance = Math.sqrt((targetX - testX) ** 2 + (targetY - testY) ** 2);
-          const relativeDirection = getRelativeDirection(
-            getDirectionByVector(currentX - testX, currentY - testY),
-            getDirectionByVector(targetX - testX, targetY - testY)
-          );
-          if (Math.abs(relativeDirection) > Math.PI / 2) {
-            right = mid;
-          } else {
-            left = mid;
-          }
-          if (testDistance < bestDistance) {
-            bestDistance = testDistance;
-            bestStir = mid;
-          }
-          // const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
-          // const testX = plot.pendingPoints[0].x;
-          // const testY = plot.pendingPoints[0].y;
-          // const testDistance = Math.sqrt((targetX - testX) ** 2 + (targetY - testY) ** 2);
-        }
-      }
-      currentStirLength += prepareingStirLength;
-      prepareingStirLength = nextSegmentLength;
-      prepareingRelativeDirection = relativeDirection;
-      nextSegmentLength = 0.0;
-      preparingIndex = currentIndex;
-      currentIndex = nextIndex;
+    const nextX = pendingPoints[nextIndex].x || 0.0;
+    const nextY = pendingPoints[nextIndex].y || 0.0;
+    const nextDirection = getDirectionByVector(nextX - currentX, nextY - currentY);
+    const targetDirection = getDirectionByVector(targetX - currentX, targetY - currentY);
+    const relativeDirection = getRelativeDirection(nextDirection, targetDirection);
+    if (
+      prepareingRelativeDirection != undefined && // not the first segment.
+      Math.abs(prepareingRelativeDirection) < Math.PI / 2 && // previously approaching target.
+      Math.abs(relativeDirection) > Math.PI / 2 //currently leaving target.
+    ) {
+      binarySearch();
     }
+    currentStirLength += preparingStirLength;
+    preparingStirLength = nextSegmentLength;
+    prepareingRelativeDirection = relativeDirection;
+    nextSegmentLength = 0.0;
+    preparingIndex = currentIndex;
+    currentIndex = nextIndex;
   }
-  logAddStirCauldron(bestStir);
 }
 
 /**
@@ -641,6 +687,69 @@ function heatAndPourToEdge(length, numbersToPour, vortexRadius = VortexRadiusLar
     }
     logAddHeatVortex(Math.min(length, maxLength));
     pourToEdge();
+  }
+}
+
+/**
+ * Pour to the moment before entering a danger zone.
+ * @param {number} maxPourLength the max length to search for the pouring.
+ */
+function pourToDangerZone(maxPourLength, searchInterval = 0.05) {
+  const initialPoint = currentPlot.pendingPoints[0];
+  const result = initialPoint.bottleCollisions.find(isDangerZone);
+  if (result != undefined) {
+    console.log("Error while pouring to danger zone: bottle currently in danger zone.");
+    terminate();
+    throw EvalError;
+  }
+  const initialX = initialPoint.x || 0.0;
+  const initialY = initialPoint.y || 0.0;
+  const initialDistance = Math.sqrt(initialX ** 2 + initialY ** 2);
+  maxPourLength = Math.min(maxPourLength, initialDistance);
+  const base = PotionBases.current.id;
+  let isWine = false;
+  if (base == "wine") {
+    isWine = true;
+  }
+  // initialization.
+  let currentHealth = initialPoint.health;
+  let currentPour = 0.0;
+  let maxPourFlag = false;
+  while (true) {
+    let nextPour = currentPour + searchInterval;
+    if (nextPour >= maxPourLength) {
+      nextPour = maxPourLength;
+      maxPourFlag = true;
+    }
+    const plot = computePlot(currentRecipeItems.concat([createPourSolvent(nextPour)]));
+    const nextHealth = plot.pendingPoints[0].health;
+    if (
+      (isWine && nextHealth < Math.min(currentHealth + (nextPour - currentPour) * 0.1, 1.0)) ||
+      (!isWine && nextHealth < 1.0)
+    ) {
+      // binary search
+      let left = currentPour;
+      let right = nextPour;
+      while (right - left > 0.0001) {
+        const mid = left + (right - left) / 2;
+        const plot = computePlot(currentRecipeItems.concat([createPourSolvent(mid)]));
+        const result = plot.pendingPoints[0].bottleCollisions.find(isDangerZone);
+        if (result != undefined) {
+          right = mid;
+        } else {
+          left = mid;
+        }
+      }
+      logAddPourSolvent(left);
+      return;
+    }
+    if (maxPourFlag) {
+      console.log("Warning: No danger zone found in the given pour distance.");
+      logAddStirCauldron(nextPour);
+      return;
+    }
+    currentPour = nextPour;
+    currentHealth = nextHealth;
   }
 }
 
@@ -1038,6 +1147,44 @@ function getCurrentVortexSize() {
   //   return VortexRadiusMedium;
   // }
   // return VortexRadiusLarge;
+}
+
+/**
+ * Path check functions.
+ */
+
+/**
+ * If the bottle is not touching a strong danger zone,
+ * check if it will touch a danger zone within the given distance.
+ * @param {number} checkDistance the distance to be checked.
+ * @return {number|undefined} distance to the strong danger zone. undefined if there is none.
+ */
+function checkStrongDangerZone(checkDistance) {
+  const initialResult = currentPlot.pendingPoints[0].bottleCollisions.find(isStrongDangerZone);
+  if (initialResult != undefined) {
+    console.log(
+      "Error while checking future strong danger zone: bottle currently in strong danger zone."
+    );
+    terminate();
+    throw EvalError;
+  }
+  const currentCommitedNodes = currentPlot.committedPoints.length;
+  const plot = computePlot(currentRecipeItems.concat([createStirCauldron(checkDistance)]));
+  const checkedCommitedNode = plot.committedPoints.length;
+  let currentIndex = Math.max(currentCommitedNodes - 1, 0);
+  let stirDistance = 0.0;
+  let nextIndex;
+  for (nextIndex = currentIndex; nextIndex < checkedCommitedNode; nextIndex += 1) {
+    stirDistance += pointDistance(
+      plot.committedPoints[nextIndex - 1],
+      plot.committedPoints[nextIndex]
+    );
+    const result = plot.committedPoints[nextIndex].bottleCollisions.find(isStrongDangerZone);
+    if (result != undefined) {
+      return stirDistance;
+    }
+  }
+  return undefined;
 }
 
 /**
