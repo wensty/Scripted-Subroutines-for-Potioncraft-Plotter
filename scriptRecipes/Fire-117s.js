@@ -4,7 +4,7 @@ import { logAddIngredient, logAddSunSalt } from "../main";
 import { logAddHeatVortex, logAddStirCauldron } from "../main";
 import { logAddPourSolvent } from "../main";
 // Stirring subroutinees.
-import { stirIntoVortex, stirToTurn, stirToSafeZone } from "../main";
+import { stirIntoVortex, stirToTurn, stirIntoSafeZone } from "../main";
 // Pouring subroutines.
 import { heatAndPourToEdge, derotateToAngle } from "../main";
 // Angle conversions.
@@ -33,7 +33,7 @@ function main() {
     stirToTurn();
   }
   straighten(0.8, getCurrentStirDirection(), "sun");
-  stirToSafeZone();
+  stirIntoSafeZone();
   logAddSunSalt(117 - 60);
   stirIntoVortex();
   logAddStirCauldron(0.327);

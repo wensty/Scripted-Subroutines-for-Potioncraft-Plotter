@@ -26,6 +26,11 @@ let TotalSun = 0;
 let TotalMoon = 0;
 
 /**
+ * Generally, functions named by "into" some entities move the bottle cross the boundary into it or vise versa.
+ * Functions named by "to" some entities stop the bottle just about to move into it or vise versa.
+ */
+
+/**
  * Terminate the program by tricking the TypeScript type checker.
  * The function deliberately contains a type error to terminate the program.
  */
@@ -259,58 +264,6 @@ function stirIntoVortex() {
   }
 }
 
-function stirIntoVortex_C(maxStirLength = Infinity) {
-  const initialVortex = currentPlot.pendingPoints[0].bottleCollisions.find(isVortex);
-  const initialCommittedNodes = currentPlot.committedPoints.length;
-  const plot = computePlot(currentRecipeItems.concat(createStirCauldron(maxStirLength)));
-  const initialIndex = Math.max(initialCommittedNodes - 1, 0);
-  const testedCommittedNodes = plot.committedPoints.length;
-  let nextIndex = initialIndex;
-  let stirDistance = 0.0;
-  while (true) {
-    nextIndex += 1;
-    if (nextIndex == testedCommittedNodes) {
-      break;
-    }
-    const nextPoint = plot.committedPoints[nextIndex];
-    const nextResult = nextPoint.bottleCollisions.find(isVortex);
-    if (
-      nextResult != undefined &&
-      (initialVortex == undefined ||
-        initialVortex.x != nextResult.x ||
-        initialVortex.y != nextResult.y)
-    ) {
-      let left = stirDistance;
-      let right =
-        stirDistance +
-        pointDistance(plot.committedPoints[nextIndex - 1], plot.committedPoints[nextIndex]);
-
-      while (right - left > 0.0001) {
-        let mid = left + (right - left) / 2;
-        const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
-        const result = plot.pendingPoints[0].bottleCollisions.find(isVortex);
-        if (
-          result != undefined &&
-          (initialVortex == undefined || initialVortex.x != result.x || initialVortex.y != result.y)
-        ) {
-          right = mid;
-        } else {
-          left = mid;
-        }
-      }
-      logAddStirCauldron(right);
-      return;
-    }
-    stirDistance += pointDistance(
-      plot.committedPoints[nextIndex - 1],
-      plot.committedPoints[nextIndex]
-    );
-  }
-  console.log("Error while stirring into vortex: no vortex found.");
-  terminate();
-  throw EvalError;
-}
-
 /**
  * Computes the length of the stir from the current point to the edge of the vortex,
  * and adds a stir instruction to the recipe for this length.
@@ -427,7 +380,7 @@ function stirToTurn(directionBuffer = 20 * SaltAngle, stirBuffer = 0.0) {
  * @returns {number|undefined} The least health of the bottle during the process.
  * @throws {EvalError} If the base is wine, or if no safe zone is found.
  */
-function stirToSafeZone(dangerBuffer = 0.02) {
+function stirIntoSafeZone(dangerBuffer = 0.02) {
   const base = PotionBases.current.id;
   if (base == "wine") {
     console.log("Stir to safe zone is not supported for wine base.");
@@ -1326,16 +1279,19 @@ function main() {
  * Useful for scripting offline.
  * Currently plotter do not support exports. Delete these export lines.
  */
+export { getUnit };
 export { logAddIngredient, logAddMoonSalt, logAddSunSalt, logAddRotationSalt };
 export { logAddHeatVortex, logAddStirCauldron, logAddPourSolvent, logAddSetPosition };
-export { isDangerZone, isVortex };
-export { stirIntoVortex, stirToEdge, stirToTurn, stirToSafeZone };
-export { pourToEdge, heatAndPourToEdge, derotateToAngle };
-export { checkBase, getUnit };
+export { isDangerZone, isStrongDangerZone, isVortex };
+export { stirIntoVortex, stirToEdge, stirToTurn, stirIntoSafeZone };
+export { stirToNearestTarget };
+export { pourToEdge, heatAndPourToEdge, pourToDangerZone, derotateToAngle };
 export { degToRad, radToDeg, degToSalt, radToSalt, saltToDeg, saltToRad };
 export { getDirectionByVector, getVectorByDirection, getRelativeDirection };
 export { getBottlePolarAngle, getBottlePolarAngleByVortex };
 export { getCurrentStirDirection, getCurrentPourDirection };
+export { checkBase, getCurrentVortexSize };
+export { checkStrongDangerZone };
 export { straighten };
 
 /**
