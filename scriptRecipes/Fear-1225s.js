@@ -1,27 +1,23 @@
-// Wrapped ingredient and salt instructions.
-import { logAddIngredient, logAddSunSalt } from "../main";
-// Wrapped operation instructions.
-import { logAddStirCauldron, logAddPourSolvent } from "../main";
-// Stirring subroutinees.
-import { stirToTurn } from "../main";
-import { stirToNearestTarget } from "../main";
-// Pouring subroutines.
-import { pourToDangerZone, derotateToAngle } from "../main";
-// Angle conversions.
-import { degToRad } from "../main";
-// Angle and direction extractions.
-import { getRelativeDirection } from "../main";
-import { getBottlePolarAngle } from "../main";
-import { getCurrentStirDirection } from "../main";
-// Extraction of other informations.
-import { checkBase } from "../main";
-// Complex subroutines.
-import { straighten } from "../main";
-// Utilities.
+import {
+  logAddIngredient,
+  logAddSunSalt,
+  logAddStirCauldron,
+  logAddPourSolvent,
+  stirToTurn,
+  stirToNearestTarget,
+  degToRad,
+  getRelativeDirection,
+  getBottlePolarAngle,
+  getCurrentStirDirection,
+  checkBase,
+  straighten,
+} from "../main";
+import { Ingredients } from "@potionous/dataset";
+
 function main() {
   checkBase("wine");
   logAddSunSalt(335);
-  logAddIngredient("PhantomSkirt", 1);
+  logAddIngredient(Ingredients.PhantomSkirt, 1);
   derotateToAngle(0);
   straighten(Infinity, degToRad(-65), "sun", 200);
   logAddStirCauldron(7.66);
@@ -96,6 +92,6 @@ function beta_1226s() {
     stirToTurn(0.1 * SaltAngle);
     pourToDangerZone(1);
   }
-  logAddPourSolvent(0.091);
+  logAddPourSolvent(0.11);
   stirToNearestTarget(-19.45, 14.64);
 }

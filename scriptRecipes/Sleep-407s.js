@@ -1,21 +1,14 @@
-// Wrapped ingredient and salt instructions.
-import { logAddIngredient, logAddSunSalt } from "../main";
-// Wrapped operation instructions.
-import { logAddHeatVortex, logAddStirCauldron } from "../main";
-import { logAddPourSolvent } from "../main";
-// Stirring subroutinees.
-import { stirIntoVortex } from "../main";
-// Pouring subroutines.
-import { heatAndPourToEdge, derotateToAngle } from "../main";
-// Angle conversions.
-import { degToRad } from "../main";
-// Utilities.
-import { checkBase } from "../main";
-// Complex subroutines.
-import { straighten } from "../main";
-
-import { checkBase, degToRad } from "../main.js";
-
+import {
+  logAddIngredient,
+  logAddSunSalt,
+  logAddHeatVortex,
+  logAddStirCauldron,
+  logAddPourSolvent,
+  stirIntoVortex,
+  degToRad,
+  checkBase,
+  straighten,
+} from "../main";
 import { Ingredients } from "@potionous/dataset";
 
 function main() {
