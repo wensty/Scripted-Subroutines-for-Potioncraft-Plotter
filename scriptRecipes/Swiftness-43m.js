@@ -1,17 +1,12 @@
-// Wrapped ingredient and salt instructions.
-import { logAddIngredient } from "../main";
-// Wrapped operation instructions.
-import { logAddStirCauldron } from "../main";
-import { logAddPourSolvent } from "../main";
-// Angle conversions.
-import { radToDeg } from "../main";
-// Angle extractions.
-import { getCurrentStirDirection } from "../main";
-// Utilities.
-import { checkBase } from "../main";
-// Complex subroutines.
-import { straighten } from "../main";
-
+import {
+  logAddIngredient,
+  logAddStirCauldron,
+  logAddPourSolvent,
+  radToDeg,
+  getCurrentStirDirection,
+  checkBase,
+  straighten,
+} from "../main";
 import { Ingredients } from "@potionous/dataset";
 
 function main() {

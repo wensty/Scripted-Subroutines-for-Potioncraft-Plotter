@@ -25,7 +25,7 @@ const Epsilon = 1e-4;
 const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
 const BottleRadius = 0.74;
-const DeviationT1 = BottleRadius * 2 * 1800;
+// const DeviationT1 = BottleRadius * 2 * 1800;
 let Display = false; // Macro to switch instruction display.
 let Step = 1;
 let TotalSun = 0;
@@ -829,7 +829,7 @@ function pourToEdge(vortexRadius = VortexRadiusLarge, buffer = 0.01, epsilon = E
     );
     const vortexCenterAngle = Math.PI - Math.abs(relativePourDirection) - vortexEdgeAngle;
     const approximatedDistance =
-      (vortexRadius * Math.sin(vortexCenterAngle)) / Math.sin(relativePourDirection);
+      (vortexRadius * Math.sin(vortexCenterAngle)) / Math.sin(Math.abs(relativePourDirection));
     return approximatedDistance;
   }
   const approximatedDistance = approximateDistance(
@@ -887,7 +887,6 @@ function pourIntoVortex(maxPourLength, buffer = 0.01, epsilon = Epsilon) {
     }
     const testPoint = plot.committedPoints[nextIndex];
     const testResult = testPoint.bottleCollisions.find(isVortex);
-    console.log(testResult);
     if (
       testResult != undefined &&
       (initialVortex == undefined ||
@@ -1420,11 +1419,21 @@ function getCurrentVortexSize() {
 }
 
 /**
+ * Calculates the total deviation of the current bottle position from the target.
  *
- * @param {number} targetX
- * @param {number}targetY
- * @param {number} targetAngle desired angle of target effect in deg.
+ * This function computes the error or deviation of the current bottle position and angle
+ * relative to a specified target position (targetX, targetY) and target angle. It calculates
+ * the distance deviation based on the Euclidean distance between the current position and
+ * the target position, scaled by a factor. It also calculates the angle deviation in degrees
+ * based on the relative direction difference between the current angle and the target angle,
+ * scaled by a factor. The total deviation is the sum of the distance and angle deviations.
+ *
+ * @param {number} targetX - The X coordinate of the target position.
+ * @param {number} targetY - The Y coordinate of the target position.
+ * @param {number} targetAngle - The desired angle of the target effect in degrees.
+ * @returns {number} The total deviation from the target position and angle.
  */
+
 function getCurrentTargetError(targetX, targetY, targetAngle) {
   const currentPoint = currentPlot.pendingPoints[0];
   const currentX = currentPoint.x || 0;
@@ -1435,7 +1444,7 @@ function getCurrentTargetError(targetX, targetY, targetAngle) {
     Math.abs(getRelativeDirection(degToRad(-currentPoint.angle), degToRad(targetAngle)))
   );
   const angleDeviation = (angleDelta * 100.0) / 12.0;
-  const totalDeviation = distancedeviation + angledeviation;
+  const totalDeviation = distanceDeviation + angleDeviation;
   return totalDeviation;
 }
 
@@ -1613,20 +1622,57 @@ function main() {
  * Useful for scripting offline.
  * Currently plotter do not support exports. Delete these export lines.
  */
-export { getUnit };
-export { logAddIngredient, logAddMoonSalt, logAddSunSalt, logAddRotationSalt };
-export { logAddHeatVortex, logAddStirCauldron, logAddPourSolvent, logAddSetPosition };
-export { isDangerZone, isStrongDangerZone, isVortex };
-export { stirIntoVortex, stirToEdge, stirToTurn, stirIntoSafeZone };
-export { stirToNearestTarget };
-export { pourToEdge, heatAndPourToEdge, pourToDangerZone, derotateToAngle };
-export { degToRad, radToDeg, degToSalt, radToSalt, saltToDeg, saltToRad };
-export { getDirectionByVector, getVectorByDirection, getRelativeDirection };
-export { getBottlePolarAngle, getBottlePolarAngleByVortex };
-export { getCurrentStirDirection, getCurrentPourDirection };
-export { checkBase, getCurrentVortexSize };
-export { checkStrongDangerZone };
-export { straighten };
+export {
+  logAddIngredient,
+  logAddMoonSalt,
+  logAddSunSalt,
+  logAddRotationSalt,
+  // Wrapped operation instructions.
+  logAddHeatVortex,
+  logAddStirCauldron,
+  logAddPourSolvent,
+  logAddSetPosition,
+  // Zone detections.
+  isDangerZone,
+  isVortex,
+  // Stirring subroutinees.
+  stirIntoVortex,
+  stirToEdge,
+  stirToTurn,
+  stirIntoSafeZone,
+  stirToNearestTarget,
+  stirToTier,
+  // Pouring subroutines.
+  pourToEdge,
+  heatAndPourToEdge,
+  pourToDangerZone,
+  derotateToAngle,
+  // Angle conversions.
+  degToRad,
+  radToDeg,
+  degToSalt,
+  radToSalt,
+  saltToDeg,
+  saltToRad,
+  // Angle and direction extractions.
+  getDirectionByVector,
+  getVectorByDirection,
+  getRelativeDirection,
+  getBottlePolarAngle,
+  getBottlePolarAngleByVortex,
+  getCurrentStirDirection,
+  getCurrentPourDirection,
+  // Extraction of other informations.
+  checkBase,
+  getCurrentVortexSize,
+  getCurrentTargetError,
+  // Checking for entities in future path.
+  checkStrongDangerZone,
+  // Complex subroutines.
+  straighten,
+  // Utilities.
+  getUnit,
+};
 
 /**
  * Main function call running the script.

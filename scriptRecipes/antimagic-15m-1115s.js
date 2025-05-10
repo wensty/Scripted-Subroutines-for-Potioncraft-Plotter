@@ -1,26 +1,16 @@
-// Subroutines defined in main script.
-// wrapped instructions defined in main script to implement statistics.
-// utility functions defined in main script.
-
-// Wrapped ingredient and salt instructions.
-import { logAddIngredient, logAddSunSalt } from "../main";
-// Wrapped operation instructions.
-import { logAddHeatVortex, logAddStirCauldron } from "../main";
-// Stirring subroutinees.
-import { stirIntoVortex } from "../main";
-// Pouring subroutines.
-import { heatAndPourToEdge, derotateToAngle } from "../main";
-// Angle conversions.
-import { degToRad, saltToDeg } from "../main";
-// Angle extractions.
-import { getDirectionByVector } from "../main";
-// Utilities.
-import { checkBase } from "../main";
-// Complex subroutines.
-import { straighten } from "../main";
-
-import { stirToNearestTarget } from "../main";
-
+import {
+  logAddIngredient,
+  logAddSunSalt,
+  logAddHeatVortex,
+  logAddStirCauldron,
+  stirIntoVortex,
+  stirToNearestTarget,
+  degToRad,
+  saltToDeg,
+  getDirectionByVector,
+  checkBase,
+  straighten,
+} from "../main";
 import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
 

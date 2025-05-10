@@ -1,7 +1,5 @@
-// Wrapped ingredient and salt instructions.
-import { logAddIngredient, logAddSunSalt } from "../main";
-// Wrapped operation instructions.
-import { logAddStirCauldron } from "../main";
+import { logAddIngredient, logAddSunSalt, logAddStirCauldron, stirToNearestTarget } from "../main";
+import { Ingredients } from "@potionous/dataset";
 
 function main() {
   logAddIngredient(Ingredients.Goodberry, 1);

@@ -15,6 +15,8 @@ import { getBottlePolarAngleByVortex } from "../main";
 // Complex subroutines.
 import { straighten } from "../main";
 
+import { Ingredients } from "@potionous/dataset";
+
 function main() {
   logAddIngredient(Ingredients.PhantomSkirt, 1);
   logAddStirCauldron(5.525);
