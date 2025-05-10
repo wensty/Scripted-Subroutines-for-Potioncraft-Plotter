@@ -22,6 +22,10 @@ const VortexRadiusLarge = 2.39;
 const VortexRadiusMedium = 1.99;
 const VortexRadiusSmall = 1.74;
 const Epsilon = 1e-4;
+const DeviationT2 = 600.0;
+const DeviationT3 = 100.0;
+const BottleRadius = 0.74;
+const DeviationT1 = BottleRadius * 2 * 1800;
 let Display = false; // Macro to switch instruction display.
 let Step = 1;
 let TotalSun = 0;
@@ -221,14 +225,20 @@ function isVortex(x) {
  */
 
 /**
- * Computes the length of the stir from the current point to the first vortex,
- * and adds a stir instruction to the recipe for this length.
+ * Stirs the potion into a vortex.
  *
- * This function attempts to stir until the bottle is about to enter a vortex.
- * If the current point is not within a vortex, an error is thrown.
+ * This function attempts to move the potion into a new vortex by
+ * incrementally increasing the stir length. It uses a binary search
+ * to precisely find the point where the potion enters a vortex.
  *
- * @throws {EvalError} If the operation is attempted outside of a vortex.
+ * If the potion is not currently within a vortex, it will search
+ * for the nearest vortex and stir into it. If no vortex is found,
+ * an error is logged and the process is terminated.
+ *
+ * @param {number} [epsilon=Epsilon] - The precision for the binary search.
+ * @throws {EvalError} If no vortex is found in the pending points.
  */
+
 function stirIntoVortex(epsilon = Epsilon) {
   const pendingPoints = currentPlot.pendingPoints;
   const currentVortex = pendingPoints[0].bottleCollisions.find(isVortex);
@@ -267,14 +277,20 @@ function stirIntoVortex(epsilon = Epsilon) {
 }
 
 /**
- * Computes the length of the stir from the current point to the edge of the vortex,
- * and adds a stir instruction to the recipe for this length.
+ * Stirs the potion to the edge of the current vortex.
  *
- * This function attempts to stir until the bottle is about to leave the same vortex.
- * If the current point is not within a vortex, an error is thrown.
+ * This function calculates the optimal stirring length to move the potion
+ * to the boundary of the vortex it is currently in. It uses a binary search
+ * approach to precisely determine the stir length needed to reach the edge.
  *
- * @throws {EvalError} If the operation is attempted outside of a vortex.
+ * If the potion is not currently within a vortex, an error is logged and
+ * the process is terminated. If the edge of the vortex cannot be reached,
+ * the function also terminates with an error.
+ *
+ * @param {number} [epsilon=Epsilon] - The precision for the binary search.
+ * @throws {EvalError} If the potion is not in a vortex or cannot reach the vortex edge.
  */
+
 function stirToEdge(epsilon = Epsilon) {
   const pendingPoints = currentPlot.pendingPoints;
   const vortex = pendingPoints[0].bottleCollisions.find(isVortex);
@@ -372,15 +388,17 @@ function stirToTurn(directionBuffer = 20 * SaltAngle, stirBuffer = 0.0) {
 }
 
 /**
- * Stir the potion to the safe zone.
+ * Stir the cauldron into a safe zone.
  *
- * This function tries to stir the potion into a safe zone by binary search.
- * If the bottle is not in a danger zone, it does nothing.
- * This operation is not supported for wine base because of its unique properties.
+ * The function checks if the bottle is in a danger zone (health lower than 1 - dangerBuffer).
+ * If it is not, the function does nothing.
+ * If it is, the function stirs the cauldron until it reaches a safe zone.
+ * The function returns the least health found in the safe zone.
  *
- * @param {number} [dangerBuffer=0.02] - The buffer value before the bottle is considered in danger.
- * @returns {number|undefined} The least health of the bottle during the process.
- * @throws {EvalError} If the base is wine, or if no safe zone is found.
+ * @param {number} [dangerBuffer=0.02] The buffer of health to determine if the bottle is in a danger zone.
+ * @param {number} [epsilon=Epsilon] The precision for the binary search.
+ * @return {number} The least health found in the safe zone.
+ * @throws {Error} If the bottle is in a wine base or no safe zone is found.
  */
 function stirIntoSafeZone(dangerBuffer = 0.02, epsilon = Epsilon) {
   const base = PotionBases.current.id;
@@ -445,6 +463,8 @@ function stirIntoSafeZone(dangerBuffer = 0.02, epsilon = Epsilon) {
  * If the potion is initially moving away from the target, a binary
  * search is initiated to find the best approach.
  *
+ * This function is time-consuming. If possible, stir to near the point first.
+ *
  * @param {number} targetX - The X coordinate of the target.
  * @param {number} targetY - The Y coordinate of the target.
  * @param {number} [leastSegmentLength=1e-4] - The minimum segment
@@ -464,15 +484,7 @@ function stirToNearestTarget(
   approximateBuffer = 0.01,
   epsilon = Epsilon
 ) {
-  function binarySearch() {
-    const distance = Math.sqrt(
-      (currentPlot.pendingPoints[preparingIndex].x - targetX) ** 2 +
-        (currentPlot.pendingPoints[preparingIndex].y - targetY) ** 2
-    );
-    const approximatedLastStir = Math.min(
-      Math.cos(prepareingRelativeDirection) * distance,
-      preparingStirLength
-    ); // approximated last stir distance.
+  function binarySearchPreparingSegment() {
     let left = Math.max(currentStirLength + approximatedLastStir - approximateBuffer, 0.0);
     let right = Math.min(
       currentStirLength + approximatedLastStir + approximateBuffer,
@@ -501,34 +513,37 @@ function stirToNearestTarget(
   }
   const pendingPoints = currentPlot.pendingPoints;
   let preparingIndex = 0; // prepare to binary search from that point.
+  let preparingStirLength = 0.0; // after the fully analyzed, the part prepared to apply binary search on
   let currentIndex = 0; // the current index to detect a turning away.
   let currentStirLength = 0.0; // the current stir on the fully analyzed segments.
-  let preparingStirLength = 0.0; // after the fully analyzed, the part prepared to apply binary search on
-  // if the first segment is leaving the target, a binary search should be triggered.
-  let prepareingRelativeDirection = 0.0; // the relative direction of the preparing segment.
-  let nextSegmentLength = 0.0;
+  let preparingRelativeDirection = Infinity; // the relative direction of the preparing segment.
+  // if the first segment is leaving the target, a binary search should not be triggered.
+  let currentSegmentLength = 0.0;
   const initialX = pendingPoints[0].x || 0.0;
   const initialY = pendingPoints[0].y || 0.0;
   // best distance found. Initialized by the distance at the start point.
   let bestDistance = Math.sqrt((targetX - initialX) ** 2 + (targetY - initialY) ** 2);
+  let preparingDistance = bestDistance;
+  let currentDistance = bestDistance;
+  let approximatedLastStir = 0.0;
   let bestStir = 0.0; // corresponding stir distance. Initialized by not stirring.
   let currentX = initialX;
   let currentY = initialY;
-  // console.log("!")
   while (true) {
     let nextIndex = currentIndex;
     currentX = pendingPoints[currentIndex].x || 0.0;
     currentY = pendingPoints[currentIndex].y || 0.0;
+    currentDistance = Math.sqrt((currentX - targetX) ** 2 + (currentY - targetY) ** 2);
     while (true) {
       nextIndex += 1;
       if (nextIndex == pendingPoints.length) {
         // endpoint. Update last time and return.
-        binarySearch();
+        binarySearchPreparingSegment();
         logAddStirCauldron(bestStir);
         return bestDistance;
       }
-      nextSegmentLength += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
-      if (nextSegmentLength > leastSegmentLength) {
+      currentSegmentLength += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
+      if (currentSegmentLength > leastSegmentLength) {
         break;
       }
     }
@@ -538,16 +553,229 @@ function stirToNearestTarget(
     const targetDirection = getDirectionByVector(targetX - currentX, targetY - currentY);
     const relativeDirection = getRelativeDirection(nextDirection, targetDirection);
     if (
-      prepareingRelativeDirection != undefined && // not the first segment.
-      Math.abs(prepareingRelativeDirection) < Math.PI / 2 && // previously approaching target.
-      Math.abs(relativeDirection) > Math.PI / 2 //currently leaving target.
+      Math.abs(preparingRelativeDirection) < Math.PI / 2 && // previously approaching target.
+      Math.abs(relativeDirection) > Math.PI / 2 // currently leaving target.
     ) {
-      binarySearch();
+      const distance = Math.sqrt(
+        (currentPlot.pendingPoints[preparingIndex].x - targetX) ** 2 +
+          (currentPlot.pendingPoints[preparingIndex].y - targetY) ** 2
+      );
+      approximatedLastStir = Math.cos(preparingRelativeDirection) * distance;
+      // approximated best distance by last stir.
+      let approximatedDistance;
+      if (approximatedLastStir > preparingStirLength) {
+        approximatedLastStir = preparingStirLength;
+        approximatedDistance = Math.min(preparingDistance, currentDistance);
+      } else {
+        approximatedDistance = Math.sin(preparingRelativeDirection) * distance;
+      }
+      if (approximatedDistance < bestDistance + 0.05) {
+        binarySearchPreparingSegment();
+      }
     }
     currentStirLength += preparingStirLength;
-    preparingStirLength = nextSegmentLength;
-    prepareingRelativeDirection = relativeDirection;
-    nextSegmentLength = 0.0;
+    preparingStirLength = currentSegmentLength;
+    preparingRelativeDirection = relativeDirection;
+    preparingDistance = currentDistance;
+    currentSegmentLength = 0.0;
+    preparingIndex = currentIndex;
+    currentIndex = nextIndex;
+  }
+}
+
+/**
+ * Stirs the potion to a specified tier of a target effect.
+ *
+ * This function calculates the stirring length required to reach a specified tier
+ * of a target effect defined by its position and angle. It uses a combination of
+ * geometry and binary search to determine the precise point at which the potion
+ * achieves the desired target effect tier.
+ *
+ * If the angle deviation from the target is too large, an error is logged and the
+ * process is terminated. The function also handles edge cases where the target
+ * tier cannot be reached.
+ *
+ * This function is time-consuming. If possible, stir to near the point first.
+ *
+ * @param {number} targetX - The x-coordinate of the target effect.
+ * @param {number} targetY - The y-coordinate of the target effect.
+ * @param {number} targetAngle - The angle of the target effect in degrees.
+ * @param {number} [maxDeviation=DeviationT2] - The maximum allowable deviation from the target angle.
+ * @param {boolean} [ignoreAngle=false] - Whether to ignore angle deviation in calculations.
+ * @param {number} [leastSegmentLength=1e-4] - The smallest segment length for stirring calculations.
+ * @param {number} [approximateBuffer=0.01] - The buffer distance for binary search approximation.
+ * @param {number} [epsilon=Epsilon] - The precision for the binary search.
+ * @throws {EvalError} If the angle deviation is too large or if the target tier cannot be reached.
+ */
+function stirToTier(
+  targetX,
+  targetY,
+  targetAngle,
+  maxDeviation = DeviationT2,
+  ignoreAngle = false,
+  leastSegmentLength = 1e-4,
+  approximateBuffer = 0.01,
+  epsilon = Epsilon
+) {
+  function binarySearchPreparingSegment() {
+    let left = Math.max(currentStirLength + approximatedLastStirLength - approximateBuffer, 0.0);
+    let right = Math.min(
+      currentStirLength + approximatedLastStirLength + approximateBuffer,
+      currentStirLength + preparingStirLength
+    );
+    let midPointFound = false;
+    while (right - left > epsilon) {
+      const mid = left + (right - left) / 2;
+      const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
+      const testX = plot.pendingPoints[0].x;
+      const testY = plot.pendingPoints[0].y;
+      const testDistance = Math.sqrt((targetX - testX) ** 2 + (targetY - testY) ** 2);
+      const relativeDirection = getRelativeDirection(
+        getDirectionByVector(currentX - testX, currentY - testY),
+        getDirectionByVector(targetX - testX, targetY - testY)
+      );
+      if (!midPointFound) {
+        if (testDistance < requiredDistance) {
+          right = mid;
+          midPointFound = true;
+        } else {
+          if (Math.abs(relativeDirection) > Math.PI / 2) {
+            right = mid;
+          } else {
+            left = mid;
+          }
+        }
+      } else {
+        if (testDistance < requiredDistance) {
+          right = mid;
+        } else {
+          left = mid;
+        }
+      }
+    }
+    if (midPointFound) {
+      logAddStirCauldron(right);
+    }
+    return midPointFound;
+  }
+  const currentPoint = currentPlot.pendingPoints[0];
+  const currentAngle = -currentPoint.angle || 0.0;
+  const angleDelta = radToDeg(
+    Math.abs(getRelativeDirection(degToRad(currentAngle), degToRad(targetAngle)))
+  );
+  let angleDeviation = angleDelta * (100.0 / 12.0);
+  if (ignoreAngle) {
+    angleDeviation = 0.0;
+  }
+  if (angleDeviation > maxDeviation) {
+    console.log("Error while stir to tier: too much angle deviation.");
+    terminate();
+    throw EvalError;
+  }
+  const requiredDistance = (maxDeviation - angleDeviation) / 1800.0;
+  let currentStirLength = 0.0;
+  let currentSegmentLength = 0.0;
+  let preparingStirLength = 0.0;
+  let preparingRelativeDirection = Infinity;
+  const initialX = currentPlot.pendingPoints[0].x || 0.0;
+  const initialY = currentPlot.pendingPoints[0].y || 0.0;
+  let preparingDistance = Math.sqrt((targetX - initialX) ** 2 + (targetY - initialY) ** 2);
+  let currentX = initialX;
+  let currentY = initialY;
+  let currentDistance = preparingDistance;
+  let preparingIndex = 0;
+  let currentIndex = preparingIndex;
+  let approximatedLastStirLength = 0.0;
+  while (true) {
+    let nextIndex = currentIndex;
+    currentX = currentPlot.pendingPoints[currentIndex].x || 0.0;
+    currentY = currentPlot.pendingPoints[currentIndex].y || 0.0;
+    currentDistance = Math.sqrt((targetX - currentX) ** 2 + (targetY - currentY) ** 2);
+    while (true) {
+      nextIndex += 1;
+      if (nextIndex == currentPlot.pendingPoints.length) {
+        const midPointFound = binarySearchPreparingSegment();
+        if (!midPointFound) {
+          console.log("Error while stirring to tier: can not reach the tier.");
+          terminate();
+          throw EvalError;
+        } else {
+          return;
+        }
+      }
+      currentSegmentLength += pointDistance(
+        currentPlot.pendingPoints[nextIndex - 1],
+        currentPlot.pendingPoints[nextIndex]
+      );
+      if (currentSegmentLength > leastSegmentLength) {
+        break;
+      }
+    }
+    const nextX = currentPlot.pendingPoints[nextIndex].x || 0.0;
+    const nextY = currentPlot.pendingPoints[nextIndex].y || 0.0;
+    const nextDistance = Math.sqrt((nextX - targetX) ** 2 + (nextY - targetY) ** 2);
+    const nextDirection = getDirectionByVector(nextX - currentX, nextY - currentY);
+    const targetDirection = getDirectionByVector(targetX - currentX, targetY - currentY);
+    const relativeDirection = getRelativeDirection(nextDirection, targetDirection);
+    if (nextDistance < requiredDistance) {
+      // the first entor point is in this segment.
+      // Binary search the current segment to find the exact point and return.
+      // nextDistance is only used in this test.
+      const theta = Math.asin(
+        (currentDistance * Math.sin(Math.abs(relativeDirection))) / requiredDistance
+      );
+      const alpha = theta - Math.abs(relativeDirection);
+      approximatedLastStirLength = (currentDistance * Math.sin(alpha)) / Math.sin(theta);
+      // approximate the distance
+      let left = Math.max(
+        currentStirLength + preparingStirLength + approximatedLastStirLength - approximateBuffer,
+        0
+      );
+      let right =
+        currentStirLength + preparingStirLength + approximatedLastStirLength + approximateBuffer;
+      while (right - left > epsilon) {
+        let mid = left + (right - left) / 2;
+        const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
+        const testPoint = plot.pendingPoints[0];
+        const testX = testPoint.x || 0.0;
+        const testY = testPoint.y || 0.0;
+        const testDistance = Math.sqrt((testX - targetX) ** 2 + (testY - targetY) ** 2);
+        if (testDistance > requiredDistance) {
+          left = mid;
+        } else {
+          right = mid;
+        }
+      }
+      logAddStirCauldron(right);
+      return;
+    }
+    if (
+      Math.abs(preparingRelativeDirection) < Math.PI / 2 && // previously approaching target.
+      Math.abs(relativeDirection) > Math.PI / 2 //currently leaving target.
+    ) {
+      // binarySearch
+      approximatedLastStirLength = Math.cos(preparingRelativeDirection) * preparingDistance;
+      // approximated best distance by last stir.
+      let approximatedDistance;
+      if (approximatedLastStirLength > preparingStirLength) {
+        approximatedLastStirLength = preparingStirLength;
+        approximatedDistance = Math.min(preparingDistance, currentDistance);
+      } else {
+        approximatedDistance = Math.sin(preparingRelativeDirection) * preparingDistance;
+      }
+      if (approximatedDistance < requiredDistance + 0.05) {
+        // binarySearch.
+        const midPointFound = binarySearchPreparingSegment();
+        if (midPointFound) {
+          break;
+        }
+      }
+    }
+    currentStirLength += preparingStirLength;
+    preparingStirLength = currentSegmentLength;
+    preparingRelativeDirection = relativeDirection;
+    preparingDistance = currentDistance;
+    currentSegmentLength = 0.0;
     preparingIndex = currentIndex;
     currentIndex = nextIndex;
   }
@@ -624,6 +852,69 @@ function pourToEdge(vortexRadius = VortexRadiusLarge, buffer = 0.01, epsilon = E
   }
   logAddPourSolvent(left);
 }
+/**
+ * Pours the bottle into a vortex with precision.
+ *
+ * This function attempts to move the bottle into a new vortex by
+ * incrementally increasing the pour length. It uses a binary search
+ * to precisely find the point where the bottle enters a vortex.
+ *
+ * If the bottle is not currently within a vortex, it will search
+ * for the nearest vortex and pour into it. If no vortex is found,
+ * an error is logged and the process is terminated.
+ *
+ * @param {number} maxPourLength - The maximum length of solvent to pour.
+ * @param {number} [buffer=0.01] - The buffer to adjust the initial pour length estimation.
+ * @param {number} [epsilon=Epsilon] - The precision for the binary search.
+ * @throws {EvalError} If the bottle is not currently in a vortex or cannot reach one.
+ */
+function pourIntoVortex(maxPourLength, buffer = 0.01, epsilon = Epsilon) {
+  // write a function that pours the bottle into a vortex.
+  const initialPoint = currentPlot.pendingPoints[0];
+  const initialVortex = initialPoint.bottleCollisions.find(isVortex);
+  const initialIndex = Math.max(currentPlot.committedPoints.length - 1, 0);
+  const plot = computePlot(currentRecipeItems.concat([createPourSolvent(maxPourLength)]));
+  let nextIndex = initialIndex;
+  let pourDistance = 0.0;
+  while (true) {
+    nextIndex += 1;
+    if (nextIndex == plot.committedPoints.length) {
+      console.log(
+        "Error while pouring into vortex: can not find a new vortex in the given distacne."
+      );
+      terminate();
+      throw EvalError;
+    }
+    const testPoint = plot.committedPoints[nextIndex];
+    const testResult = testPoint.bottleCollisions.find(isVortex);
+    console.log(testResult);
+    if (
+      testResult != undefined &&
+      (initialVortex == undefined ||
+        testResult.x != initialVortex.x ||
+        testResult.y != initialVortex.y)
+    ) {
+      break;
+    }
+    pourDistance = pointDistance(initialPoint, testPoint);
+  }
+  let left = Math.max(pourDistance - buffer, 0.0);
+  let right = pointDistance(initialPoint, plot.committedPoints[nextIndex]) + buffer;
+  while (right - left > epsilon) {
+    let mid = left + (right - left) / 2;
+    const plot = computePlot(currentRecipeItems.concat([createPourSolvent(mid)]));
+    const result = plot.pendingPoints[0].bottleCollisions.find(isVortex);
+    if (
+      result == undefined ||
+      (initialVortex != undefined && result.x != initialVortex.x && result.y != initialVortex.y)
+    ) {
+      left = mid;
+    } else {
+      right = mid;
+    }
+  }
+  logAddPourSolvent(right);
+}
 
 /**
  * Heats and pours to the edge of the current vortex.
@@ -663,68 +954,6 @@ function heatAndPourToEdge(length, numbersToPour, vortexRadius = VortexRadiusLar
 }
 
 /**
- * Pour to the moment before entering a danger zone.
- * @param {number} maxPourLength the max length to search for the pouring.
- */
-function pourToDangerZone(maxPourLength, searchInterval = 0.05, epsilon = Epsilon) {
-  const initialPoint = currentPlot.pendingPoints[0];
-  const result = initialPoint.bottleCollisions.find(isDangerZone);
-  if (result != undefined) {
-    console.log("Error while pouring to danger zone: bottle currently in danger zone.");
-    terminate();
-    throw EvalError;
-  }
-  const initialX = initialPoint.x || 0.0;
-  const initialY = initialPoint.y || 0.0;
-  const initialDistance = Math.sqrt(initialX ** 2 + initialY ** 2);
-  maxPourLength = Math.min(maxPourLength, initialDistance);
-  const base = PotionBases.current.id;
-  let isWine = false;
-  if (base == "wine") {
-    isWine = true;
-  }
-  // initialization.
-  let currentHealth = initialPoint.health;
-  let currentPour = 0.0;
-  let maxPourFlag = false;
-  while (true) {
-    let nextPour = currentPour + searchInterval;
-    if (nextPour >= maxPourLength) {
-      nextPour = maxPourLength;
-      maxPourFlag = true;
-    }
-    const plot = computePlot(currentRecipeItems.concat([createPourSolvent(nextPour)]));
-    const nextHealth = plot.pendingPoints[0].health;
-    if (
-      (isWine && nextHealth < Math.min(currentHealth + (nextPour - currentPour) * 0.1, 1.0)) ||
-      (!isWine && nextHealth < 1.0)
-    ) {
-      // binary search
-      let left = currentPour;
-      let right = nextPour;
-      while (right - left > epsilon) {
-        const mid = left + (right - left) / 2;
-        const plot = computePlot(currentRecipeItems.concat([createPourSolvent(mid)]));
-        const result = plot.pendingPoints[0].bottleCollisions.find(isDangerZone);
-        if (result != undefined) {
-          right = mid;
-        } else {
-          left = mid;
-        }
-      }
-      logAddPourSolvent(left);
-      return;
-    }
-    if (maxPourFlag) {
-      console.log("Warning: No danger zone found in the given pour distance.");
-      logAddStirCauldron(nextPour);
-      return;
-    }
-    currentPour = nextPour;
-    currentHealth = nextHealth;
-  }
-}
-/**
  * Pours the solvent towards a danger zone with precision.
  *
  * This function calculates the necessary amount of solvent to pour
@@ -742,7 +971,7 @@ function pourToDangerZone(maxPourLength, searchInterval = 0.05, epsilon = Epsilo
  * @param {number} [epsilon=Epsilon] - The precision for the binary search.
  * @throws {EvalError} If the bottle is already in a danger zone or cannot reach one.
  */
-function pourToDangerZoneV2(maxPourLength, leftBuffer = 0.01, epsilon = Epsilon) {
+function pourToDangerZone(maxPourLength, leftBuffer = 0.01, epsilon = Epsilon) {
   const initialResult = currentPlot.pendingPoints[0].bottleCollisions.find(isDangerZone);
   if (initialResult != undefined) {
     console.log("Error while pouring to danger zone: already in danger zone.");
@@ -1188,6 +1417,26 @@ function getCurrentVortexSize() {
     return VortexRadiusMedium;
   }
   return VortexRadiusLarge;
+}
+
+/**
+ *
+ * @param {number} targetX
+ * @param {number}targetY
+ * @param {number} targetAngle desired angle of target effect in deg.
+ */
+function getCurrentTargetError(targetX, targetY, targetAngle) {
+  const currentPoint = currentPlot.pendingPoints[0];
+  const currentX = currentPoint.x || 0;
+  const currentY = currentPoint.y || 0;
+  const distanceDeviation =
+    Math.sqrt((currentX - targetX) ** 2 + (currentY - targetY) ** 2) * 1800.0;
+  const angleDelta = radToDeg(
+    Math.abs(getRelativeDirection(degToRad(-currentPoint.angle), degToRad(targetAngle)))
+  );
+  const angleDeviation = (angleDelta * 100.0) / 12.0;
+  const totalDeviation = distancedeviation + angledeviation;
+  return totalDeviation;
 }
 
 /**

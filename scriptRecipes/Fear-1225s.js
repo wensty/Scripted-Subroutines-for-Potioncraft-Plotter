@@ -97,6 +97,6 @@ function beta_1226s() {
     stirToTurn(0.1 * SaltAngle);
     pourToDangerZone(1);
   }
-  logAddPourSolvent(0.091);
+  logAddPourSolvent(0.11);
   stirToNearestTarget(-19.45, 14.64);
 }
