@@ -1428,9 +1428,10 @@ function getCurrentPourDirection(byVortex = true) {
  * @throws {EvalError} If the bottle is not in a vortex.
  */
 function getCurrentVortexRadius() {
-  console.log("Some bugs of plotter prevents this from functional.");
-  terminate();
-  throw EvalError;
+  console.log(
+    "Warning: Some bugs of plotter prevents this from functional. Always return 2.39 currently."
+  );
+  return VortexRadiusLarge; // current workaround on plotter scripting do not have `createSetPosition`
   // const result = currentPlot.pendingPoints[0].bottleCollisions.find(isVortex);
   // if (result === undefined) {
   //   console.log("Error while finding the radius of the current");
