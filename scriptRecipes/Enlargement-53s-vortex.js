@@ -6,6 +6,7 @@ import {
   stirIntoVortex,
   stirToEdge,
   stirToTurn,
+  heatAndPourToEdge,
   degToRad,
   radToDeg,
   getBottlePolarAngleByVortex,

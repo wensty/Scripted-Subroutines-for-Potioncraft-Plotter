@@ -7,11 +7,14 @@ import {
   stirIntoVortex,
   stirToTurn,
   stirIntoSafeZone,
+  heatAndPourToEdge,
+  derotateToAngle,
   radToDeg,
   getBottlePolarAngleByVortex,
   getCurrentStirDirection,
   straighten,
 } from "../main";
+
 import { Ingredients } from "@potionous/dataset";
 
 function main() {
