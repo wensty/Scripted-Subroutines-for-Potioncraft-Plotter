@@ -5,6 +5,8 @@ import {
   logAddStirCauldron,
   stirIntoVortex,
   stirToNearestTarget,
+  heatAndPourToEdge,
+  derotateToAngle,
   degToRad,
   saltToDeg,
   getDirectionByVector,

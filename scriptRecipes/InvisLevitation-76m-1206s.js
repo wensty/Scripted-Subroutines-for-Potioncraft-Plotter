@@ -42,14 +42,14 @@ function beta() {
   logAddStirCauldron(11);
   stirToTurn();
   logAddHeatVortex(2.5);
-  heatAndPourToEdge(1, 10, VortexRadiusLarge);
+  heatAndPourToEdge(1, 10);
   derotateToAngle(-113);
   logAddHeatVortex(0.87); // Empirical
   stirIntoVortex();
-  heatAndPourToEdge(0.3, 6, VortexRadiusLarge);
+  heatAndPourToEdge(0.3, 6);
   logAddHeatVortex(4); //Empirical
   stirIntoVortex();
-  heatAndPourToEdge(0.3, 17, VortexRadiusLarge);
+  heatAndPourToEdge(0.3, 17);
   logAddHeatVortex(0.2);
   logAddPourSolvent(1.65);
   logAddMoonSalt(76);
@@ -58,7 +58,7 @@ function beta() {
   derotateToAngle(0.0);
   logAddHeatVortex(5);
   pourToEdge();
-  heatAndPourToEdge(1, 9, VortexRadiusLarge);
+  heatAndPourToEdge(1, 9);
   logAddHeatVortex(1.71); // Empirical
   logAddStirCauldron(7.1);
   stirToTier(10.46, 35.57, 0.0);
@@ -67,7 +67,7 @@ function beta() {
   stirIntoSafeZone();
   logAddPourSolvent(1.55);
   stirIntoSafeZone();
-  logAddPourSolvent(1.4);
+  logAddPourSolvent(1.38);
   stirIntoVortex();
   logAddHeatVortex(9.28);
   logAddPourSolvent(7.5);
@@ -87,8 +87,8 @@ function beta() {
   logAddHeatVortex(4.751);
   derotateToAngle(saltToDeg("moon", 105 + 33));
   straighten(Infinity, degToRad(-25), "sun", 104);
-  logAddStirCauldron(1.86);
+  logAddStirCauldron(1.39); // update on the lowered default accuracy.
   logAddSunSalt(1);
-  logAddStirCauldron(3.02);
+  logAddStirCauldron(3.5);
   stirToNearestTarget(-4.22, 36.37);
 }

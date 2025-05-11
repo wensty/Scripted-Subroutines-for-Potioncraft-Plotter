@@ -5,6 +5,8 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
   stirIntoVortex,
+  heatAndPourToEdge,
+  derotateToAngle,
   degToRad,
   checkBase,
   straighten,
