@@ -1,5 +1,19 @@
 import { pointDistance } from "@potionous/common";
 
+import {
+  addIngredient,
+  addMoonSalt,
+  addSunSalt,
+  addRotationSalt,
+  addStirCauldron,
+  addPourSolvent,
+  addHeatVortex,
+  addSetPosition,
+  createStirCauldron,
+  createPourSolvent,
+  createSetPosition,
+} from "@potionous/instructions";
+
 import { Ingredients, PotionBases } from "@potionous/dataset";
 import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
 
