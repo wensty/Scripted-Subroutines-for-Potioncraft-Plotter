@@ -27,6 +27,7 @@ const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
 const BottleRadius = 0.74;
 // const DeviationT1 = BottleRadius * 2 * 1800;
+const DefaultTPStart = true;
 let Display = false; // Macro to switch instruction display.
 let Step = 1;
 let TotalSun = 0;
@@ -799,7 +800,7 @@ function stirToTier(
  * @param {number} [epsilon=Epsilon] - The precision for the binary search.
  * @throws {EvalError} If the bottle is not currently in a vortex.
  */
-function pourToEdge(tpStart = true, buffer = 0.01, epsilon = PourEpsilon) {
+function pourToEdge(tpStart = DefaultTPStart, buffer = 0.01, epsilon = PourEpsilon) {
   const currentPoint = currentPlot.pendingPoints[0];
   const vortex = currentPoint.bottleCollisions.find(isVortex);
   if (vortex === undefined) {
@@ -876,7 +877,12 @@ function pourToEdge(tpStart = true, buffer = 0.01, epsilon = PourEpsilon) {
  * @param {number} [epsilon=Epsilon] - The precision for the binary search.
  * @throws {EvalError} If the bottle is not currently in a vortex or cannot reach one.
  */
-function pourIntoVortex(maxPourLength, tpStart = true, buffer = 0.01, epsilon = PourEpsilon) {
+function pourIntoVortex(
+  maxPourLength,
+  tpStart = DefaultTPStart,
+  buffer = 0.01,
+  epsilon = PourEpsilon
+) {
   // write a function that pours the bottle into a vortex.
   const initialPoint = currentPlot.pendingPoints[0];
   const initialX = initialPoint.x || 0.0;
@@ -943,7 +949,7 @@ function pourIntoVortex(maxPourLength, tpStart = true, buffer = 0.01, epsilon = 
  * @param {number} numbersToPour - The number of times to repeat the heating and pouring process.
  * @throws {EvalError} If the bottle is not currently in a vortex.
  */
-function heatAndPourToEdge(length, numbersToPour, tpStart = true) {
+function heatAndPourToEdge(length, numbersToPour, tpStart = DefaultTPStart) {
   const pendingPoints = currentPlot.pendingPoints;
   const result = pendingPoints[0].bottleCollisions.find(isVortex);
   if (result === undefined) {
@@ -985,7 +991,12 @@ function heatAndPourToEdge(length, numbersToPour, tpStart = true) {
  * @param {number} [epsilon=Epsilon] - The precision for the binary search.
  * @throws {EvalError} If the bottle is already in a danger zone or cannot reach one.
  */
-function pourToDangerZone(maxPourLength, tpStart = true, leftBuffer = 0.01, epsilon = PourEpsilon) {
+function pourToDangerZone(
+  maxPourLength,
+  tpStart = DefaultTPStart,
+  leftBuffer = 0.01,
+  epsilon = PourEpsilon
+) {
   const initialResult = currentPlot.pendingPoints[0].bottleCollisions.find(isDangerZone);
   if (initialResult != undefined) {
     console.log("Error while pouring to danger zone: already in danger zone.");
