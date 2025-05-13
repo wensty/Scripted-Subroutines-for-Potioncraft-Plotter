@@ -54,8 +54,7 @@ function beta() {
   logAddMoonSalt(62);
   logAddStirCauldron(3.06);
   stirToTurn();
-  logAddPourSolvent(1.8);
-  pourIntoVortex(0.2);
+  pourIntoVortex(13, 26);
   derotateToAngle(0.0);
   logAddHeatVortex(5.7);
   pourToEdge();
@@ -71,8 +70,7 @@ function beta() {
   logAddPourSolvent(1.38);
   stirIntoVortex();
   logAddHeatVortex(9.28);
-  logAddPourSolvent(7.5);
-  pourIntoVortex(0.5);
+  pourIntoVortex(8, 16);
   logAddHeatVortex(Infinity);
   console.log(getCurrentStirDirection());
   straighten(Infinity, degToRad(57), "sun", 83);
