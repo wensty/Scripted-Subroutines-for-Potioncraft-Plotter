@@ -367,62 +367,42 @@ function stirToTurn(maxStirLength = Infinity, directionBuffer = 20 * SaltAngle, 
 }
 
 /**
- * Stir the cauldron into a safe zone.
+ * Stirs the potion to the edge of the current or next danger zone.
  *
- * @param {number} [dangerBuffer=0.02] The buffer of health to determine if the bottle is in a danger zone.
- * @param {number} [epsilon=Epsilon] The precision for the binary search.
- * @return {number} The least health found in the safe zone.
- * @throws {Error} If the bottle is in a wine base or no safe zone is found.
+ * @return {number} The least health value encountered while stirring.
+ * @throws {EvalError} If the potion is not in a danger zone or cannot reach a safe zone.
  */
-function stirIntoSafeZone(dangerBuffer = 0.02, epsilon = StirEpsilon) {
-  const base = PotionBases.current.id;
-  if (base == "wine") {
-    console.log("Stir to safe zone is not supported for wine base.");
-    terminate();
-    throw EvalError;
-  }
+function stirToDangerZoneExit() {
   const pendingPoints = currentPlot.pendingPoints;
-  const currentHealth = pendingPoints[0].health;
-  if (currentHealth > 1 - dangerBuffer) {
-    console.log("Bottle not in danger zone.");
-  } else {
-    let stirDistance = 0.0;
-    let nextIndex = 0;
-    while (true) {
-      nextIndex += 1;
-      if (nextIndex == pendingPoints.length) {
-        console.log("Error while stirring to safe zone: no safe zone found.");
-        terminate();
-        throw EvalError;
-      }
-      const health = pendingPoints[nextIndex].health;
-      if (health > currentHealth) {
-        break;
-      } else {
-        stirDistance += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
-      }
-    }
-    /**
-     * Find the exact point of heal and find the least health.
-     */
-    let leastHealth = pendingPoints[nextIndex - 1].health;
-    let left = stirDistance;
-    let right =
-      stirDistance + pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
-    while (right - left > epsilon) {
-      const mid = left + (right - left) / 2;
-      const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
-      const health = plot.pendingPoints[0].health;
-      if (health > currentHealth) {
-        right = mid;
-      } else {
-        left = mid;
-        leastHealth = health;
-      }
-    }
-    logAddStirCauldron(right);
-    return leastHealth;
+  let inDangerZone = false;
+  if (pendingPoints[0].bottleCollisions.find(isDangerZone) != undefined) {
+    inDangerZone = true;
   }
+  let nextIndex = 0;
+  let stirDistance = 0.0;
+  let leastHealth = 1.0;
+  while (true) {
+    nextIndex += 1;
+    if (nextIndex == pendingPoints.length) {
+      console.log("Error while stirring to safe zone: no safe zone found.");
+      terminate();
+      throw EvalError;
+    }
+    stirDistance += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
+    const result = pendingPoints[nextIndex].bottleCollisions.find(isDangerZone);
+    if (inDangerZone) {
+      if (result === undefined) {
+        break;
+      }
+      leastHealth = pendingPoints[nextIndex].health;
+    } else {
+      if (result != undefined) {
+        inDangerZone = true;
+      }
+    }
+  }
+  logAddStirCauldron(stirDistance); // calculation by plotter is accurate enough.
+  return leastHealth;
 }
 
 /**
@@ -811,6 +791,18 @@ function pourToEdge(assumedVortexRadius = VortexRadiusLarge, buffer = 0.02, epsi
   }
   logAddPourSolvent(left);
 }
+
+/**
+ * Pours into a specific target vortex.
+ *
+ * @param {number} targetVortexX - The x-coordinate of the target vortex.
+ * @param {number} targetVortexY - The y-coordinate of the target vortex.
+ * @param {number} [assumedVortexRadius=VortexRadiusLarge] - The assumed radius of the target vortex when createSetPosition is not enabled.
+ * @param {number} [buffer=0.02] - The buffer to adjust the initial pour length estimation.
+ * @param {number} [epsilon=PourEpsilon] - The precision for the binary search.
+ * @throws {EvalError} If the bottle is not in a vortex or at the origin,
+ * or if the derotation is impossible.
+ */
 function pourIntoVortex(
   targetVortexX,
   targetVortexY,
@@ -992,7 +984,7 @@ function pourToDangerZone(maxPourLength, leftBuffer = 0.01, epsilon = PourEpsilo
 /**
  * Derotates the bottle to a target angle with precision.
  *
- * @param {number} targetAngle - The target angle in degree to derotate to.
+ * @param {number} targetAngle - The target angle to derotate to, in degree.
  * @param {number} [buffer=0.012] - The buffer to adjust the initial pour length estimation.
  * @param {number} [epsilon=Epsilon] - The precision for the binary search.
  * @throws {EvalError} If the bottle is not in a vortex or at the origin,
@@ -1601,7 +1593,7 @@ export {
   stirIntoVortex,
   stirToEdge,
   stirToTurn,
-  stirIntoSafeZone,
+  stirToDangerZoneExit,
   stirToNearestTarget,
   stirToTier,
   // Pouring subroutines.
@@ -1628,6 +1620,7 @@ export {
   // Extraction of other informations.
   checkBase,
   getCurrentVortexRadius,
+  getTargetVortexRadius,
   getCurrentTargetError,
   // Checking for entities in future path.
   checkStrongDangerZone,
