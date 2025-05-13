@@ -6,18 +6,20 @@ import {
   logAddPourSolvent,
   stirIntoVortex,
   stirToTurn,
-  stirIntoSafeZone,
+  stirToDangerZoneExit,
   heatAndPourToEdge,
   derotateToAngle,
   radToDeg,
   getBottlePolarAngleByVortex,
   getCurrentStirDirection,
+  checkBase,
   straighten,
 } from "../main";
 
 import { Ingredients } from "@potionous/dataset";
 
-function main() {
+function beta() {
+  checkBase("water");
   logAddIngredient(Ingredients.PhantomSkirt, 1);
   logAddStirCauldron(5.525);
   logAddPourSolvent(Infinity);
@@ -35,12 +37,13 @@ function main() {
     stirToTurn();
   }
   straighten(0.8, getCurrentStirDirection(), "sun");
-  stirIntoSafeZone();
+  stirToDangerZoneExit();
   logAddSunSalt(117 - 60);
   stirIntoVortex();
-  logAddStirCauldron(0.327);
+  logAddStirCauldron(0.336);
   derotateToAngle(0);
-  logAddHeatVortex(3.143);
+  logAddHeatVortex(3.13);
   logAddStirCauldron(0.832);
   logAddHeatVortex(4.58);
+  stirToNearestTarget(-14, 1.12);
 }
