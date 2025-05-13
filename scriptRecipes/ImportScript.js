@@ -23,6 +23,7 @@ import {
   pourToEdge,
   heatAndPourToEdge,
   pourToDangerZone,
+  pourIntoVortex,
   derotateToAngle,
   degToRad,
   radToDeg,
