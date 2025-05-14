@@ -1,0 +1,29 @@
+import {
+  logAddIngredient,
+  logAddMoonSalt,
+  logAddSunSalt,
+  logAddStirCauldron,
+  logAddPourSolvent,
+  stirToNearestTarget,
+  getDirectionByVector,
+  straighten,
+} from "../main";
+
+function main() {
+  logAddIngredient(Ingredients.PhantomSkirt, 1);
+  logAddStirCauldron(5.8);
+  logAddPourSolvent(Infinity);
+  logAddMoonSalt(45);
+  logAddStirCauldron(9.8);
+  logAddPourSolvent(1.66);
+  logAddStirCauldron(1.84);
+  let x = currentPlot.pendingPoints[0].x || 0.0;
+  let y = currentPlot.pendingPoints[0].y || 0.0;
+  straighten(0.56, getDirectionByVector(-17.67 - x, 3.61 - y), "sun");
+  logAddSunSalt(179 - TotalSun);
+  logAddStirCauldron(2.503);
+  logAddSunSalt(1);
+  logAddStirCauldron(8.15);
+  stirToNearestTarget(-17.67, 3.61);
+  logAddMoonSalt(165);
+}
