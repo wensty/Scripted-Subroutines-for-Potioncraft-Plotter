@@ -426,23 +426,32 @@ function stirToDangerZoneExit() {
 function stirToNearestTarget(
   targetX,
   targetY,
+  maxStirLength = Infinity,
   leastSegmentLength = 1e-4,
   approximateBuffer = 1e-3,
   epsilon = StirEpsilon
 ) {
   function binarySearchPreparingSegment() {
-    const distance = Math.sqrt(
-      (currentPlot.pendingPoints[preparingIndex].x - targetX) ** 2 +
-        (currentPlot.pendingPoints[preparingIndex].y - targetY) ** 2
-    );
-    approximatedLastStir = Math.cos(preparingRelativeDirection) * distance;
+    const alpha = getRelativeDirection(
+      currentPlot.pendingPoints[currentIndex].x - targetX,
+      currentPlot.pendingPoints[currentIndex].y - targetY,
+      preparingDistance
+    ); // the angle at start of current segment.
+    if (Math.abs(alpha) > Math.PI / 2) {
+      if (currentDistance < bestDistance) {
+        bestDistance = currentDistance;
+        bestStir = currentStirLength + preparingStirLength;
+      }
+      return;
+    }
+    approximatedLastStir = Math.cos(preparingRelativeDirection) * preparingDistance;
     // approximated best distance by last stir.
     let approximatedDistance;
     if (approximatedLastStir > preparingStirLength) {
       approximatedLastStir = preparingStirLength;
       approximatedDistance = Math.min(preparingDistance, currentDistance);
     } else {
-      approximatedDistance = Math.sin(preparingRelativeDirection) * distance;
+      approximatedDistance = Math.sin(preparingRelativeDirection) * preparingDistance;
     }
     if (approximatedDistance < bestDistance + 0.05) {
       let left = Math.max(currentStirLength + approximatedLastStir - approximateBuffer, 0.0);
@@ -473,6 +482,7 @@ function stirToNearestTarget(
     }
   }
   const pendingPoints = currentPlot.pendingPoints;
+  let maxStirDistanceReached = false;
   let preparingIndex = 0; // prepare to binary search from that point.
   let preparingStirLength = 0.0; // after the fully analyzed, the part prepared to apply binary search on
   let currentIndex = 0; // the current index to detect a turning away.
@@ -484,8 +494,8 @@ function stirToNearestTarget(
   const initialY = pendingPoints[0].y || 0.0;
   // best distance found. Initialized by the distance at the start point.
   let bestDistance = Math.sqrt((targetX - initialX) ** 2 + (targetY - initialY) ** 2);
-  let preparingDistance = bestDistance;
-  let currentDistance = bestDistance;
+  let preparingDistance = bestDistance; // distance at start of preparing segment.
+  let currentDistance = bestDistance; // distance at start of current segment.
   let approximatedLastStir = 0.0;
   let bestStir = 0.0; // corresponding stir distance. Initialized by not stirring.
   let currentX = initialX;
@@ -496,14 +506,24 @@ function stirToNearestTarget(
     currentY = pendingPoints[currentIndex].y || 0.0;
     currentDistance = Math.sqrt((currentX - targetX) ** 2 + (currentY - targetY) ** 2);
     while (true) {
+      // endpoint. Update last time and return.
+      if (maxStirDistanceReached) {
+        binarySearchPreparingSegment();
+        logAddStirCauldron(bestStir);
+        return bestDistance;
+      }
       nextIndex += 1;
       if (nextIndex == pendingPoints.length) {
-        // endpoint. Update last time and return.
         binarySearchPreparingSegment();
         logAddStirCauldron(bestStir);
         return bestDistance;
       }
       currentSegmentLength += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
+      if (currentStirLength + preparingStirLength + currentSegmentLength > maxStirLength) {
+        currentSegmentLength = maxStirLength - currentStirLength - preparingStirLength;
+        maxStirDistanceReached = true;
+        break;
+      }
       if (currentSegmentLength > leastSegmentLength) {
         break;
       }
@@ -512,10 +532,10 @@ function stirToNearestTarget(
     const nextY = pendingPoints[nextIndex].y || 0.0;
     const nextDirection = getDirectionByVector(nextX - currentX, nextY - currentY);
     const targetDirection = getDirectionByVector(targetX - currentX, targetY - currentY);
-    const relativeDirection = getRelativeDirection(nextDirection, targetDirection);
+    const relativeDirection = Math.abs(getRelativeDirection(nextDirection, targetDirection));
     if (
-      Math.abs(preparingRelativeDirection) < Math.PI / 2 && // previously approaching target.
-      Math.abs(relativeDirection) > Math.PI / 2 // currently leaving target.
+      preparingRelativeDirection < Math.PI / 2 && // previously approaching target.
+      relativeDirection >= Math.PI / 2 // currently leaving target.
     ) {
       binarySearchPreparingSegment();
     }
