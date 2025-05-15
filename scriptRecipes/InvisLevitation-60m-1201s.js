@@ -68,9 +68,10 @@ function beta() {
   logAddSunSalt(returnSalt);
   stirToDangerZoneExit();
   logAddPourSolvent(1.63); // Empirical
-  stirToDangerZoneExit(); // Empirical
+  stirToDangerZoneExit();
+  logAddPourSolvent(1.36); // Empirical
   stirIntoVortex();
-  logAddHeatVortex(9.28); // Empirically
+  logAddHeatVortex(9.28); // Empirical
   pourIntoVortex(8, 16);
   logAddHeatVortex(Infinity);
   console.log(Math.ceil((180 + currentPlot.pendingPoints[0].angle) / 0.36) + 280);
@@ -94,5 +95,5 @@ function beta() {
   logAddStirCauldron(1.83);
   logAddSunSalt(1);
   logAddStirCauldron(3);
-  console.log("path deviation: " + stirToNearestTarget(32.77, 29.94));
+  console.log("path deviation: " + stirToNearestTarget(-4.22, 36.37));
 }
