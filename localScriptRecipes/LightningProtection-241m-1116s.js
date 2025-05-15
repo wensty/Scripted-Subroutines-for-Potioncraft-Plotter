@@ -15,7 +15,7 @@ import {
 } from "../main";
 
 /**
- * LightningProtection-241m-1116s
+ * Lightning Protection-241m-1116s
  *
  * The first 157 moon salt is not optimal for length efficiency,
  * roughly 4 moon is pre-rotation to save sun.

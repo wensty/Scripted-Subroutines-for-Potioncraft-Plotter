@@ -122,7 +122,7 @@ Used to detection of certain entities.
 - `stirIntoVortex`
 - `StirToEdge`
 - `stirToTurn`
-- `StirIntoSafeZone`
+- `StirIntoDangerZoneExit`
 - `stirToNearestTarget`
 - `stirToTier`
 
