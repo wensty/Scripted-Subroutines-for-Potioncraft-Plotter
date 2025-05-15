@@ -15,14 +15,18 @@ project
 |   .gitignore
 │
 └───scriptRecipes
+|   │   someRecipe.js
+|   │   anotherRecipe.js
+|
+└───localScriptRecipes
     │   someRecipe.js
-    │   anotherRecipe.js
 ```
 
 - `main.js` : the main scripting file.
 - `public-types.ts` : containing signatures of all the APIs provided by the plotter tool. Since plotter tool itself is not fully open-source, this allows you to scripting offline with intellisense support.
-- `scriptRecipes` : My recipe dataset, containing the scripts finally made online. Can be used as examples.
+- `scriptRecipes` : Example recipes, containing some scripts finally made online.
 - `scriptRecipes/ImportScript.js` : Containing all the exported functions. Make it easier to import functions offline when storing scripts.
+- `localScriptRecipes/*.js` : Local script recipe dataset, recipes here are ignored by git. The one is forced to be added.
 
 ## How to use this collection of functions and scripted subroutines.
 
@@ -127,6 +131,7 @@ Used to detection of certain entities.
 - `pourToEdge`
 - `heatAndPourToEdge`
 - `pourToDangerZone`
+- `pourIntoVortex`
 - `derotateToAngle`
 
 ### Angle conversion functions
@@ -152,6 +157,7 @@ Used to detection of certain entities.
 
 - `checkBase`
 - `getCurrentVortexRadius`
+- `getTargetVoretexRadius`
 - `getCurrentTargetError`
 
 ### Checking for entities in future path.

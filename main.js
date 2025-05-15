@@ -1608,8 +1608,9 @@ export {
   logAddSetPosition,
   // Zone detections.
   isDangerZone,
+  isStrongDangerZone,
   isVortex,
-  // Stirring subroutinees.
+  // Stirring subroutines.
   stirIntoVortex,
   stirToEdge,
   stirToTurn,
