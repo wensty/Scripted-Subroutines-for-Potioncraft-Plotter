@@ -7,7 +7,7 @@ import {
   logAddPourSolvent,
   stirIntoVortex,
   stirToTurn,
-  stirIntoSafeZone,
+  stirToDangerZoneExit,
   stirToTier,
   stirToNearestTarget,
   pourToEdge,
@@ -64,9 +64,9 @@ function beta() {
   stirToTier(10.46, 35.57, 0.0);
   logAddPourSolvent(5.28);
   logAddSunSalt(290);
-  stirIntoSafeZone();
+  stirToDangerZoneExit();
   logAddPourSolvent(1.55);
-  stirIntoSafeZone();
+  stirToDangerZoneExit();
   logAddPourSolvent(1.38);
   stirIntoVortex();
   logAddHeatVortex(9.28);
