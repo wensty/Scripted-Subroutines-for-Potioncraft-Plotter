@@ -92,8 +92,8 @@ function beta() {
   // More test is needed.
   straighten(Infinity, degToRad(-25), "sun", 102);
   // last salt for precise centering
-  logAddStirCauldron(1.83);
+  logAddStirCauldron(2.55);
   logAddSunSalt(1);
-  logAddStirCauldron(3);
+  logAddStirCauldron(2.3);
   console.log("path deviation: " + stirToNearestTarget(-4.22, 36.37));
 }
