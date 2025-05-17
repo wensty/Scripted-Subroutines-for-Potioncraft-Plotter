@@ -439,27 +439,15 @@ function stirToNearestTarget(
   epsilon = StirEpsilon
 ) {
   function binarySearchPreparingSegment() {
-    const alpha = getRelativeDirection(
-      currentPlot.pendingPoints[currentIndex].x - targetX,
-      currentPlot.pendingPoints[currentIndex].y - targetY,
-      preparingDistance
-    ); // the angle at start of current segment.
-    if (Math.abs(alpha) > Math.PI / 2) {
+    approximatedLastStir = Math.cos(preparingRelativeDirection) * preparingDistance;
+    if (approximatedLastStir > preparingStirLength) {
       if (currentDistance < bestDistance) {
         bestDistance = currentDistance;
         bestStir = currentStirLength + preparingStirLength;
+        return;
       }
-      return;
     }
-    approximatedLastStir = Math.cos(preparingRelativeDirection) * preparingDistance;
-    // approximated best distance by last stir.
-    let approximatedDistance;
-    if (approximatedLastStir > preparingStirLength) {
-      approximatedLastStir = preparingStirLength;
-      approximatedDistance = Math.min(preparingDistance, currentDistance);
-    } else {
-      approximatedDistance = Math.sin(preparingRelativeDirection) * preparingDistance;
-    }
+    const approximatedDistance = Math.sin(preparingRelativeDirection) * preparingDistance;
     if (approximatedDistance < bestDistance + 0.05) {
       let left = Math.max(currentStirLength + approximatedLastStir - approximateBuffer, 0.0);
       let right = Math.min(
