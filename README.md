@@ -30,13 +30,25 @@ project
 
 ## How to use this collection of functions and scripted subroutines.
 
-> Import and export on plotter is under development.
+> Import and export on plotter is under development _and now testing on beta version_.
+>
+> import the function from `github:wensty/Scripted-Subroutines-for-Potioncraft-Plotter/main.js`
 >
 > Note that online plotter scripting accepts only one input file
+
+### LTS version
 
 - Copy the whole `main.js` file into the online script editor.
 - Delete all the import statements _since the online plotter have not implemented this._
 - Write your script recipe in the `main()` function. All the defined utility functions and subroutines can be used.
+- This produce a too long link to share. To share it you flatten it into a regular instruction recipe
+
+### beta version
+
+- import the required function from github repository.
+- Write your script recipes.
+- This produce a script recipe link that can be shared.
+- but is volatile to future changes in the `main.js` file.
 
 ## What can scripts do and what _can't_ scripts do
 
@@ -167,5 +179,10 @@ Used to detection of certain entities.
 ### Complex subroutines.
 
 - `straighten`
+
+### Other utilities
+
+- `getUnit`
+- `logSalt`
 
 ---
