@@ -25,8 +25,7 @@ const StirEpsilon = 1e-4;
 const PourEpsilon = 2e-3;
 const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
-const BottleRadius = 0.74;
-// const DeviationT1 = BottleRadius * 2 * 1800;
+const DeviationT1 = 1.53 * 1800; // effect radius is 0.79, bottle radius is 0.74.
 const CreateSetPositionEnabled = true;
 const Display = true; // Macro to switch instruction display.
 let Step = 1;
@@ -34,12 +33,14 @@ let TotalSun = 0;
 let TotalMoon = 0;
 
 /**
- * Generally, functions named by "into" some entities move the bottle cross the boundary into it or vise versa.
- * Functions named by "to" some entities stop the bottle just about to move into it or vise versa.
+ * Generally, functions named by "into" some entities move the bottle cross the boundary into it.
+ * Functions named by "to" some entities stop the bottle just about to move into it.
  */
 
+/**
+ * Dirty way to terminate the program.
+ */
 function terminate() {
-  // Dirty way to terminate the program.
   const terminator = 0;
   // @ts-ignore
   terminator = 1;
