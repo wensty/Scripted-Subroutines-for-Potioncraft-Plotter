@@ -413,151 +413,94 @@ function stirToDangerZoneExit() {
 }
 
 /**
- * Stirs the potion towards the nearest target point (targetX, targetY)
- * and returns the minimum distance achieved during the stirring process.
- *
- * This function is time-consuming. If possible, stir to near the point first.
- *
- * @param {number} targetX - The X coordinate of the target.
- * @param {number} targetY - The Y coordinate of the target.
- * @param {number} [leastSegmentLength=1e-4] - The minimum segment
- * length to consider for analysis.
- * @param {number} [approximateBuffer=1e-3] - The buffer for
- * approximating the binary search range.
- * @param {number} [epsilon=Epsilon] - The precision for the
- * binary search.
- *
- * @returns {number} The minimum distance achieved to the target
- * during the stirring process.
+ * Stirs the potion to the closest point to the target position within the given
+ * maximum stir length.
+ * @param {number} targetX The x-coordinate of the target.
+ * @param {number} targetY The y-coordinate of the target.
+ * @param {number} [maxStirLength=Infinity] The maximum length to stir the potion.
+ * @param {number} [leastSegmentLength=1e-9] The minimum length between points to
+ *     consider in the optimization.
+ * @return {number} The minimum distance between the target and the potion after
+ *     stirring.
  */
 function stirToNearestTarget(
   targetX,
   targetY,
   maxStirLength = Infinity,
-  leastSegmentLength = 1e-4,
-  approximateBuffer = 1e-3,
-  epsilon = StirEpsilon
+  leastSegmentLength = 1e-9
 ) {
-  function binarySearchPreparingSegment() {
-    approximatedLastStir = Math.cos(preparingRelativeDirection) * preparingDistance;
-    if (approximatedLastStir > preparingStirLength) {
-      if (currentDistance < bestDistance) {
-        bestDistance = currentDistance;
-        bestStir = currentStirLength + preparingStirLength;
-        return;
-      }
-    }
-    const approximatedDistance = Math.sin(preparingRelativeDirection) * preparingDistance;
-    if (approximatedDistance < bestDistance + 0.05) {
-      let left = Math.max(currentStirLength + approximatedLastStir - approximateBuffer, 0.0);
-      let right = Math.min(
-        currentStirLength + approximatedLastStir + approximateBuffer,
-        currentStirLength + preparingStirLength
-      );
-      while (right - left > epsilon) {
-        const mid = left + (right - left) / 2;
-        const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
-        const testX = plot.pendingPoints[0].x;
-        const testY = plot.pendingPoints[0].y;
-        const testDistance = Math.sqrt((targetX - testX) ** 2 + (targetY - testY) ** 2);
-        const relativeDirection = getRelativeDirection(
-          getDirectionByVector(currentX - testX, currentY - testY),
-          getDirectionByVector(targetX - testX, targetY - testY)
-        );
-        if (Math.abs(relativeDirection) > Math.PI / 2) {
-          right = mid;
-        } else {
-          left = mid;
-        }
-        if (testDistance < bestDistance) {
-          bestDistance = testDistance;
-          bestStir = mid;
-        }
-      }
-    }
-  }
   const pendingPoints = currentPlot.pendingPoints;
-  let maxStirDistanceReached = false;
-  let preparingIndex = 0; // prepare to binary search from that point.
-  let preparingStirLength = 0.0; // after the fully analyzed, the part prepared to apply binary search on
-  let currentIndex = 0; // the current index to detect a turning away.
-  let currentStirLength = 0.0; // the current stir on the fully analyzed segments.
-  let preparingRelativeDirection = Infinity; // the relative direction of the preparing segment.
-  // if the first segment is leaving the target, a binary search should not be triggered.
-  let currentSegmentLength = 0.0;
   const initialX = pendingPoints[0].x || 0.0;
   const initialY = pendingPoints[0].y || 0.0;
-  // best distance found. Initialized by the distance at the start point.
-  let bestDistance = Math.sqrt((targetX - initialX) ** 2 + (targetY - initialY) ** 2);
-  let preparingDistance = bestDistance; // distance at start of preparing segment.
-  let currentDistance = bestDistance; // distance at start of current segment.
-  let approximatedLastStir = 0.0;
-  let bestStir = 0.0; // corresponding stir distance. Initialized by not stirring.
+  const initialDistance = Math.sqrt((initialX - targetX) ** 2 + (initialY - targetY) ** 2);
+  let isLastSegment = false;
+  let currentStirLength = 0.0;
+  let optimalStirLength = 0.0;
+  let optimalDistance = initialDistance;
+  let currentIndex = 0;
+  let nextIndex = currentIndex;
+  let nextSegmentLength = 0.0;
   let currentX = initialX;
   let currentY = initialY;
-  while (true) {
-    let nextIndex = currentIndex;
-    currentX = pendingPoints[currentIndex].x || 0.0;
-    currentY = pendingPoints[currentIndex].y || 0.0;
-    currentDistance = Math.sqrt((currentX - targetX) ** 2 + (currentY - targetY) ** 2);
+  while (!isLastSegment) {
     while (true) {
-      // endpoint. Update last time and return.
-      if (maxStirDistanceReached) {
-        binarySearchPreparingSegment();
-        logAddStirCauldron(bestStir);
-        return bestDistance;
-      }
       nextIndex += 1;
       if (nextIndex == pendingPoints.length) {
-        binarySearchPreparingSegment();
-        logAddStirCauldron(bestStir);
-        return bestDistance;
-      }
-      currentSegmentLength += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
-      if (currentStirLength + preparingStirLength + currentSegmentLength > maxStirLength) {
-        currentSegmentLength = maxStirLength - currentStirLength - preparingStirLength;
-        maxStirDistanceReached = true;
+        isLastSegment = true;
         break;
       }
-      if (currentSegmentLength > leastSegmentLength) {
+      nextSegmentLength += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
+      if (nextSegmentLength > leastSegmentLength) {
         break;
       }
+    }
+    if (nextSegmentLength <= leastSegmentLength) {
+      continue;
+    }
+    if (currentStirLength + nextSegmentLength > maxStirLength) {
+      isLastSegment = true;
     }
     const nextX = pendingPoints[nextIndex].x || 0.0;
     const nextY = pendingPoints[nextIndex].y || 0.0;
-    const nextDirection = getDirectionByVector(nextX - currentX, nextY - currentY);
-    const targetDirection = getDirectionByVector(targetX - currentX, targetY - currentY);
-    const relativeDirection = Math.abs(getRelativeDirection(nextDirection, targetDirection));
-    if (
-      preparingRelativeDirection < Math.PI / 2 && // previously approaching target.
-      relativeDirection >= Math.PI / 2 // currently leaving target.
-    ) {
-      binarySearchPreparingSegment();
+    const nextUnit = getUnit(nextX - currentX, nextY - currentY);
+    const lastStirLength = nextUnit[0] * (targetX - currentX) + nextUnit[1] * (targetY - currentY);
+    if (lastStirLength > nextSegmentLength) {
+      const nextDistance = Math.sqrt((targetX - nextX) ** 2 + (targetY - nextY) ** 2);
+      if (nextDistance < optimalDistance) {
+        optimalStirLength = currentStirLength + lastStirLength;
+        optimalDistance = nextDistance;
+      }
+    } else {
+      if (lastStirLength >= 0) {
+        const lastOptimalDistance = Math.abs(
+          -nextUnit[1] * (targetX - currentX) + nextUnit[0] * (targetY - currentY)
+        );
+        if (lastOptimalDistance < optimalDistance) {
+          optimalDistance = lastOptimalDistance;
+          optimalStirLength = currentStirLength + lastStirLength;
+        }
+      }
     }
-    currentStirLength += preparingStirLength;
-    preparingStirLength = currentSegmentLength;
-    preparingRelativeDirection = relativeDirection;
-    preparingDistance = currentDistance;
-    currentSegmentLength = 0.0;
-    preparingIndex = currentIndex;
     currentIndex = nextIndex;
+    currentX = pendingPoints[currentIndex].x || 0.0;
+    currentY = pendingPoints[currentIndex].y || 0.0;
+    currentStirLength += nextSegmentLength;
+    nextSegmentLength = 0.0;
   }
+  logAddStirCauldron(optimalStirLength);
+  return optimalDistance;
 }
 
 /**
- * Stirs the potion to a specified tier of a target effect.
+ * Computes the length of the stir to the next tier change point.
  *
- * This function is time-consuming. If possible, stir to near the point first.
- *
- * @param {number} targetX - The x-coordinate of the target effect.
- * @param {number} targetY - The y-coordinate of the target effect.
- * @param {number} targetAngle - The angle of the target effect in degrees.
- * @param {number} [maxDeviation=DeviationT2] - The maximum allowable deviation from the target angle.
- * @param {boolean} [ignoreAngle=false] - Whether to ignore angle deviation in calculations.
- * @param {number} [leastSegmentLength=1e-4] - The smallest segment length for stirring calculations.
- * @param {number} [approximateBuffer=1e-3] - The buffer distance for binary search approximation.
- * @param {number} [epsilon=Epsilon] - The precision for the binary search.
- * @throws {EvalError} If the angle deviation is too large or if the target tier cannot be reached.
+ * @param {number} targetX - The target x position.
+ * @param {number} targetY - The target y position.
+ * @param {number} targetAngle - The target angle in degree.
+ * @param {number} [maxDeviation=DeviationT2] - The maximum allowed angle deviation in degree.
+ * @param {boolean} [ignoreAngle=false] - Whether to ignore angle deviation.
+ * @param {number} [leastSegmentLength=1e-9] - The least length of each segment.
+ * @param {number} [approximateBuffer=1e-4] - The buffer value to guarantee stirring into given tier.
  */
 function stirToTier(
   targetX,
@@ -565,66 +508,10 @@ function stirToTier(
   targetAngle,
   maxDeviation = DeviationT2,
   ignoreAngle = false,
-  leastSegmentLength = 1e-4,
-  approximateBuffer = 1e-3,
-  epsilon = StirEpsilon
+  leastSegmentLength = 1e-9,
+  approximateBuffer = 1e-5
 ) {
-  function binarySearchPreparingSegment() {
-    // binarySearch
-    approximatedLastStirLength = Math.cos(preparingRelativeDirection) * preparingDistance;
-    // approximated best distance by last stir.
-    let approximatedDistance;
-    if (approximatedLastStirLength > preparingStirLength) {
-      approximatedLastStirLength = preparingStirLength;
-      approximatedDistance = Math.min(preparingDistance, currentDistance);
-    } else {
-      approximatedDistance = Math.sin(preparingRelativeDirection) * preparingDistance;
-    }
-    if (approximatedDistance < requiredDistance + 0.05) {
-      // good enough to contain reaching point.
-      // binarySearch.
-      let left = Math.max(currentStirLength + approximatedLastStirLength - approximateBuffer, 0.0);
-      let right = Math.min(
-        currentStirLength + approximatedLastStirLength + approximateBuffer,
-        currentStirLength + preparingStirLength
-      );
-      let midPointFound = false;
-      while (right - left > epsilon) {
-        const mid = left + (right - left) / 2;
-        const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
-        const testX = plot.pendingPoints[0].x;
-        const testY = plot.pendingPoints[0].y;
-        const testDistance = Math.sqrt((targetX - testX) ** 2 + (targetY - testY) ** 2);
-        const relativeDirection = getRelativeDirection(
-          getDirectionByVector(currentX - testX, currentY - testY),
-          getDirectionByVector(targetX - testX, targetY - testY)
-        );
-        if (!midPointFound) {
-          if (testDistance < requiredDistance) {
-            right = mid;
-            midPointFound = true;
-          } else {
-            if (Math.abs(relativeDirection) > Math.PI / 2) {
-              right = mid;
-            } else {
-              left = mid;
-            }
-          }
-        } else {
-          if (testDistance < requiredDistance) {
-            right = mid;
-          } else {
-            left = mid;
-          }
-        }
-      }
-      if (midPointFound) {
-        logAddStirCauldron(right);
-      }
-      return midPointFound;
-    }
-    return false;
-  }
+  const pendingPoints = currentPlot.pendingPoints;
   const currentPoint = currentPlot.pendingPoints[0];
   const currentAngle = -currentPoint.angle || 0.0;
   const angleDelta = radToDeg(
@@ -634,104 +521,82 @@ function stirToTier(
   if (ignoreAngle) {
     angleDeviation = 0.0;
   }
-  if (angleDeviation > maxDeviation) {
+  if (angleDeviation >= maxDeviation) {
     console.log("Error while stir to tier: too much angle deviation.");
     terminate();
     throw EvalError;
   }
   const requiredDistance = (maxDeviation - angleDeviation) / 1800.0;
-  let currentStirLength = 0.0;
-  let currentSegmentLength = 0.0;
-  let preparingStirLength = 0.0;
-  let preparingRelativeDirection = Infinity;
   const initialX = currentPlot.pendingPoints[0].x || 0.0;
   const initialY = currentPlot.pendingPoints[0].y || 0.0;
-  let preparingDistance = Math.sqrt((targetX - initialX) ** 2 + (targetY - initialY) ** 2);
+  let lastSegment = false;
+  let currentStirLength = 0.0;
+  let currentSegmentLength = 0.0;
+  let currentIndex = 0;
+  let nextIndex = currentIndex;
   let currentX = initialX;
   let currentY = initialY;
-  let currentDistance = preparingDistance;
-  let preparingIndex = 0;
-  let currentIndex = preparingIndex;
-  let approximatedLastStirLength = 0.0;
-  while (true) {
-    let nextIndex = currentIndex;
-    currentX = currentPlot.pendingPoints[currentIndex].x || 0.0;
-    currentY = currentPlot.pendingPoints[currentIndex].y || 0.0;
-    currentDistance = Math.sqrt((targetX - currentX) ** 2 + (targetY - currentY) ** 2);
+  let currentDistance = Math.sqrt((targetX - initialX) ** 2 + (targetY - initialY) ** 2);
+  let nextDistance = 0.0;
+  while (!lastSegment) {
     while (true) {
       nextIndex += 1;
-      if (nextIndex == currentPlot.pendingPoints.length) {
-        const midPointFound = binarySearchPreparingSegment();
-        if (!midPointFound) {
-          console.log("Error while stirring to tier: can not reach the tier.");
-          terminate();
-          throw EvalError;
-        } else {
-          return;
-        }
+      if (nextIndex == pendingPoints.length) {
+        lastSegment = true;
+        break;
       }
-      currentSegmentLength += pointDistance(
-        currentPlot.pendingPoints[nextIndex - 1],
-        currentPlot.pendingPoints[nextIndex]
-      );
+      currentSegmentLength += pointDistance(pendingPoints[currentIndex], pendingPoints[nextIndex]);
       if (currentSegmentLength > leastSegmentLength) {
         break;
       }
     }
-    const nextX = currentPlot.pendingPoints[nextIndex].x || 0.0;
-    const nextY = currentPlot.pendingPoints[nextIndex].y || 0.0;
-    const nextDistance = Math.sqrt((nextX - targetX) ** 2 + (nextY - targetY) ** 2);
-    const nextDirection = getDirectionByVector(nextX - currentX, nextY - currentY);
-    const targetDirection = getDirectionByVector(targetX - currentX, targetY - currentY);
-    const relativeDirection = getRelativeDirection(nextDirection, targetDirection);
-    if (nextDistance < requiredDistance) {
-      // The first entor point is in this segment. NextDistance is only used in this test.
-      // Binary search the current segment to find the exact point and return.
-      const theta = Math.asin(
-        (currentDistance * Math.sin(Math.abs(relativeDirection))) / requiredDistance
-      );
-      const alpha = theta - Math.abs(relativeDirection);
-      approximatedLastStirLength = (currentDistance * Math.sin(alpha)) / Math.sin(theta);
-      // approximate the distance
-      let left = Math.max(
-        currentStirLength + preparingStirLength + approximatedLastStirLength - approximateBuffer,
-        0
-      );
-      let right =
-        currentStirLength + preparingStirLength + approximatedLastStirLength + approximateBuffer;
-      while (right - left > epsilon) {
-        let mid = left + (right - left) / 2;
-        const plot = computePlot(currentRecipeItems.concat([createStirCauldron(mid)]));
-        const testPoint = plot.pendingPoints[0];
-        const testX = testPoint.x || 0.0;
-        const testY = testPoint.y || 0.0;
-        const testDistance = Math.sqrt((testX - targetX) ** 2 + (testY - targetY) ** 2);
-        if (testDistance > requiredDistance) {
-          left = mid;
-        } else {
-          right = mid;
+    if (currentSegmentLength <= leastSegmentLength) {
+      continue;
+    }
+    const nextX = pendingPoints[nextIndex].x || 0.0;
+    const nextY = pendingPoints[nextIndex].y || 0.0;
+    const nextUnit = getUnit(nextX - currentX, nextY - currentY);
+    nextDistance = Math.sqrt((targetX - nextX) ** 2 + (targetY - nextY) ** 2);
+    let lastStirLength = nextUnit[0] * (targetX - currentX) + nextUnit[1] * (targetY - currentY);
+    if (lastStirLength > currentSegmentLength) {
+      if (nextDistance < requiredDistance) {
+        const lineDistance =
+          -nextUnit[1] * (targetX - currentX) + nextUnit[0] * (targetY - currentY);
+        const approximatedLastStirLength =
+          lastStirLength - Math.sqrt(requiredDistance ** 2 - lineDistance ** 2);
+        // findExactStir(approximatedLastStirLength);
+        logAddStirCauldron(
+          currentStirLength +
+            Math.min(approximatedLastStirLength + approximateBuffer, currentSegmentLength)
+        );
+        return;
+      }
+    } else {
+      if (lastStirLength >= 0) {
+        const nextDistance =
+          -nextUnit[1] * (targetX - currentX) + nextUnit[0] * (targetY - currentY);
+        const approximatedLastStirLength =
+          lastStirLength - Math.sqrt(requiredDistance ** 2 - nextDistance ** 2);
+        if (nextDistance < requiredDistance) {
+          // findExactStir(approximatedLastStirLength);
+          logAddStirCauldron(
+            currentStirLength +
+              Math.min(approximatedLastStirLength + approximateBuffer, lastStirLength)
+          );
+          return;
         }
       }
-      logAddStirCauldron(right);
-      return;
     }
-    if (
-      Math.abs(preparingRelativeDirection) < Math.PI / 2 && // previously approaching target.
-      Math.abs(relativeDirection) > Math.PI / 2 //currently leaving target.
-    ) {
-      const midPointFound = binarySearchPreparingSegment();
-      if (midPointFound) {
-        break;
-      }
-    }
-    currentStirLength += preparingStirLength;
-    preparingStirLength = currentSegmentLength;
-    preparingRelativeDirection = relativeDirection;
-    preparingDistance = currentDistance;
-    currentSegmentLength = 0.0;
-    preparingIndex = currentIndex;
     currentIndex = nextIndex;
+    currentX = nextX;
+    currentY = nextY;
+    currentDistance = nextDistance;
+    currentStirLength += currentSegmentLength;
+    currentSegmentLength = 0.0;
   }
+  console.log("Error while stirring to tier: cannot reach target tier.");
+  terminate();
+  throw EvalError;
 }
 
 /**
@@ -1159,7 +1024,7 @@ function saltToRad(salt, grains) {
  * @throws {Error} If the vector is a zero vector
  */
 function getUnit(x, y) {
-  if (Math.abs(x) < 1e-9 && Math.abs(y) < 1e-9) {
+  if (Math.abs(x) < 1e-12 && Math.abs(y) < 1e-12) {
     console.log("Error while getting unit: zero vector.");
     terminate();
     throw EvalError;
