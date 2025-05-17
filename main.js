@@ -28,7 +28,7 @@ const DeviationT3 = 100.0;
 const BottleRadius = 0.74;
 // const DeviationT1 = BottleRadius * 2 * 1800;
 const CreateSetPositionEnabled = false;
-let Display = false; // Macro to switch instruction display.
+const Display = true; // Macro to switch instruction display.
 let Step = 1;
 let TotalSun = 0;
 let TotalMoon = 0;
@@ -64,6 +64,11 @@ function checkBase(expectedBase) {
   }
 }
 
+function logSalt() {
+  console.log("Total moon salt: " + TotalMoon + ", Total sun salt: " + TotalSun);
+  return;
+}
+
 /**
  * Logging function to display the current step and the action taken.
  */
@@ -85,7 +90,6 @@ function logAddIngredient(ingredientId, grindPercent, display = Display) {
 /**
  * Logs the addition of sun salt and adds it to the current plot.
  * @param {number} grains The amount of sun salt to add in grains.
- * If `display` is not given, the value of `Display` is used.
  */
 function logAddSunSalt(grains) {
   if (Display) {
@@ -94,12 +98,12 @@ function logAddSunSalt(grains) {
   }
   TotalSun += grains;
   addSunSalt(grains);
+  return { salt: "sun", grains: grains };
 }
 
 /**
  * Logs the addition of moon salt and adds it to the current plot.
  * @param {number} grains The amount of moon salt to add in grains.
- * If `display` is not given, the value of `Display` is used.
  */
 function logAddMoonSalt(grains) {
   if (Display) {
@@ -108,13 +112,13 @@ function logAddMoonSalt(grains) {
   }
   TotalMoon += grains;
   addMoonSalt(grains);
+  return { salt: "moon", grains: grains };
 }
 
 /**
  * Logs the addition of rotation salt and adds it to the current plot.
  * @param {"moon"|"sun"} salt The type of rotation salt to add ("sun" or "moon").
  * @param {number} grains The amount of salt to add in grains.
- * If "display" is not given, the value of "Display" is used.
  */
 function logAddRotationSalt(salt, grains) {
   if (salt != "moon" && salt != "sun") {
@@ -132,6 +136,7 @@ function logAddRotationSalt(salt, grains) {
     TotalSun += grains;
   }
   addRotationSalt(salt, grains);
+  return { salt: salt, grains: grains };
 }
 
 /**
@@ -1476,14 +1481,13 @@ function checkStrongDangerZone(checkDistance) {
  */
 
 /**
- * Straightens the potion path by adjusting the stirring direction using rotation salt.
- *
- * @param {number} maxStirDistance - The maximum distance to stir in PotionCraft units.
- * @param {number} direction - The initial direction in radians to align the stirring.
- * @param {"moon"|"sun"} [salt="moon"] - The type of rotation salt to use ("moon" or "sun").
- * @param {number} [maxGrains=Infinity] - The maximum grains of salt that can be used.
- * @param {boolean} [ignoreReverse=true] - Whether to ignore reverse directions.
- * @throws {EvalError} If the salt is neither "moon" nor "sun".
+ * Straighten the potion path by adding moon or sun salt and stirring.
+ * @param {number} maxStirDistance The maximum distance to stir.
+ * @param {number} direction The direction of the potion path in degrees.
+ * @param {"moon"|"sun"} [salt="moon"] The type of salt to use.
+ * @param {number} [maxGrains=Infinity] The maximum number of grains of salt to add.
+ * @param {boolean} [ignoreReverse=true] Whether to ignore reversed directions.
+ * @returns {Object} An object containing the type of salt added and the number of grains added.
  */
 function straighten(
   maxStirDistance,
@@ -1583,13 +1587,15 @@ function straighten(
     }
   }
   console.log("Added " + totalGrains + " grains of " + salt + " salt.");
+  return { salt: salt, grains: totalGrains };
 }
 
 /**
- * Main function. Put actual scripts here.
+ * if the functions are imported from github, we have no access to the global statistics and we have to manually calculate them.
  */
 function main() {
-  return;
+  // main script here.
+  logSalt();
 }
 
 /**
@@ -1649,12 +1655,5 @@ export {
   straighten,
   // Utilities.
   getUnit,
+  logSalt,
 };
-
-/**
- * Main function call running the script.
- */
-Display = true; //Display the actual instructions added.
-main();
-console.log("Total moon salt added: " + TotalMoon);
-console.log("Total sun salt added: " + TotalSun);
