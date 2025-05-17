@@ -90,7 +90,9 @@ function logAddIngredient(ingredientId, grindPercent, display = Display) {
 /**
  * Logs the addition of sun salt and adds it to the current plot.
  * @param {number} grains The amount of sun salt to add in grains.
+ * @returns {number} The amount of sun salt added in grains.
  */
+
 function logAddSunSalt(grains) {
   if (Display) {
     console.log("Step " + Step + ": Adding " + grains + " grains of sun salt");
@@ -98,7 +100,7 @@ function logAddSunSalt(grains) {
   }
   TotalSun += grains;
   addSunSalt(grains);
-  return { salt: "sun", grains: grains };
+  return grains;
 }
 
 /**
@@ -112,7 +114,7 @@ function logAddMoonSalt(grains) {
   }
   TotalMoon += grains;
   addMoonSalt(grains);
-  return { salt: "moon", grains: grains };
+  return grains;
 }
 
 /**
@@ -136,7 +138,7 @@ function logAddRotationSalt(salt, grains) {
     TotalSun += grains;
   }
   addRotationSalt(salt, grains);
-  return { salt: salt, grains: grains };
+  return grains;
 }
 
 /**
@@ -1094,6 +1096,7 @@ function radToDeg(rad) {
 /**
  * Converts degrees to salt.
  * @param {number} deg The degrees to convert
+ * @returns {{salt: "moon"|"sun", grains: number}} The salt equivalent of the given degrees
  */
 function degToSalt(deg) {
   let salt;
@@ -1103,12 +1106,13 @@ function degToSalt(deg) {
     salt = "moon";
   }
   const grains = (Math.abs(deg) * 500.0) / 180.0;
-  return [salt, grains];
+  return { salt: salt, grains: grains };
 }
 
 /**
  * Converts radians to salt.
  * @param {number} rad The radians to convert
+ * @returns {{salt: "moon"|"sun", grains: number}} The salt equivalent of the given radians
  */
 function radToSalt(rad) {
   let salt;
@@ -1118,7 +1122,7 @@ function radToSalt(rad) {
     salt = "moon";
   }
   const grains = (Math.abs(rad) * 500.0) / Math.PI;
-  return [salt, grains];
+  return { salt: salt, grains: grains };
 }
 
 /**
@@ -1481,13 +1485,14 @@ function checkStrongDangerZone(checkDistance) {
  */
 
 /**
- * Straighten the potion path by adding moon or sun salt and stirring.
- * @param {number} maxStirDistance The maximum distance to stir.
- * @param {number} direction The direction of the potion path in degrees.
- * @param {"moon"|"sun"} [salt="moon"] The type of salt to use.
- * @param {number} [maxGrains=Infinity] The maximum number of grains of salt to add.
- * @param {boolean} [ignoreReverse=true] Whether to ignore reversed directions.
- * @returns {Object} An object containing the type of salt added and the number of grains added.
+ * Straighten the potion path with the least amount of salt.
+ *
+ * @param {number} maxStirDistance The maximum distance to be stirred.
+ * @param {number} direction The direction to be stirred in radian.
+ * @param {string} [salt="moon"] The type of salt to be added. It must be "moon" or "sun".
+ * @param {number} [maxGrains=Infinity] The maximum amount of salt to be added.
+ * @param {boolean} [ignoreReverse=true] If set to false, the function will terminate when a reversed direction is detected.
+ * @returns {number} The total amount of salt added.
  */
 function straighten(
   maxStirDistance,
@@ -1587,7 +1592,7 @@ function straighten(
     }
   }
   console.log("Added " + totalGrains + " grains of " + salt + " salt.");
-  return { salt: salt, grains: totalGrains };
+  return totalGrains;
 }
 
 /**
