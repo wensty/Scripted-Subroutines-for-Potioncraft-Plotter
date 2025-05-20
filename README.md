@@ -163,18 +163,13 @@ Used to detection of certain entities.
 - `getBottlePolarAngle`
 - `getBottlePolarAngleByVortex`
 - `getCurrentStirDirection`
-- `getCurrentPourDirection`
 
 ### Extraction of other informations.
 
 - `checkBase`
 - `getCurrentVortexRadius`
-- `getTargetVoretexRadius`
+- `getTargetVortexInfo`
 - `getCurrentTargetError`
-
-### Checking for entities in future path.
-
-- `checkStrongDangerZone`
 
 ### Complex subroutines.
 
