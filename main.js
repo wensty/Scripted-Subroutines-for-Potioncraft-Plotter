@@ -9,7 +9,6 @@ import {
   addStirCauldron,
   addPourSolvent,
   addSetPosition,
-  createStirCauldron,
   createPourSolvent,
   // createSetPosition,
 } from "@potionous/instructions";
@@ -49,7 +48,11 @@ function terminate() {
 }
 
 function logError() {
-  if (ret) console.log(err);
+  if (ret) {
+    console.log(err);
+  } else {
+    console.log("No error during this script!");
+  }
 }
 
 /**
@@ -526,7 +529,7 @@ function stirToNearestTarget(
  *     deviation.
  * @param {number} [leastSegmentLength=1e-9] - The minimum length between points to
  *     consider in the optimization.
- * @param {number} [approximateBuffer=1e-5] - The buffer to adjust the final stir
+ * @param {number} [afterBuffer=1e-5] - The buffer to adjust the final stir
  *     length.
  */
 function stirToTier(
@@ -536,7 +539,7 @@ function stirToTier(
   maxDeviation = DeviationT2,
   ignoreAngle = false,
   leastSegmentLength = 1e-9,
-  approximateBuffer = 1e-5
+  afterBuffer = 1e-5
 ) {
   const pendingPoints = currentPlot.pendingPoints;
   const currentPoint = currentPlot.pendingPoints[0];
@@ -593,7 +596,7 @@ function stirToTier(
         // findExactStir(approximatedLastStirLength);
         logAddStirCauldron(
           currentStirLength +
-            Math.min(approximatedLastStirLength + approximateBuffer, currentSegmentLength)
+            Math.min(approximatedLastStirLength + afterBuffer, currentSegmentLength)
         );
         return;
       }
@@ -605,8 +608,7 @@ function stirToTier(
         if (nextDistance < requiredDistance) {
           // findExactStir(approximatedLastStirLength);
           logAddStirCauldron(
-            currentStirLength +
-              Math.min(approximatedLastStirLength + approximateBuffer, lastStirLength)
+            currentStirLength + Math.min(approximatedLastStirLength + afterBuffer, lastStirLength)
           );
           return;
         }
@@ -651,9 +653,11 @@ function pourToEdge(assumedVortexRadius = VortexRadiusLarge) {
   const pourUnit = getUnit(-currentPoint.x, -currentPoint.y);
   const l1 = pourUnit.x * (vortex.x - currentPoint.x) + pourUnit.y * (vortex.y - currentPoint.y);
   const l2 = -pourUnit.y * (vortex.x - currentPoint.x) + pourUnit.x * (vortex.y - currentPoint.y);
-  const approximatedPourLength =
+  const approximatedPourLength = Math.min(
     Math.floor((l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2)) / MinimalPour) * MinimalPour -
-    MinimalPour / 2.0;
+      MinimalPour / 2.0,
+    0.0
+  );
   logAddPourSolvent(approximatedPourLength);
   return;
 }
@@ -704,14 +708,13 @@ function pourIntoVortex(targetVortexX, targetVortexY, assumedVortexRadius = Vort
  * Heats and pours to the edge of the current vortex.
  *
  * @param {number} length - The maximum length of solvent to pour.
- * @param {number} numbersToPour - The number of times to repeat the heating and pouring process.
+ * @param {number} repeats - The number of times to repeat the heating and pouring process.
  * @throws {EvalError} If the bottle is not currently in a vortex.
  */
-function heatAndPourToEdge(length, numbersToPour, assumedVortexRadius = VortexRadiusLarge) {
+function heatAndPourToEdge(length, repeats, assumedVortexRadius = VortexRadiusLarge) {
   if (ret) return;
-  const pendingPoints = currentPlot.pendingPoints;
-  const result = pendingPoints[0].bottleCollisions.find(isVortex);
-  if (result === undefined) {
+  const vortex = currentPlot.pendingPoints[0].bottleCollisions.find(isVortex);
+  if (vortex === undefined) {
     ret = 1;
     err = "Error while pouring to edge: bottle not in a vortex.";
     return;
@@ -723,15 +726,28 @@ function heatAndPourToEdge(length, numbersToPour, assumedVortexRadius = VortexRa
   } else {
     console.log("Warning while pouring to edge: default vortex radius assumed.");
   }
-  for (let i = 0; i < numbersToPour; i++) {
+  const c = 0.17; // the coefficient of the archimedean spiral formed by the vortex.
+  const vortexDistance = Math.sqrt(vortex.x ** 2 + vortex.y ** 2);
+  const cosTheta = vortexRadius / vortexDistance;
+  const sinTheta = Math.sqrt(vortexDistance ** 2 - vortexRadius ** 2) / vortexDistance;
+  const vortexUnit = getUnit(-vortex.x, -vortex.y);
+  const edgeLimit = {
+    x: cosTheta * vortexUnit.x + sinTheta * vortexUnit.y,
+    y: -sinTheta * vortexUnit.x + cosTheta * vortexUnit.y,
+  };
+  for (let i = 0; i < repeats; i++) {
     const pendingPoints = currentPlot.pendingPoints;
     const x = pendingPoints[0].x || 0.0;
     const y = pendingPoints[0].y || 0.0; // unnecessary since origin is not in a vortex.
-    const vortexAngle = getDirectionByVector(x, y, getBottlePolarAngleByVortex());
     let maxLength = Infinity;
-    if (vortexAngle > Math.PI / 2) {
-      // Do not heat too much.
-      maxLength = vortexRadius * (vortexAngle - Math.PI / 2) * 0.25;
+    if (edgeLimit.x * (x - vortex.x) + edgeLimit.y * (y - vortex.y) > 0) {
+      maxLength = -edgeLimit.y * (x - vortex.x) + edgeLimit.x * (y - vortex.y);
+      maxLength = maxLength - c;
+      if (maxLength < 0) {
+        break;
+      }
+      maxLength = maxLength * 0.75;
+      maxLength = Math.floor(maxLength / MinimalPour) * MinimalPour + MinimalPour / 2.0;
     }
     logAddHeatVortex(Math.min(length, maxLength));
     pourToEdge();
@@ -784,7 +800,7 @@ function pourToDangerZone(maxPourLength, leftBuffer = 0.01, epsilon = PourEpsilo
       plot.committedPoints[nextIndex]
     );
   }
-  // can not approximate poring length in this task.
+  // can not approximate pouring length in this task.
   // need more test for the accuracy of plotter calculation.
   let left = Math.max(pourLength - leftBuffer, 0.0);
   let right =
@@ -814,7 +830,7 @@ function pourToDangerZone(maxPourLength, leftBuffer = 0.01, epsilon = PourEpsilo
 }
 
 /**
- * Derotates the bottle to a target angle with precision.
+ * Derotates the bottle to a target angle.
  * Error if the bottle is not in a vortex or at the origin,
  * or if the derotation is impossible.
  *
@@ -909,12 +925,11 @@ function radToDeg(rad) {
  */
 function degToSalt(deg) {
   if (ret) return { salt: "moon", grains: 0 };
-  let salt = "moon";
-  if (deg > 0) {
-    salt = "sun";
-  }
   const grains = (Math.abs(deg) * 500.0) / 180.0;
-  return { salt: salt, grains: grains };
+  if (deg > 0) {
+    return { salt: "sun", grains: grains };
+  }
+  return { salt: "moon", grains: grains };
 }
 
 /**
@@ -924,12 +939,11 @@ function degToSalt(deg) {
  */
 function radToSalt(rad) {
   if (ret) return { salt: "moon", grains: 0 };
-  let salt = "moon";
-  if (rad > 0) {
-    salt = "sun";
-  }
   const grains = (Math.abs(rad) * 500.0) / Math.PI;
-  return { salt: salt, grains: grains };
+  if (rad > 0) {
+    return { salt: "sun", grains: grains };
+  }
+  return { salt: "moon", grains: grains };
 }
 
 /**
@@ -968,7 +982,7 @@ function saltToRad(salt, grains) {
   } else {
     ret = 1;
     err = "Error while converting salt to radian: salt must be moon or sun.";
-    return;
+    return 0.0;
   }
 }
 
@@ -1239,7 +1253,7 @@ function getCurrentTargetError(targetX, targetY, targetAngle) {
 /**
  * Straighten the potion path with the least amount of salt.
  *
- * @param {number} maxStirDistance The maximum distance to be stirred.
+ * @param {number} maxStirLength The maximum distance to be stirred.
  * @param {number} direction The direction to be stirred in radian.
  * @param {string} [salt="moon"] The type of salt to be added. It must be "moon" or "sun".
  * @param {number} [maxGrains=Infinity] The maximum amount of salt to be added.
@@ -1247,7 +1261,7 @@ function getCurrentTargetError(targetX, targetY, targetAngle) {
  * @returns {number} The total amount of salt added.
  */
 function straighten(
-  maxStirDistance,
+  maxStirLength,
   direction,
   salt = "moon",
   maxGrains = Infinity,
@@ -1328,9 +1342,9 @@ function straighten(
     } else {
       nextDistance += nextSegmentDistance;
       nextSegmentDistance = 0.0;
-      if (nextDistance + distanceStirred >= maxStirDistance) {
+      if (nextDistance + distanceStirred >= maxStirLength) {
         /** If the distance is capped, stir the remaining path and terminate. */
-        nextDistance = maxStirDistance - distanceStirred;
+        nextDistance = maxStirLength - distanceStirred;
         logAddStirCauldron(nextDistance);
         console.log("Straignten terminated by maximal length stirred.");
         break;
@@ -1411,5 +1425,6 @@ export {
   straighten,
   // Utilities.
   getUnit,
+  logError,
   logSalt,
 };

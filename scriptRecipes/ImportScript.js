@@ -43,6 +43,7 @@ import {
   getCurrentTargetError,
   straighten,
   getUnit,
+  logError,
   logSalt,
 } from "../main";
 

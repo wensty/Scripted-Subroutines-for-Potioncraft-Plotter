@@ -115,7 +115,7 @@ A `PlotPoint` item is a point on the map with the following information:
 
 ## Implemented utilities and subroutines
 
-For the detailed use of the functions, see JSDoc.
+For the full details, see JSDoc. Here not all parameters are listed.
 
 ### logged instruction
 
@@ -125,26 +125,47 @@ For the detailed use of the functions, see JSDoc.
 
 Used to detection of certain entities.
 
-- `isDangerZone`
-- `isStrongDangerZone`
-- `isVortex`
+- `isDangerZone`: test danger zone entities in collision of current point.
+- `isStrongDangerZone`: test strong danger zone entities in collision of current point.
+- `isVortex`: test vortex entities in collision of current point.
 
 ### Stirring subroutines.
 
-- `stirIntoVortex`
-- `StirToEdge`
-- `stirToTurn`
-- `StirIntoDangerZoneExit`
-- `stirToNearestTarget`
-- `stirToTier`
+- `stirIntoVortex(assumedVortexRadius?)`: stir to a different vortex.
+  - `assumedVortexRadius` :the radius of the target vortex assumed if `createSetPosition(x, y)` is not usable as in non-beta scripting.
+- `StirToEdge(assumedVortexRadius?)`: stir to edge of the current vortex. Similar for the optional `assumedVortexRadius` parameter.
+- `stirToTurn(maxStirLength?, directionBuffer?, leastSegmentLength?)`: stir to the point where the direction changes vastly.
+  - `maxStirLength`: the maximal length it will stir.
+  - `directionBuffer`: the angular threshold in radians to be considered as "vast" change.
+  - `leastSegmentLength`: the minimum length between points to consider in the calculation.
+- `StirIntoDangerZoneExit()`: stir to the nearest exit point of danger zone. The bottle will find a danger zone if it is not currently in.
+- `stirToNearestTarget(targetX, targetY, maxStirLength?)`: stir to the nearest point to the target position within the given maximum stir length.
+  - `targetX`, `targetY`: the target coordinates.
+  - `maxStirLength`: the maximal length it will stir.
+- `stirToTier(targetX, targetY, targetAngle, maxDeviation?, ignoreAngle?)`: stir to the specified tier of certain effect, adjusting the stir length based on the current angle and position.
+  - `targetX`, `targetY`: the coordinates of the target effect.
+  - `targetAngle`: the angle of the target effect.
+  - `maxDeviation`: the maximum angle deviation to the target effect.
+  - `ignoreAngle`: whether to ignore the angle deviation.
 
 ### Pouring subroutines.
 
-- `pourToEdge`
-- `heatAndPourToEdge`
-- `pourToDangerZone`
-- `pourIntoVortex`
-- `derotateToAngle`
+- `pourToEdge(assumedVortexRadius?)`: pour to the edge of the current vortex.
+  - `assumedVortexRadius` : the radius of the target vortex assumed if `createSetPosition(x, y)` is not usable as in non-beta scripting.
+- `heatAndPourToEdge(length, repeats, assumedVortexRadius?)`: repeatedly heating the vortex and pouring to edge of it, to move the bottle with the vortex and keep it at the boundary of the vortex.
+  - `length`: the maximal length of pour. Overridden at the last stage where we can not heat too much.
+  - `repeats`: the number of times to repeat the heating and pouring process.
+  - `assumedVortexRadius` : the radius of the target vortex assumed if `createSetPosition(x, y)` is not usable as in non-beta scripting.
+- `pourToDangerZone(maxPourLength?, leftBuffer?, epsilon?)`: pour until about to enter danger zone.
+  - `maxPourLength`: the maximal length it will pour.
+  - `leftBuffer`, `epsilon`: the parameters for the binary search to decide exact pouring.
+- `pourIntoVortex(targetVortexX, targetVortexY, assumedVortexRadius?)`: pour into the target vortex.
+  - `targetVortexX`, `targetVortexY`: the coordinates of the target vortex. The function detects the center of the vortex at the given point automatically if `createSetPosition(x, y)` is available, otherwise you should provide exact coordinate.
+  - `assumedVortexRadius` : the radius of the target vortex assumed if `createSetPosition(x, y)` is not available as in non-beta scripting.
+- `derotateToAngle(targetAngle, buffer?, epsilon?)`: derotate the bottle to a target angle, can be used if the bottle is at the origin or in a vortex.
+  - `targetAngle`: the target angle in degrees.
+  - `buffer`, `epsilon`: the parameters for the binary search to decide exact derotation.
+  - **Note that this derotation process is not real derotation process. Check that it can be translated back to real derotation before using it**.
 
 ### Angle conversion functions
 
@@ -173,11 +194,24 @@ Used to detection of certain entities.
 
 ### Complex subroutines.
 
-- `straighten`
+- `straighten(maxStirLength, direction, salt?, maxGrains?, ignoreReverse?)`: straighten the potion path with rotation salts, i.e. automatically adding proper number of rotation salt while stirring to make the potion path straight.
+  - `maxStirLength`, `maxGrains`: stopping conditions of the straightening process.
+  - `direction`: the direction to be stirred in radian.
+  - `salt`: the type of salt to be added, it must be "moon" or "sun".
+  - `ignoreReverse`: Controls the behavior when reversed direction(i.e. should add another rotation salt to bend it to the given direction) is detected. If set, no salt will be added and the process continues. If not set, the function terminate when a reversed direction is detected.
+  - Straightening is important for many highly-salty recipes with brute-force bending of path, like `AntiMagic-15m-1115s.js`.
+    > Under some assumption, we can prove that that the optimal path is:
+    >
+    > 1. a part of the ingredient.
+    > 2. a straightened part.
+    > 3. last part of the ingredient.
+    >    And there are geometric relations between the straighten direction and some other directions.
 
 ### Other utilities
 
-- `getUnit`
-- `logSalt`
+- `getUnit(x,y)`: get the unit vector of the vector (x, y).
+- `logError()`: log the current error.
+- `logSalt()`: log the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
+  - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.
 
 ---

@@ -90,10 +90,11 @@ function beta() {
   derotateToAngle(saltToDeg("moon", 103 + 33));
   // -25 is not the proper straightening angle meeting optimal condition.
   // More test is needed.
+  logAddStirCauldron(9.8);
   straighten(Infinity, degToRad(-25), "sun", 102);
   // last salt for precise centering
-  logAddStirCauldron(2.55);
+  logAddStirCauldron(1.83);
   logAddSunSalt(1);
-  logAddStirCauldron(2.3);
+  logAddStirCauldron(3);
   console.log("path deviation: " + stirToNearestTarget(-4.22, 36.37));
 }
