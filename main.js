@@ -9,7 +9,6 @@ import {
   addPourSolvent,
   addHeatVortex,
   addSetPosition,
-  createStirCauldron,
   createPourSolvent,
   createSetPosition,
 } from "@potionous/instructions";
@@ -49,7 +48,11 @@ function terminate() {
 }
 
 function logError() {
-  if (ret) console.log(err);
+  if (ret) {
+    console.log(err);
+  } else {
+    console.log("No error during this script!");
+  }
 }
 
 /**
@@ -909,12 +912,11 @@ function radToDeg(rad) {
  */
 function degToSalt(deg) {
   if (ret) return { salt: "moon", grains: 0 };
-  let salt = "moon";
-  if (deg > 0) {
-    salt = "sun";
-  }
   const grains = (Math.abs(deg) * 500.0) / 180.0;
-  return { salt: salt, grains: grains };
+  if (deg > 0) {
+    return { salt: "sun", grains: grains };
+  }
+  return { salt: "moon", grains: grains };
 }
 
 /**
@@ -924,12 +926,11 @@ function degToSalt(deg) {
  */
 function radToSalt(rad) {
   if (ret) return { salt: "moon", grains: 0 };
-  let salt = "moon";
-  if (rad > 0) {
-    salt = "sun";
-  }
   const grains = (Math.abs(rad) * 500.0) / Math.PI;
-  return { salt: salt, grains: grains };
+  if (rad > 0) {
+    return { salt: "sun", grains: grains };
+  }
+  return { salt: "moon", grains: grains };
 }
 
 /**
@@ -968,7 +969,7 @@ function saltToRad(salt, grains) {
   } else {
     ret = 1;
     err = "Error while converting salt to radian: salt must be moon or sun.";
-    return;
+    return 0.0;
   }
 }
 
@@ -1411,5 +1412,6 @@ export {
   straighten,
   // Utilities.
   getUnit,
+  logError,
   logSalt,
 };
