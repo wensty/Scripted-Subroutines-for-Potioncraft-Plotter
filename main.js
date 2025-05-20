@@ -654,9 +654,11 @@ function pourToEdge(assumedVortexRadius = VortexRadiusLarge) {
   const pourUnit = getUnit(-currentPoint.x, -currentPoint.y);
   const l1 = pourUnit.x * (vortex.x - currentPoint.x) + pourUnit.y * (vortex.y - currentPoint.y);
   const l2 = -pourUnit.y * (vortex.x - currentPoint.x) + pourUnit.x * (vortex.y - currentPoint.y);
-  const approximatedPourLength =
+  const approximatedPourLength = Math.min(
     Math.floor((l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2)) / MinimalPour) * MinimalPour -
-    MinimalPour / 2.0;
+      MinimalPour / 2.0,
+    0.0
+  );
   logAddPourSolvent(approximatedPourLength);
   return;
 }
@@ -712,9 +714,8 @@ function pourIntoVortex(targetVortexX, targetVortexY, assumedVortexRadius = Vort
  */
 function heatAndPourToEdge(length, numbersToPour, assumedVortexRadius = VortexRadiusLarge) {
   if (ret) return;
-  const pendingPoints = currentPlot.pendingPoints;
-  const result = pendingPoints[0].bottleCollisions.find(isVortex);
-  if (result === undefined) {
+  const vortex = currentPlot.pendingPoints[0].bottleCollisions.find(isVortex);
+  if (vortex === undefined) {
     ret = 1;
     err = "Error while pouring to edge: bottle not in a vortex.";
     return;
@@ -726,15 +727,28 @@ function heatAndPourToEdge(length, numbersToPour, assumedVortexRadius = VortexRa
   } else {
     console.log("Warning while pouring to edge: default vortex radius assumed.");
   }
+  const c = 0.17; // the coefficient of the archimedean spiral formed by the vortex.
+  const vortexDistance = Math.sqrt(vortex.x ** 2 + vortex.y ** 2);
+  const cosTheta = vortexRadius / vortexDistance;
+  const sinTheta = Math.sqrt(vortexDistance ** 2 - vortexRadius ** 2) / vortexDistance;
+  const vortexUnit = getUnit(-vortex.x, -vortex.y);
+  const edgeLimit = {
+    x: cosTheta * vortexUnit.x + sinTheta * vortexUnit.y,
+    y: -sinTheta * vortexUnit.x + cosTheta * vortexUnit.y,
+  };
   for (let i = 0; i < numbersToPour; i++) {
     const pendingPoints = currentPlot.pendingPoints;
     const x = pendingPoints[0].x || 0.0;
     const y = pendingPoints[0].y || 0.0; // unnecessary since origin is not in a vortex.
-    const vortexAngle = getDirectionByVector(x, y, getBottlePolarAngleByVortex());
     let maxLength = Infinity;
-    if (vortexAngle > Math.PI / 2) {
-      // Do not heat too much.
-      maxLength = vortexRadius * (vortexAngle - Math.PI / 2) * 0.25;
+    if (edgeLimit.x * (x - vortex.x) + edgeLimit.y * (y - vortex.y) > 0) {
+      maxLength = -edgeLimit.y * (x - vortex.x) + edgeLimit.x * (y - vortex.y);
+      maxLength = maxLength - c;
+      if (maxLength < 0) {
+        break;
+      }
+      maxLength = maxLength * 0.75;
+      maxLength = Math.floor(maxLength / MinimalPour) * MinimalPour + MinimalPour / 2.0;
     }
     logAddHeatVortex(Math.min(length, maxLength));
     pourToEdge();
