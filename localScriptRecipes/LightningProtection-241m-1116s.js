@@ -15,20 +15,20 @@ import {
 } from "../main";
 
 /**
- * Lightning Protection-241m-1116s
+ * Lightning Protection-239m-1116s
  *
- * The first 157 moon salt is not optimal for length efficiency,
- * roughly 4 moon is pre-rotation to save sun.
+ * The first 156 moon salt is not optimal for length efficiency,
+ * roughly 3 moon is pre-rotation to save sun.
  *
- * The 88 moon bending the 3rd part can also straighten the part.
+ * The 83 (actually 26) moon straighten the 3rd part.
  */
 function main() {
   checkBase("oil");
-  logAddMoonSalt(157);
+  logAddMoonSalt(156);
   logAddIngredient(Ingredients.PhantomSkirt, 1);
   derotateToAngle(0);
   logAddStirCauldron(4.6);
-  straighten(1.35, getBottlePolarAngle() - degToRad(3.6), "sun");
+  straighten(1.35, getBottlePolarAngle() - degToRad(3), "sun");
   logAddStirCauldron(4.8);
   logAddSunSalt(42);
   logAddStirCauldron(1.25);
@@ -45,12 +45,12 @@ function main() {
     Math.ceil((currentPlot.pendingPoints[0].angle + 180.01) / 0.36)
   );
   straighten(4, getDirectionByVector(x2 - x1, y2 - y1), "sun", 315);
-  stirToDangerZoneExit();
-  straighten(3.4, degToRad(-169.6), "moon", 88);
-  logAddMoonSalt(241 - TotalMoon);
+  stirToTurn();
+  straighten(6.61, degToRad(-169.5), "moon", 88);
+  logAddMoonSalt(239 - TotalMoon);
   logAddStirCauldron(2.3);
-  straighten(Infinity, degToRad(155), "sun", 1115 - TotalSun);
-  stirToDangerZoneExit();
+  straighten(Infinity, degToRad(154.5), "sun", 1115 - TotalSun);
+  console.log("Minimal health: " + stirToDangerZoneExit());
   logAddSunSalt(1);
-  stirToNearestTarget(3.66, -30.72);
+  console.log("Minimal distance: " + stirToNearestTarget(3.66, -30.72));
 }
