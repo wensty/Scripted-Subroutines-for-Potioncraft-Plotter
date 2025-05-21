@@ -96,7 +96,7 @@ function beta_1226s() {
     pourToDangerZone(0.15);
   }
   // New technique to avoid pouring centering.
-  logAddStirCauldron(0.821);
-  logAddPourSolvent(0.11);
-  stirToNearestTarget(-19.45, 14.64);
+  logAddStirCauldron(0.825);
+  logAddPourSolvent(0.14);
+  console.log(stirToNearestTarget(-19.45, 14.64));
 }
