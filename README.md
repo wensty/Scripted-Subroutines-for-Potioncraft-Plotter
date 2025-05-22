@@ -39,7 +39,7 @@ project
 ### LTS version
 
 - Copy the whole `main.js` file into the online script editor.
-- Delete all the import statements _since the online plotter have not implemented this._
+- Delete all the import statements _since the online plotter have not implemented this._ Add a `main();` statement calling the main script.
 - Write your script recipe in the `main()` function. All the defined utility functions and subroutines can be used.
 - This produce a too long link to share. To share it you flatten it into a regular instruction recipe
 
@@ -49,6 +49,8 @@ project
 - Write your script recipes.
 - This produce a script recipe link that can be shared.
 - but is volatile to future changes in the `main.js` file.
+- Still, you can copy the whole `main.js` file as in LTS version.
+- The dev branch enables `createSetPosition()` so it only works with beta version, but with better efficiency.
 
 ## What can scripts do and what _can't_ scripts do
 
@@ -156,9 +158,8 @@ Used to detection of certain entities.
   - `length`: the maximal length of pour. Overridden at the last stage where we can not heat too much.
   - `repeats`: the number of times to repeat the heating and pouring process.
   - `assumedVortexRadius` : the radius of the target vortex assumed if `createSetPosition(x, y)` is not usable as in non-beta scripting.
-- `pourToDangerZone(maxPourLength?, leftBuffer?, epsilon?)`: pour until about to enter danger zone.
+- `pourToDangerZone(maxPourLength?)`: pour until about to enter danger zone.
   - `maxPourLength`: the maximal length it will pour.
-  - `leftBuffer`, `epsilon`: the parameters for the binary search to decide exact pouring.
 - `pourIntoVortex(targetVortexX, targetVortexY, assumedVortexRadius?)`: pour into the target vortex.
   - `targetVortexX`, `targetVortexY`: the coordinates of the target vortex. The function detects the center of the vortex at the given point automatically if `createSetPosition(x, y)` is available, otherwise you should provide exact coordinate.
   - `assumedVortexRadius` : the radius of the target vortex assumed if `createSetPosition(x, y)` is not available as in non-beta scripting.

@@ -759,11 +759,9 @@ function heatAndPourToEdge(length, repeats, assumedVortexRadius = VortexRadiusLa
  * Pours the solvent towards danger zone with precision.
  *
  * @param {number} maxPourLength - The maximum length of solvent to pour.
- * @param {number} [leftBuffer=0.01] - The buffer to adjust the initial pour length estimation.
- * @param {number} [epsilon=Epsilon] - The precision for the binary search.
  * @throws {EvalError} If the bottle is already in a danger zone or cannot reach one.
  */
-function pourToDangerZone(maxPourLength, leftBuffer = 0.01, epsilon = PourEpsilon) {
+function pourToDangerZone(maxPourLength) {
   if (ret) return;
   const initialResult = currentPlot.pendingPoints[0].bottleCollisions.find(isDangerZone);
   if (initialResult != undefined) {
@@ -800,32 +798,11 @@ function pourToDangerZone(maxPourLength, leftBuffer = 0.01, epsilon = PourEpsilo
       plot.committedPoints[nextIndex]
     );
   }
-  // can not approximate pouring length in this task.
-  // need more test for the accuracy of plotter calculation.
-  let left = Math.max(pourLength - leftBuffer, 0.0);
-  let right =
-    pourLength +
-    pointDistance(plot.committedPoints[nextIndex - 1], plot.committedPoints[nextIndex]);
-  while (right - left > epsilon) {
-    let mid = left + (right - left) / 2;
-    let testResult;
-    if (CreateSetPositionEnabled) {
-      testResult = computePlot([
-        createSetPosition(initialX, initialY),
-        createPourSolvent(mid),
-      ]).pendingPoints[0].bottleCollisions.find(isDangerZone);
-    } else {
-      testResult = computePlot(
-        currentRecipeItems.concat(createPourSolvent(mid))
-      ).pendingPoints[0].bottleCollisions.find(isDangerZone);
-    }
-    if (testResult != undefined) {
-      right = mid;
-    } else {
-      left = mid;
-    }
-  }
-  logAddPourSolvent(left);
+  pourLength = Math.max(
+    Math.floor(pourLength / MinimalPour) * MinimalPour - MinimalPour / 2.0,
+    0.0
+  );
+  logAddPourSolvent(pourLength);
   return;
 }
 
