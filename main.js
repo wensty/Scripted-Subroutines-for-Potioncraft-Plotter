@@ -25,7 +25,7 @@ const PourEpsilon = 2e-3; // precision for binary search of pouring length.
 const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
 const DeviationT1 = 1.53 * 1800; // effect radius is 0.79, bottle radius is 0.74.
-const CreateSetPositionEnabled = false;
+const CreateSetPositionEnabled = true;
 const Display = true; // Macro to switch instruction display.
 let Step = 1;
 let TotalSun = 0;
@@ -39,6 +39,16 @@ let err = ""; // The return into string of last error.
  */
 
 /**
+ * Simulation of plotter API `createSetPosition(x, y)`.
+ * @param {number} x
+ * @param {number} y
+ * @returns
+ */
+function createSetPosition(x, y) {
+  return { type: "set-position", x: x, y: y };
+}
+
+/**
  * Dirty way to terminate the program. Reworked error handling and deprecated.
  */
 function terminate() {
@@ -47,6 +57,10 @@ function terminate() {
   terminator = 1;
 }
 
+/**
+ * Logs the error message if an error occurred during this script.
+ * If no error occurred, it logs a success message.
+ */
 function logError() {
   if (ret) {
     console.log(err);

@@ -121,6 +121,8 @@ A `PlotPoint` item is a point on the map with the following information:
 
 - Some function requires `createSetPosition(x, y)`. Currently this is only available in beta version, flagged by the constant `CreateSetPositionEnabled`. In master branch this is set to `false` and `createSetPosition(x, y)` is not imported to avoid error, while in dev branch this is set to `true`.
 
+- New discovery: `createSetPosition(x, y)` can be simulated, so we can still use this API with some workaround.
+
 - Without exceptions, directions are based on north and use radian input and output, clockwise(sun salt direction) being positive, anticlockwise(moon salt direction) being negative. Only `derotateToAngle()` uses degree input, this is because `.angle` of points is in degrees.
 
 - For the full details of the usages, see JSDoc.
