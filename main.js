@@ -1123,12 +1123,13 @@ function getCurrentStirDirection() {
  */
 
 /**
- * Determines the size of the current vortex by testing positions around it.
+ * Retrieves the radius of the current vortex.
  *
+ * @param {number} [assumedVortexRadius=VortexRadiusLarge] - The assumed radius of the current vortex if createSetPosition is not enabled.
  * @returns {number} The radius of the current vortex.
- * @throws {EvalError} If the bottle is not in a vortex.
+ * @throws {Error} If the bottle is not in a vortex.
  */
-function getCurrentVortexRadius() {
+function getCurrentVortexRadius(assumedVortexRadius = VortexRadiusLarge) {
   if (ret) return VortexRadiusLarge;
   const result = currentPlot.pendingPoints[0].bottleCollisions.find(isVortex);
   if (result === undefined) {
@@ -1140,7 +1141,7 @@ function getCurrentVortexRadius() {
     console.log(
       "Warining while finding the radius of current vortex: createSetPosition is not enabled. Return default value."
     );
-    return VortexRadiusLarge;
+    return assumedVortexRadius;
   }
   const vortex = result;
   let testSmall = computePlot([
@@ -1221,6 +1222,24 @@ function getCurrentTargetError(targetX, targetY, targetAngle) {
   const angleDeviation = (angleDelta * 100.0) / 12.0;
   const totalDeviation = distanceDeviation + angleDeviation;
   return totalDeviation;
+}
+
+/**
+ * Returns the total amount of Sun Salt added so far.
+ *
+ * @returns {number} The total amount of Sun Salt.
+ */
+function getTotalSun() {
+  return TotalSun;
+}
+
+/**
+ * Returns the total amount of Moon Salt added so far.
+ *
+ * @returns {number} The total amount of Moon Salt.
+ */
+function getTotalMoon() {
+  return TotalMoon;
 }
 
 /**
@@ -1402,6 +1421,8 @@ export {
   straighten,
   // Utilities.
   getUnit,
+  getTotalMoon,
+  getTotalSun,
   logError,
   logSalt,
 };

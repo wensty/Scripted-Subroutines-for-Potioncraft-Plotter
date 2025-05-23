@@ -117,7 +117,13 @@ A `PlotPoint` item is a point on the map with the following information:
 
 ## Implemented utilities and subroutines
 
-For the full details, see JSDoc. Here not all parameters are listed.
+### Impoortant notes:
+
+- Some function requires `createSetPosition(x, y)`. Currently this is only available in beta version, flagged by the constant `CreateSetPositionEnabled`. In master branch this is set to `false` and `createSetPosition(x, y)` is not imported to avoid error, while in dev branch this is set to `true`.
+
+- Without exceptions, directions are based on north and use radian input and output, clockwise(sun salt direction) being positive, anticlockwise(moon salt direction) being negative. Only `derotateToAngle()` uses degree input, this is because `.angle` of points is in degrees.
+
+- For the full details of the usages, see JSDoc.
 
 ### logged instruction
 
@@ -134,8 +140,9 @@ Used to detection of certain entities.
 ### Stirring subroutines.
 
 - `stirIntoVortex(assumedVortexRadius?)`: stir to a different vortex.
-  - `assumedVortexRadius` :the radius of the target vortex assumed if `createSetPosition(x, y)` is not usable as in non-beta scripting.
-- `StirToEdge(assumedVortexRadius?)`: stir to edge of the current vortex. Similar for the optional `assumedVortexRadius` parameter.
+  - `assumedVortexRadius` :the radius of the target vortex assumed(provided by caller) if `createSetPosition(x, y)` is not usable as in non-beta scripting. Default to `VortexRadiusLarge`, i.e. the radius of the largest vortex 2.39.
+- `StirToEdge(assumedVortexRadius?)`: stir to edge of the current vortex.
+  - `assumedVortexRadius` :the radius of the target vortex assumed(provided by caller) if `createSetPosition(x, y)` is not usable as in non-beta scripting. Default to `VortexRadiusLarge`.
 - `stirToTurn(maxStirLength?, directionBuffer?, leastSegmentLength?)`: stir to the point where the direction changes vastly.
   - `maxStirLength`: the maximal length it will stir.
   - `directionBuffer`: the angular threshold in radians to be considered as "vast" change.
@@ -153,11 +160,11 @@ Used to detection of certain entities.
 ### Pouring subroutines.
 
 - `pourToEdge(assumedVortexRadius?)`: pour to the edge of the current vortex.
-  - `assumedVortexRadius` : the radius of the target vortex assumed if `createSetPosition(x, y)` is not usable as in non-beta scripting.
+  - `assumedVortexRadius` : the radius of the target vortex assumed if `createSetPosition(x, y)` is not usable as in non-beta scripting. Default to `VortexRadiusLarge`.
 - `heatAndPourToEdge(length, repeats, assumedVortexRadius?)`: repeatedly heating the vortex and pouring to edge of it, to move the bottle with the vortex and keep it at the boundary of the vortex.
   - `length`: the maximal length of pour. Overridden at the last stage where we can not heat too much.
   - `repeats`: the number of times to repeat the heating and pouring process.
-  - `assumedVortexRadius` : the radius of the target vortex assumed if `createSetPosition(x, y)` is not usable as in non-beta scripting.
+  - `assumedVortexRadius` : the radius of the target vortex assumed if `createSetPosition(x, y)` is not usable as in non-beta scripting. Default to `VortexRadiusLarge`.
 - `pourToDangerZone(maxPourLength?)`: pour until about to enter danger zone.
   - `maxPourLength`: the maximal length it will pour.
 - `pourIntoVortex(targetVortexX, targetVortexY, assumedVortexRadius?)`: pour into the target vortex.
@@ -165,8 +172,8 @@ Used to detection of certain entities.
   - `assumedVortexRadius` : the radius of the target vortex assumed if `createSetPosition(x, y)` is not available as in non-beta scripting.
 - `derotateToAngle(targetAngle, buffer?, epsilon?)`: derotate the bottle to a target angle, can be used if the bottle is at the origin or in a vortex.
   - `targetAngle`: the target angle in degrees.
-  - `buffer`, `epsilon`: the parameters for the binary search to decide exact derotation.
-  - **Note that this derotation process is not real derotation process. Check that it can be translated back to real derotation before using it**.
+  - `buffer`, `epsilon`: the parameters for the binary search to decide exact de-rotation.
+  - **Note that this de-rotation process is not real de-rotation process. Check that it can be translated back to real de-rotation before using it**.
 
 ### Angle conversion functions
 
@@ -179,19 +186,28 @@ Used to detection of certain entities.
 
 ### Angle and direction extractions
 
-- `getDirectionByVector`
-- `getVectorByDirection`
-- `getRelativeDirection`
-- `getBottlePolarAngle`
-- `getBottlePolarAngleByVortex`
-- `getCurrentStirDirection`
+- `getDirectionByVector(x, y, baseDirection?)` : computes the direction angle of a 2D vector relative to a base direction.
+  - `x`, `y`: the x and y components of the vector.
+  - `baseDirection`: the base direction in radian. Default to be 0.
+- `getVectorByDirection(direction, baseDirection?)` : computes a 2D vector from a direction angle and an optional base direction angle.
+- `getRelativeDirection(direction, baseDirection?)` : computes the relative direction between two direction angles.
+  - This is dedicated to compute the relative direction. So the base direction must be provided.
+- `getBottlePolarAngle(toBottle?)`: computes the direction angle of the current bottle position.
+  - `toBottle`: Boolean default to be `true`. Decide to calculate the angle toward the bottle or from the bottle.
+- `getBottlePolarAngleByVortex(toBottle?)`: computes the direction angle of the current bottle position _relative to the center of the current vortex_.
+  - `toBottle`: Boolean default to be `true`. Decide to calculate the angle toward the bottle or from the bottle.
+- `getCurrentStirDirection()`: computes the direction angle of the current stir in radians.
 
 ### Extraction of other informations.
 
-- `checkBase`
-- `getCurrentVortexRadius`
-- `getTargetVortexInfo`
-- `getCurrentTargetError`
+- `checkBase(expectedBase)`: checks if the current potion base is the given expected base. If not, this check produce an error.
+- `getCurrentVortexRadius(assumedVortexRadius?)`: returns the radius of the current vortex.
+  - This function requires `createSetPosition(x, y)`. If not available, `assumedVortexRadius` is used and should be manually provided.
+- `getTargetVortexInfo(targetX, targetY, assumedVortexRadius)`: returns the coordinates and radius of the target vortex.
+  - return: `{x:number, y:number, r:number}` be a object with `x`, `y`, `r` as keys.
+  - This requires `createSetPosition(x, y)`. If not available, the function will return `{x: targetX, y: targetY, r: assumedVortexRadius}` and you should manually provide the answer.
+- `getCurrentTargetError(targetX, targetY, targetAngle)`: returns the error between the current bottle position and the target effect.
+  - `targetX`, `targetY`, `targetAngle`: the coordinates and tilted angle of the target effect.
 
 ### Complex subroutines.
 
@@ -211,6 +227,8 @@ Used to detection of certain entities.
 ### Other utilities
 
 - `getUnit(x,y)`: get the unit vector of the vector (x, y).
+- `getTotalMoon()`: get the total amount of moon salt added so far _in this script_.
+- `getTotalSun()`: get the total amount of sun salt added so far _in this script_.
 - `logError()`: log the current error.
 - `logSalt()`: log the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
   - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.

@@ -43,6 +43,8 @@ import {
   getCurrentTargetError,
   straighten,
   getUnit,
+  getTotalMoon,
+  getTotalSun,
   logError,
   logSalt,
 } from "../main";
