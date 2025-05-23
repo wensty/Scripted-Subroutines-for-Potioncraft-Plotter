@@ -87,10 +87,10 @@ function logSalt() {
 /**
  * Logs the addition of an ingredient and adds it to the current plot.
  * @param {import("@potionous/dataset").IngredientId} ingredientId The ID of the ingredient to add.
- * @param {number} grindPercent The percentage of the ingredient to grind.
+ * @param {number} [grindPercent=1.0] The percentage of the ingredient to grind, default to be 1.0.
  * If `display` is not given, the value of `Display` is used.
  */
-function logAddIngredient(ingredientId, grindPercent, display = Display) {
+function logAddIngredient(ingredientId, grindPercent = 1.0, display = Display) {
   if (ret) return;
   if (display) {
     console.log("Step " + Step + ": Adding " + grindPercent * 100 + "% of " + ingredientId);
@@ -107,6 +107,7 @@ function logAddIngredient(ingredientId, grindPercent, display = Display) {
 
 function logAddSunSalt(grains) {
   if (ret) return 0;
+  if (grains <= 0) return 0;
   if (Display) {
     console.log("Step " + Step + ": Adding " + grains + " grains of sun salt");
     Step += 1;
@@ -122,6 +123,7 @@ function logAddSunSalt(grains) {
  */
 function logAddMoonSalt(grains) {
   if (ret) return 0;
+  if (grains <= 0) return 0;
   if (Display) {
     console.log("Step " + Step + ": Adding " + grains + " grains of moon salt");
     Step += 1;
@@ -143,6 +145,7 @@ function logAddRotationSalt(salt, grains) {
     err = "Error while adding rotation salt: salt must be moon or sun.";
     return;
   }
+  if (grains <= 0) return 0;
   if (Display) {
     console.log("Step " + Step + ": Adding " + grains + " grains of " + salt + " salt");
     Step += 1;
@@ -163,6 +166,7 @@ function logAddRotationSalt(salt, grains) {
  */
 function logAddHeatVortex(length) {
   if (ret) return;
+  if (length <= 0) return;
   if (Display) {
     console.log("Step " + Step + ": Heat the vortex by " + length + " distance.");
     Step += 1;
@@ -177,6 +181,7 @@ function logAddHeatVortex(length) {
  */
 function logAddStirCauldron(length) {
   if (ret) return;
+  if (length <= 0) return;
   if (Display) {
     console.log("Step " + Step + ": Stir the cauldron by " + length + " distance.");
     Step += 1;
@@ -190,6 +195,7 @@ function logAddStirCauldron(length) {
  */
 function logAddPourSolvent(length) {
   if (ret) return;
+  if (length <= 0) return;
   if (Display) {
     console.log("Step " + Step + ": Pour solvent by " + length + " distance");
     Step += 1;
@@ -1261,7 +1267,8 @@ function straighten(
   direction,
   salt = "moon",
   maxGrains = Infinity,
-  ignoreReverse = true
+  ignoreReverse = true,
+  leastSegmentLength = 1e-7
 ) {
   if (ret) return 0;
   if (salt != "moon" && salt != "sun") {
@@ -1269,24 +1276,32 @@ function straighten(
     err = "Error while straightening: salt must be moon or sun.";
     return 0;
   }
-  let distanceStirred = 0.0;
-  let nextDistance = 0.0;
-  let nextSegmentDistance = 0.0;
+  let stirredLength = 0.0;
+  let nextStirLength = 0.0;
+  let nextSegmentLength = 0.0;
   let totalGrains = 0;
   let currentIndex = 0;
   let pendingPoints = currentPlot.pendingPoints;
-  while (true) {
+  let lastSegment = false;
+  while (!lastSegment) {
     const currentX = pendingPoints[currentIndex].x;
     const currentY = pendingPoints[currentIndex].y;
     let nextIndex = currentIndex;
     // Find the "real" next point by skipping "too close" points.
     while (true) {
-      nextSegmentDistance += pointDistance(pendingPoints[nextIndex], pendingPoints[nextIndex + 1]);
       nextIndex += 1;
-      // Threshold to decide two points to be different.
-      if (nextSegmentDistance > 1e-4) {
+      if (nextIndex >= pendingPoints.length) {
+        lastSegment = true;
         break;
       }
+      nextSegmentLength += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
+      // Threshold to decide two points to be different.
+      if (nextSegmentLength > leastSegmentLength) {
+        break;
+      }
+    }
+    if (nextSegmentLength <= leastSegmentLength) {
+      continue;
     }
     const nextX = pendingPoints[nextIndex].x;
     const nextY = pendingPoints[nextIndex].y;
@@ -1315,13 +1330,13 @@ function straighten(
       }
     }
     if (grains > 0) {
-      if (nextDistance > 0.0) {
-        logAddStirCauldron(nextDistance);
-        distanceStirred += nextDistance;
+      if (nextStirLength > 0.0) {
+        logAddStirCauldron(nextStirLength);
+        stirredLength += nextStirLength;
       }
       currentIndex = 0;
-      nextSegmentDistance = 0.0;
-      nextDistance = 0.0;
+      nextSegmentLength = 0.0;
+      nextStirLength = 0.0;
       if (totalGrains + grains >= maxGrains) {
         /** If the salt is capped, then straightening should terminate. */
         grains = maxGrains - totalGrains;
@@ -1336,25 +1351,27 @@ function straighten(
         pendingPoints = currentPlot.pendingPoints;
       }
     } else {
-      nextDistance += nextSegmentDistance;
-      nextSegmentDistance = 0.0;
-      if (nextDistance + distanceStirred >= maxStirLength) {
-        /** If the distance is capped, stir the remaining path and terminate. */
-        nextDistance = maxStirLength - distanceStirred;
-        logAddStirCauldron(nextDistance);
+      nextStirLength += nextSegmentLength;
+      nextSegmentLength = 0.0;
+      if (nextStirLength + stirredLength >= maxStirLength) {
+        /** If the stir length is capped, stir the remaining length and terminate. */
+        nextStirLength = maxStirLength - stirredLength;
+        logAddStirCauldron(nextStirLength);
         console.log("Straignten terminated by maximal length stirred.");
         break;
       } else {
         currentIndex = nextIndex;
-        if (pendingPoints.length < currentIndex + 2) {
-          console.log("Straignten terminated by end of path.");
-          logAddStirCauldron(nextDistance);
-          break;
-        }
       }
     }
   }
-  console.log("Added " + totalGrains + " grains of " + salt + " salt.");
+  if (lastSegment) {
+    // if break the loop by setting the `lastSegment` flag.
+    console.log("straighten terminated by end of path.");
+    logAddStirCauldron(Infinity);
+  }
+  console.log(
+    "Added " + totalGrains + " grains of " + salt + " salt in total while straightening."
+  );
   return totalGrains;
 }
 
