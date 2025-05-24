@@ -26,7 +26,7 @@ const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
 const DeviationT1 = 1.53 * 1800; // effect radius is 0.79, bottle radius is 0.74.
 const CreateSetPositionEnabled = true;
-const Display = true; // Macro to switch instruction display.
+let Display = true; // Macro to switch instruction display.
 let Step = 1;
 let TotalSun = 0;
 let TotalMoon = 0;
@@ -53,6 +53,14 @@ function logError() {
   } else {
     console.log("No error during this script!");
   }
+}
+
+/**
+ * Sets the display flag to control instruction display.
+ * @param {boolean} display - A boolean value to enable or disable instruction display.
+ */
+function setDisplay(display) {
+  Display = display;
 }
 
 /**
@@ -1440,6 +1448,7 @@ export {
   getUnit,
   getTotalMoon,
   getTotalSun,
+  setDisplay,
   logError,
   logSalt,
 };
