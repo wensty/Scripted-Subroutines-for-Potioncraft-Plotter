@@ -231,6 +231,8 @@ Used to detection of certain entities.
 - `getUnit(x,y)`: get the unit vector of the vector (x, y).
 - `getTotalMoon()`: get the total amount of moon salt added so far _in this script_.
 - `getTotalSun()`: get the total amount of sun salt added so far _in this script_.
+- `setDisplay(display)`: set the display mode of the plotter.
+  - `display`: `true` or `false`.
 - `logError()`: log the current error.
 - `logSalt()`: log the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
   - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.
