@@ -7,6 +7,7 @@ import {
   stirIntoVortex,
   stirToTurn,
   stirToDangerZoneExit,
+  stirToNearestTarget,
   heatAndPourToEdge,
   derotateToAngle,
   radToDeg,
