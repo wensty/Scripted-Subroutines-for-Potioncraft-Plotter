@@ -1,8 +1,4 @@
-test.js
-localScriptRecipes/*.js
+/localScriptRecipes/*.js
 
-node_modules
-package.json
-package-lock.json
-
-eslint.config.mjs
+/node_modules
+/package-lock.json
