@@ -14,18 +14,20 @@ import {
   checkBase,
   straighten,
   getTotalSun,
+  setDisplay,
 } from "../main";
 
 import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
 
-function main() {
+function beta() {
   checkBase("wine");
-  logAddSunSalt(69);
+  setDisplay(false);
+  logAddSunSalt(70);
   logAddIngredient(Ingredients.PhantomSkirt, 1);
-  derotateToAngle(saltToDeg("sun", 50 - 0.9));
-  const direction = degToRad(28.5);
-  straighten(Infinity, direction, "sun", 168);
+  derotateToAngle(saltToDeg("sun", 53 - 0.9));
+  const direction = degToRad(28.4);
+  straighten(Infinity, direction, "sun", 167);
   const x1 = currentPlot.pendingPoints[0].x;
   const y1 = currentPlot.pendingPoints[0].y;
   logAddStirCauldron(7);
@@ -35,8 +37,8 @@ function main() {
   console.log("Direction of concave part: " + radToDeg(getDirectionByVector(x2 - x1, y2 - y1)));
   const s1 = Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36);
   straighten(Infinity, direction, "sun", s1);
-  logAddStirCauldron(0.8);
-  logAddPourSolvent(6.3);
+  logAddStirCauldron(0.7);
+  logAddPourSolvent(6.34);
   const s2 = Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36);
   console.log("Final salt after main pouring: " + (getTotalSun() + s2));
   logAddStirCauldron(9.7);
@@ -44,8 +46,8 @@ function main() {
     "Final salt after last pouring: " +
       (getTotalSun() + Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36))
   );
-  straighten(1, degToRad(55), "sun", 828 - getTotalSun());
-  logAddStirCauldron(0.51);
+  straighten(1.3, degToRad(48.5), "sun", 825 - getTotalSun());
+  logAddStirCauldron(1.13);
   logAddSunSalt(1);
   console.log("least distance: " + stirToNearestTarget(19.25, 16.3));
 }
