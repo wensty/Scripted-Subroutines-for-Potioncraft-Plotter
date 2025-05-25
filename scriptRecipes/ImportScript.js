@@ -48,6 +48,16 @@ import {
   logError,
   logSalt,
 } from "../main";
+import {
+  SaltAngle,
+  MinimalPour,
+  VortexRadiusLarge,
+  VortexRadiusMedium,
+  VortexRadiusSmall,
+  DeviationT2,
+  DeviationT3,
+  DeviationT1,
+} from "../main";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";
 import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";

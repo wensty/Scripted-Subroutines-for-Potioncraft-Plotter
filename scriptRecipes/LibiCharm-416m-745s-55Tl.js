@@ -9,7 +9,11 @@ import {
   degToRad,
   checkBase,
   straighten,
+  getTotalMoon,
+  getTotalSun,
 } from "../main";
+
+import { Ingredients } from "@potionous/dataset";
 
 function main() {
   checkBase("wine");
@@ -17,7 +21,7 @@ function main() {
   logAddSunSalt(195);
   stirToTurn();
   straighten(Infinity, degToRad(-81), "moon", 298);
-  logAddMoonSalt(415 - TotalMoon);
+  logAddMoonSalt(415 - getTotalMoon());
   logAddStirCauldron(1.09);
   logAddMoonSalt(1);
   logAddStirCauldron(3.7);
@@ -29,6 +33,6 @@ function main() {
   stirToTurn();
   stirToTurn();
   stirToTurn();
-  logAddSunSalt(745 - TotalSun);
+  logAddSunSalt(745 - getTotalSun());
   logAddStirCauldron(Infinity);
 }

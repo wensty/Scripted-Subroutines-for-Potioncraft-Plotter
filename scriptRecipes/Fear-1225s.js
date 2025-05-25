@@ -13,7 +13,9 @@ import {
   getCurrentStirDirection,
   checkBase,
   straighten,
+  getTotalSun,
 } from "../main";
+import { SaltAngle } from "../main";
 import { Ingredients } from "@potionous/dataset";
 
 function main() {
@@ -48,7 +50,7 @@ function main() {
     stirToTurn(0.1 * SaltAngle);
     pourToDangerZone(1);
   }
-  logAddSunSalt(1225 - TotalSun);
+  logAddSunSalt(1225 - getTotalSun());
   for (let i = 0; i < 38; i++) {
     stirToTurn(0.1 * SaltAngle);
     pourToDangerZone(1);
@@ -89,7 +91,7 @@ function beta_1226s() {
     stirToTurn(Infinity, 0.001 * SaltAngle);
     pourToDangerZone(0.4);
   }
-  logAddSunSalt(1226 - TotalSun);
+  logAddSunSalt(1226 - getTotalSun());
   for (let i = 0; i < 47; i++) {
     stirToTurn(0.1, 0.1 * SaltAngle);
     pourToDangerZone(0.15);

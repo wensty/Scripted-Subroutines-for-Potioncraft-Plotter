@@ -49,15 +49,6 @@ function createSetPosition(x, y) {
 }
 
 /**
- * Dirty way to terminate the program. Reworked error handling and deprecated.
- */
-function terminate() {
-  const terminator = 0;
-  // @ts-ignore
-  terminator = 1;
-}
-
-/**
  * Logs the error message if an error occurred during this script.
  * If no error occurred, it logs a success message.
  */
@@ -1465,4 +1456,15 @@ export {
   setDisplay,
   logError,
   logSalt,
+};
+
+export {
+  SaltAngle,
+  MinimalPour,
+  VortexRadiusLarge,
+  VortexRadiusMedium,
+  VortexRadiusSmall,
+  DeviationT2,
+  DeviationT3,
+  DeviationT1,
 };

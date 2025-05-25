@@ -12,7 +12,11 @@ import {
   getBottlePolarAngle,
   checkBase,
   straighten,
+  getTotalMoon,
+  getTotalSun,
 } from "../main";
+import { Ingredients } from "@potionous/dataset";
+import { currentPlot } from "@potionous/plot";
 
 /**
  * Lightning Protection-239m-1116s
@@ -47,9 +51,9 @@ function main() {
   straighten(4, getDirectionByVector(x2 - x1, y2 - y1), "sun", 315);
   stirToTurn();
   straighten(6.61, degToRad(-169.5), "moon", 88);
-  logAddMoonSalt(239 - TotalMoon);
+  logAddMoonSalt(239 - getTotalMoon());
   logAddStirCauldron(2.3);
-  straighten(Infinity, degToRad(154.5), "sun", 1115 - TotalSun);
+  straighten(Infinity, degToRad(154.5), "sun", 1115 - getTotalSun());
   console.log("Minimal health: " + stirToDangerZoneExit());
   logAddSunSalt(1);
   console.log("Minimal distance: " + stirToNearestTarget(3.66, -30.72));
