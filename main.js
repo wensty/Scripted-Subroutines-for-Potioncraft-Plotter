@@ -25,7 +25,6 @@ const PourEpsilon = 2e-3; // precision for binary search of pouring length.
 const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
 const DeviationT1 = 1.53 * 1800; // effect radius is 0.79, bottle radius is 0.74.
-const CreateSetPositionEnabled = true;
 let Display = true; // Macro to switch instruction display.
 let Step = 1;
 let TotalSun = 0;
@@ -271,11 +270,10 @@ function isVortex(x) {
  * Stirs the solution into next vortex, adjusting the stir length based on
  * the current and target vortex positions.
  *
- * @param {number} [assumedVortexRadius=VortexRadiusLarge] - The assumed radius of the target vortex.
  * @param {number} [buffer=1e-5] - The buffer to adjust the final stir length.
  * @throws {EvalError} If no vortex is found in the pending points.
  */
-function stirIntoVortex(assumedVortexRadius = VortexRadiusLarge, buffer = 1e-5) {
+function stirIntoVortex(buffer = 1e-5) {
   if (ret) return;
   const pendingPoints = currentPlot.pendingPoints;
   const currentVortex = pendingPoints[0].bottleCollisions.find(isVortex);
@@ -300,7 +298,7 @@ function stirIntoVortex(assumedVortexRadius = VortexRadiusLarge, buffer = 1e-5) 
       const unit = getUnit(next.x - current.x, next.y - current.y);
       const l1 = unit.x * (nextVortex.x - current.x) + unit.y * (nextVortex.y - current.y);
       const l2 = -unit.y * (nextVortex.x - current.x) + unit.x * (nextVortex.y - current.y);
-      const vortexRadius = getTargetVortexInfo(nextVortex.x, nextVortex.y, assumedVortexRadius).r;
+      const vortexRadius = getTargetVortexInfo(nextVortex.x, nextVortex.y).r;
       const approximatedLastStirLength = l1 - Math.sqrt(vortexRadius ** 2 - l2 ** 2);
       logAddStirCauldron(currentStirLength + approximatedLastStirLength + buffer);
       return;
@@ -312,13 +310,11 @@ function stirIntoVortex(assumedVortexRadius = VortexRadiusLarge, buffer = 1e-5) 
 
 /**
  * Stirs the potion to the edge of the current vortex.
- * @param {number} [assumedVortexRadius=VortexRadiusLarge] - The assumed radius of the
- * target vortex when createSetPosition is not enabled.
  * @param {number} [buffer=1e-5] - The buffer to adjust the final stir length.
  * @throws {EvalError} If the bottle is not in a vortex or cannot reach the edge of the
  * current vortex.
  */
-function stirToEdge(assumedVortexRadius = VortexRadiusLarge, buffer = 1e-5) {
+function stirToEdge(buffer = 1e-5) {
   if (ret) return;
   const pendingPoints = currentPlot.pendingPoints;
   const vortex = pendingPoints[0].bottleCollisions.find(isVortex);
@@ -348,7 +344,7 @@ function stirToEdge(assumedVortexRadius = VortexRadiusLarge, buffer = 1e-5) {
   const unit = getUnit(next.x - current.x, next.y - current.y);
   const l1 = unit.x * (vortex.x - current.x) + unit.y * (vortex.y - current.y);
   const l2 = -unit.y * (vortex.x - current.x) + unit.x * (vortex.y - current.y);
-  const vortexRadius = getTargetVortexInfo(vortex.x, vortex.y, assumedVortexRadius).r;
+  const vortexRadius = getTargetVortexInfo(vortex.x, vortex.y).r;
   const approximatedLastStirLength = l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2);
   logAddStirCauldron(stirLength + approximatedLastStirLength - buffer);
 }
@@ -560,6 +556,7 @@ function stirToTier(
   leastSegmentLength = 1e-9,
   afterBuffer = 1e-5
 ) {
+  if (ret) return 0.0;
   const pendingPoints = currentPlot.pendingPoints;
   const currentPoint = currentPlot.pendingPoints[0];
   const currentAngle = -currentPoint.angle || 0.0;
@@ -651,10 +648,9 @@ function stirToTier(
 /**
  * Pours solvent to the edge of the current vortex.
  *
- * @param {number} [assumedVortexRadius=VortexRadiusLarge] - The assumed radius of the vortex.
  * @throws {EvalError} If the bottle is not in a vortex or cannot reach the vortex edge.
  */
-function pourToEdge(assumedVortexRadius = VortexRadiusLarge) {
+function pourToEdge() {
   if (ret) return;
   const currentPoint = currentPlot.pendingPoints[0];
   const vortex = currentPoint.bottleCollisions.find(isVortex);
@@ -663,20 +659,23 @@ function pourToEdge(assumedVortexRadius = VortexRadiusLarge) {
     err = "Error while pouring to edge: bottle not in a vortex.";
     return;
   } // In case this is called outside a vortex.
-  let vortexRadius = assumedVortexRadius; // default value if we do not have `createSetPosition`.
-  if (CreateSetPositionEnabled) {
-    vortexRadius = getCurrentVortexRadius();
-  } else {
-    console.log("Warning while pouring to edge: default vortex radius assumed.");
-  }
+  const vortexRadius = getCurrentVortexRadius();
   const pourUnit = getUnit(-currentPoint.x, -currentPoint.y);
   const l1 = pourUnit.x * (vortex.x - currentPoint.x) + pourUnit.y * (vortex.y - currentPoint.y);
   const l2 = -pourUnit.y * (vortex.x - currentPoint.x) + pourUnit.x * (vortex.y - currentPoint.y);
-  const approximatedPourLength = Math.min(
+  const approximatedPourLength = Math.max(
     Math.floor((l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2)) / MinimalPour) * MinimalPour -
       MinimalPour / 2.0,
     0.0
   );
+  const result = computePlot([
+    createSetPosition(currentPoint.x, currentPoint.y),
+    createPourSolvent(approximatedPourLength),
+  ]).pendingPoints[0].bottleCollisions.find(isVortex);
+  if (result === undefined) {
+    logAddPourSolvent(approximatedPourLength - MinimalPour);
+    return;
+  }
   logAddPourSolvent(approximatedPourLength);
   return;
 }
@@ -686,25 +685,15 @@ function pourToEdge(assumedVortexRadius = VortexRadiusLarge) {
  *
  * @param {number} targetVortexX - The x-coordinate of the target vortex.
  * @param {number} targetVortexY - The y-coordinate of the target vortex.
- * @param {number} [assumedVortexRadius=VortexRadiusLarge] - The assumed radius of the target
- *   vortex when createSetPosition is not enabled.
- * @throws {EvalError} If the bottle is not behind the target vortex or the bottle polar angle
- *   deviates too much.
+ * @throws {EvalError} If the bottle is not behind the target vortex.
  */
-function pourIntoVortex(targetVortexX, targetVortexY, assumedVortexRadius = VortexRadiusLarge) {
+function pourIntoVortex(targetVortexX, targetVortexY) {
   if (ret) return;
-  let vortex;
-  if (CreateSetPositionEnabled) {
-    vortex = getTargetVortexInfo(targetVortexX, targetVortexY);
-  } else {
-    console.log("Warning while pouring into certain vortex: assumed value used.");
-    vortex = { x: targetVortexX, y: targetVortexY, r: assumedVortexRadius };
-  }
+  const vortex = getTargetVortexInfo(targetVortexX, targetVortexY);
   const currentPoint = currentPlot.pendingPoints[0];
   const current = { x: currentPoint.x || 0.0, y: currentPoint.y || 0.0 };
   const pourUnit = getUnit(-current.x, -current.y);
   const l1 = pourUnit.x * (vortex.x - current.x) + pourUnit.y * (vortex.y - current.y);
-
   const l2 = -pourUnit.y * (vortex.x - current.x) + pourUnit.x * (vortex.y - current.y);
   if (Math.abs(l2) >= vortex.r) {
     ret = 1;
@@ -730,7 +719,7 @@ function pourIntoVortex(targetVortexX, targetVortexY, assumedVortexRadius = Vort
  * @param {number} repeats - The number of times to repeat the heating and pouring process.
  * @throws {EvalError} If the bottle is not currently in a vortex.
  */
-function heatAndPourToEdge(length, repeats, assumedVortexRadius = VortexRadiusLarge) {
+function heatAndPourToEdge(length, repeats) {
   if (ret) return;
   const vortex = currentPlot.pendingPoints[0].bottleCollisions.find(isVortex);
   if (vortex === undefined) {
@@ -738,13 +727,7 @@ function heatAndPourToEdge(length, repeats, assumedVortexRadius = VortexRadiusLa
     err = "Error while pouring to edge: bottle not in a vortex.";
     return;
   }
-
-  let vortexRadius = assumedVortexRadius;
-  if (CreateSetPositionEnabled) {
-    vortexRadius = getCurrentVortexRadius();
-  } else {
-    console.log("Warning while pouring to edge: default vortex radius assumed.");
-  }
+  const vortexRadius = getCurrentVortexRadius();
   const c = 0.17; // the coefficient of the archimedean spiral formed by the vortex.
   const vortexDistance = Math.sqrt(vortex.x ** 2 + vortex.y ** 2);
   const cosTheta = vortexRadius / vortexDistance;
@@ -791,17 +774,12 @@ function pourToDangerZone(maxPourLength) {
   const initialCommittedIndex = Math.max(currentPlot.committedPoints.length - 1, 0);
   const initialX = currentPlot.pendingPoints[0].x || 0.0;
   const initialY = currentPlot.pendingPoints[0].y || 0.0;
-  let plot;
-  let nextIndex;
-  if (CreateSetPositionEnabled) {
-    plot = computePlot([createSetPosition(initialX, initialY), createPourSolvent(maxPourLength)]);
-    nextIndex = 0;
-  } else {
-    plot = computePlot(currentRecipeItems.concat([createPourSolvent(maxPourLength)]));
-    nextIndex = initialCommittedIndex;
-  }
+  const plot = computePlot([
+    createSetPosition(initialX, initialY),
+    createPourSolvent(maxPourLength),
+  ]);
+  let nextIndex = 0;
   let pourLength = 0.0;
-
   while (true) {
     nextIndex += 1;
     if (nextIndex == plot.committedPoints.length) {
@@ -1143,24 +1121,16 @@ function getCurrentStirDirection() {
 
 /**
  * Retrieves the radius of the current vortex.
- *
- * @param {number} [assumedVortexRadius=VortexRadiusLarge] - The assumed radius of the current vortex if createSetPosition is not enabled.
  * @returns {number} The radius of the current vortex.
  * @throws {Error} If the bottle is not in a vortex.
  */
-function getCurrentVortexRadius(assumedVortexRadius = VortexRadiusLarge) {
+function getCurrentVortexRadius() {
   if (ret) return VortexRadiusLarge;
   const result = currentPlot.pendingPoints[0].bottleCollisions.find(isVortex);
   if (result === undefined) {
     ret = 1;
     err = "Error while finding the radius of current vortex: current point is not in a vortex.";
     return VortexRadiusLarge;
-  }
-  if (!CreateSetPositionEnabled) {
-    console.log(
-      "Warining while finding the radius of current vortex: createSetPosition is not enabled. Return default value."
-    );
-    return assumedVortexRadius;
   }
   const vortex = result;
   let testSmall = computePlot([
@@ -1182,21 +1152,13 @@ function getCurrentVortexRadius(assumedVortexRadius = VortexRadiusLarge) {
  * Retrieves information about the target vortex at specified coordinates.
  * @param {number} targetX - The x-coordinate of the target vortex.
  * @param {number} targetY - The y-coordinate of the target vortex.
- * @param {number} [assumedVortexRadius=VortexRadiusLarge] - The assumed radius of
- * the vortex if `createSetPosition` is not enabled.
  * @returns {{x:number, y:number, r:number}} An object containing the x and y coordinates and the radius
  * of the target vortex.
  * @throws {EvalError} If there is no vortex at the target position.
  */
-function getTargetVortexInfo(targetX, targetY, assumedVortexRadius = VortexRadiusLarge) {
-  let defaultOuput = { x: targetX, y: targetY, r: assumedVortexRadius };
+function getTargetVortexInfo(targetX, targetY) {
+  let defaultOuput = { x: 0.0, y: 0.0, r: 0.0 };
   if (ret) return defaultOuput;
-  if (!CreateSetPositionEnabled) {
-    console.log(
-      "Warning while getting target vortex radius: createSetPosition not enabled. Return default radius."
-    );
-    return defaultOuput;
-  }
   const plot = computePlot([createSetPosition(targetX, targetY)]);
   const result = plot.pendingPoints[0].bottleCollisions.find(isVortex);
   if (result == undefined) {
