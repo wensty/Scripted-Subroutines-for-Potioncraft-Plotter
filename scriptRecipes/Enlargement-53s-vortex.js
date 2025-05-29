@@ -9,7 +9,7 @@ import {
   heatAndPourToEdge,
   degToRad,
   radToDeg,
-  getBottlePolarAngleByVortex,
+  getBottlePolarAngleByEntity,
   getCurrentStirDirection,
   checkBase,
   straighten,
@@ -37,7 +37,7 @@ function main() {
   stirToTurn();
   straighten(Infinity, degToRad(59.07 - 180), "sun", 53);
   stirIntoVortex();
-  console.log(radToDeg(getBottlePolarAngleByVortex()));
+  console.log(radToDeg(getBottlePolarAngleByEntity()));
   logAddHeatVortex(3);
   heatAndPourToEdge(0.07, 45);
   for (let i = 0; i < 44; i++) {

@@ -11,7 +11,7 @@ import {
   heatAndPourToEdge,
   derotateToAngle,
   radToDeg,
-  getBottlePolarAngleByVortex,
+  getBottlePolarAngleByEntity,
   getCurrentStirDirection,
   checkBase,
   straighten,
@@ -26,7 +26,7 @@ function beta() {
   logAddPourSolvent(Infinity);
   console.log(radToDeg(getCurrentStirDirection()));
   stirIntoVortex();
-  console.log(radToDeg(getBottlePolarAngleByVortex()) - 90);
+  console.log(radToDeg(getBottlePolarAngleByEntity()) - 90);
   logAddHeatVortex(3);
   logAddStirCauldron(4);
   stirToTurn();

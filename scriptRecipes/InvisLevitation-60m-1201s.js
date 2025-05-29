@@ -18,7 +18,7 @@ import {
   radToDeg,
   saltToDeg,
   getBottlePolarAngle,
-  getBottlePolarAngleByVortex,
+  getBottlePolarAngleByEntity,
   getCurrentStirDirection,
   checkBase,
   straighten,
@@ -82,7 +82,7 @@ function beta() {
   // match the angle entering vortex.
   straighten(Infinity, degToRad(-65.9), "sun", saltToReverse);
   stirIntoVortex();
-  console.log(radToDeg(getBottlePolarAngleByVortex(false)));
+  console.log(radToDeg(getBottlePolarAngleByEntity(false)));
   logAddHeatVortex(4.6);
   pourToEdge();
   heatAndPourToEdge(1, 9);

@@ -39,16 +39,16 @@ project
 ### LTS version
 
 - Copy the whole `main.js` file into the online script editor.
-- Delete all the import statements _since the online plotter have not implemented this._ Add a `main();` statement calling the main script.
+- Delete all the import statements. Add a `main();` statement calling the main script function.
 - Write your script recipe in the `main()` function. All the defined utility functions and subroutines can be used.
 - This produce a too long link to share. To share it you flatten it into a regular instruction recipe
 
 ### beta version
 
-- import the required function from github repository.
-- Write your script recipes.
-- This produce a script recipe link that can be shared.
-- but is volatile to future changes in the `main.js` file.
+- <del>import the required function from github repository.</del>
+- <del>Write your script recipes.</del>
+- <del>This produce a script recipe link that can be shared.</del>
+- <del>but is volatile to future changes in the `main.js` file.</del>
 - Still, you can copy the whole `main.js` file as in LTS version.
 - The dev branch enables `createSetPosition()` so it only works with beta version, but with better efficiency.
 
@@ -117,13 +117,13 @@ A `PlotPoint` item is a point on the map with the following information:
 
 ## Implemented utilities and subroutines
 
-### Impoortant notes:
-
-- <del>Some function requires `createSetPosition(x, y)`. Currently this is only available in beta version, flagged by the constant `CreateSetPositionEnabled`. In master branch this is set to `false` and `createSetPosition(x, y)` is not imported to avoid error, while in dev branch this is set to `true`.</del>
+### Important notes:
 
 - New discovery: `createSetPosition(x, y)` can be simulated, so we can still use this API with some workaround.
 
-- Without exceptions, directions are based on north and use radian input and output, clockwise(sun salt direction) being positive, anticlockwise(moon salt direction) being negative. Only `derotateToAngle()` uses degree input, this is because `.angle` of points is in degrees.
+- Without exceptions, directions are based on north and use radian input and output, clockwise(sun salt direction) being positive, anticlockwise(moon salt direction) being negative.
+
+  - `derotateToAngle()` uses degree input, this is because `.angle` of points is in degrees.
 
 - For the full details of the usages, see JSDoc.
 
@@ -156,6 +156,9 @@ Used to detection of certain entities.
   - `targetAngle`: the angle of the target effect.
   - `maxDeviation`: the maximum angle deviation to the target effect.
   - `ignoreAngle`: whether to ignore the angle deviation.
+- `stirToConsume(consumeLength)`: stir to consume a specified length while in a vortex.
+  - `consumeLength`: the length of stirring to consume.
+  - <em>The consume is virtual</em>. Consider if it can be translated to real path consuming.
 
 ### Pouring subroutines.
 
@@ -191,7 +194,9 @@ Used to detection of certain entities.
   - This is dedicated to compute the relative direction. So the base direction must be provided.
 - `getBottlePolarAngle(toBottle?)`: computes the direction angle of the current bottle position.
   - `toBottle`: Boolean default to be `true`. Decide to calculate the angle toward the bottle or from the bottle.
-- `getBottlePolarAngleByVortex(toBottle?)`: computes the direction angle of the current bottle position _relative to the center of the current vortex_.
+- `getBottlePolarAngleByEntity(expectedEntityTypes, toBottle?)`: computes the direction angle of the current bottle position _relative to the center_ of the given entity touching the current bottle.
+  - Renamed to include potion effect angle calculation.
+  - `expectedEntityTypes`: an array of entity type names, default to be `EntityVortex=["Vortex"]`. Some constants have been defined for this.
   - `toBottle`: Boolean default to be `true`. Decide to calculate the angle toward the bottle or from the bottle.
 - `getCurrentStirDirection()`: computes the direction angle of the current stir in radians.
 
@@ -229,5 +234,13 @@ Used to detection of certain entities.
 - `logError()`: log the current error.
 - `logSalt()`: log the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
   - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.
+
+### Constants
+
+- `SaltAngle`: the angle of one grain of rotation salt in radian.
+- `MinimalPour`: the minimal actual pouring distance unit in online plotter. The value is `0.008`.
+- `VortexRadiusLarge`, `VortexRadiusMedium`, `VortexRadiusSmall`: the radius of the vortex. The value is `2.39`, `1.99`, `1.74` respectively.
+- `DeviationT2`, `DeviationT3`, `DeviationT1`: the deviation of the vortex. The value is `600`, `100`, `2754` respectively.
+- `EntityVortex`, `EntityPotionEffect`, `EntityDangerZone`, `EntityStrongDangerZone`: Predefined arrays of related entity names.
 
 ---

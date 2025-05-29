@@ -25,6 +25,11 @@ const PourEpsilon = 2e-3; // precision for binary search of pouring length.
 const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
 const DeviationT1 = 1.53 * 1800; // effect radius is 0.79, bottle radius is 0.74.
+const EntityVortex = ["Vortex"];
+const EntityPotionEffect = ["PotionEffect"];
+const EntityDangerZone = ["DangerZonePart", "StrongDangerZonePart", "WeakDangerZonePart"];
+const EntityStrongDangerZone = ["DangerZonePart", "StrongDangerZonePart"];
+const Salt = { Moon: "moon", Sun: "sun" };
 let Display = true; // Macro to switch instruction display.
 let Step = 1;
 let TotalSun = 0;
@@ -109,6 +114,20 @@ function logAddIngredient(ingredientId, grindPercent = 1.0, display = Display) {
     Step += 1;
   }
   addIngredient(ingredientId, grindPercent);
+}
+
+/**
+ * Logs the addition of a Phantom Skirt ingredient and adds it to the current plot.
+ * @param {number} [grindPercent=1.0] - The percentage of the Phantom Skirt to grind, default to 100%.
+ * @param {boolean} [display=Display] - Whether to display the log message; defaults to the global Display setting.
+ */
+function logSkirt(grindPercent = 1.0, display = Display) {
+  if (ret) return;
+  if (display) {
+    console.log("Step " + Step + ": Adding " + grindPercent * 100 + "% of skirt");
+    Step += 1;
+  }
+  addIngredient(Ingredients.PhantomSkirt, grindPercent);
 }
 
 /**
@@ -235,32 +254,22 @@ function logAddSetPosition(x, y) {
  */
 
 /**
- * Checks if the given point is a danger zone.
- * @param {import("@potionous/dataset").PotionBaseEntity} x Checked entity.
- * @returns {boolean} True if the entity type is a danger zone, false otherwise.
+ * Returns a function that checks if the bottle collides to one of the expected entity types.
+ * @param {string[]} expectedEntityTypes The expected entity types.
+ * @returns {(x: import("@potionous/dataset").PotionBaseEntity) => boolean} A function that takes a point and returns true if the point is one of the expected entity types, false otherwise.
  */
-function isDangerZone(x) {
-  return ["StrongDangerZonePart", "WeakDangerZonePart", "DangerZonePart"].includes(x.entityType);
+function isEntityType(expectedEntityTypes) {
+  /**
+   * @param {import("@potionous/dataset").PotionBaseEntity} x Checked entity.
+   * @returns {boolean} True if the entity type is one of the expected types, false otherwise.
+   */
+  return (x) => expectedEntityTypes.includes(x.entityType);
 }
 
-/**
- * Checks if the given point is a strong danger zone.
- * @param {import("@potionous/dataset").PotionBaseEntity} x Checked entity.
- */
-
-function isStrongDangerZone(x) {
-  return ["StrongDangerZonePart", "DangerZonePart"].includes(x.entityType);
-}
-
-/**
- * Checks if the given point is a Vortex.
- * @param {import("@potionous/dataset").PotionBaseEntity} x A point with an entityType property.
- * @returns {boolean} True if the entity type is a Vortex, false otherwise.
- */
-function isVortex(x) {
-  const { entityType } = x;
-  return ["Vortex"].includes(entityType);
-}
+const isDangerZone = isEntityType(EntityDangerZone);
+const isStrongDangerZone = isEntityType(EntityStrongDangerZone);
+const isVortex = isEntityType(EntityVortex);
+const isPotionEffect = isEntityType(EntityPotionEffect);
 
 /**
  * Subroutines related to stirring.
@@ -638,6 +647,26 @@ function stirToTier(
   }
   ret = 1;
   err = "Error while stirring to tier: cannot reach target tier.";
+  return;
+}
+
+/**
+ * Stirs the potion to consume a specified length while in a vortex.
+ *
+ * @param {number} consumeLength - The length of stirring to consume.
+ * @throws {EvalError} If the bottle is not in a vortex.
+ */
+function stirToConsume(consumeLength) {
+  if (ret) return;
+  const currentPoint = currentPlot.pendingPoints[0];
+  const result = currentPoint.bottleCollisions.find(isVortex);
+  if (result == undefined) {
+    ret = 1;
+    err = "Error while stirring to consume: bottle not in a vortex.";
+    return;
+  }
+  logAddStirCauldron(consumeLength);
+  logAddSetPosition(currentPoint.x, currentPoint.y);
   return;
 }
 
@@ -1057,34 +1086,39 @@ function getBottlePolarAngle(toBottle = true) {
 }
 
 /**
- * Computes the direction angle of the current bottle position relative to a vortex.
+ * Computes the direction angle of the current bottle position relative to the given entity.
  *
- * @param {boolean} [toBottle=true] - If true, calculates the direction from the current position to the center of the vortex.
- *                              If false, calculates the direction from the center of the vortex to the current position.
+ * @param {string[]} expectedEntityTypes A list of entity types to be considered. The function will return the direction to the first found entity.
+ * @param {boolean} [toBottle=true] - If true, calculates the direction from the current position to the entity.
+ *                              If false, calculates the direction from the entity to the current position.
  * @returns {number} The direction angle in radians.
- * @throws {EvalError} If the bottle is not in a vortex or at the center of a vortex.
+ * @throws {Error} If the given entity is not found or the bottle coincides the entity.
  */
-function getBottlePolarAngleByVortex(toBottle = true) {
+function getBottlePolarAngleByEntity(expectedEntityTypes = EntityVortex, toBottle = true) {
   if (ret) return 0.0;
   const currentPoint = currentPlot.pendingPoints[0];
-  const vortex = currentPoint.bottleCollisions.find(isVortex);
-  if (vortex === undefined) {
+  let entity = undefined;
+  // online plotter do not support for-of statement.
+  for (let i = 0; i < expectedEntityTypes.length; i++) {
+    entity = currentPoint.bottleCollisions.find((x) => x.entityType === expectedEntityTypes[i]);
+    if (entity !== undefined) break;
+  }
+  if (entity === undefined) {
     ret = 1;
-    err = "Error while getting bottle polar angle by vortex: bottle not in a vortex.";
+    err = "Error while getting bottle polar angle by entity: given entity not found.";
     return 0.0;
   }
-  let deltaX = (currentPoint.x || 0.0) - vortex.x;
-  let deltaY = (currentPoint.y || 0.0) - vortex.y;
-  if (Math.abs(deltaX) < 1e-6 && Math.abs(deltaY) < -6) {
+  let delta = { x: (currentPoint.x || 0.0) - entity.x, y: (currentPoint.y || 0.0) - entity.y };
+  if (Math.abs(delta.x) < 1e-9 && Math.abs(delta.y) < 1e-9) {
     ret = 1;
-    err = "Error while getting bottle polar angle by vortex: bottle at center of vortex.";
+    err = "Error while getting bottle polar angle by entity: bottle coincides the entity.";
     return 0.0;
   }
   if (!toBottle) {
-    deltaX = -deltaX;
-    deltaY = -deltaY;
+    delta.x = -delta.x;
+    delta.y = -delta.y;
   }
-  return getDirectionByVector(deltaX, deltaY);
+  return getDirectionByVector(delta.x, delta.y);
 }
 
 /**
@@ -1350,9 +1384,7 @@ function straighten(
   return totalGrains;
 }
 
-/**
- * if the functions are imported from github, we have no access to the global statistics and we have to manually calculate them.
- */
+/** main function. */
 function main() {
   // main script here.
   logError();
@@ -1365,6 +1397,7 @@ function main() {
  */
 export {
   logAddIngredient,
+  logSkirt,
   logAddMoonSalt,
   logAddSunSalt,
   logAddRotationSalt,
@@ -1384,6 +1417,7 @@ export {
   stirToDangerZoneExit,
   stirToNearestTarget,
   stirToTier,
+  stirToConsume,
   // Pouring subroutines.
   pourToEdge,
   heatAndPourToEdge,
@@ -1402,7 +1436,7 @@ export {
   getVectorByDirection,
   getRelativeDirection,
   getBottlePolarAngle,
-  getBottlePolarAngleByVortex,
+  getBottlePolarAngleByEntity,
   getCurrentStirDirection,
   // Extraction of other informations.
   checkBase,
@@ -1429,4 +1463,8 @@ export {
   DeviationT2,
   DeviationT3,
   DeviationT1,
+  EntityVortex,
+  EntityPotionEffect,
+  EntityDangerZone,
+  EntityStrongDangerZone,
 };

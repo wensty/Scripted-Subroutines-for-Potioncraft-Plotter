@@ -4,6 +4,7 @@
 
 import {
   logAddIngredient,
+  logSkirt,
   logAddMoonSalt,
   logAddSunSalt,
   logAddRotationSalt,
@@ -20,6 +21,7 @@ import {
   stirToDangerZoneExit,
   stirToNearestTarget,
   stirToTier,
+  stirToConsume,
   pourToEdge,
   heatAndPourToEdge,
   pourToDangerZone,
@@ -35,7 +37,7 @@ import {
   getVectorByDirection,
   getRelativeDirection,
   getBottlePolarAngle,
-  getBottlePolarAngleByVortex,
+  getBottlePolarAngleByEntity,
   getCurrentStirDirection,
   checkBase,
   getCurrentVortexRadius,
@@ -45,6 +47,7 @@ import {
   getUnit,
   getTotalMoon,
   getTotalSun,
+  setDisplay,
   logError,
   logSalt,
 } from "../main";
@@ -57,6 +60,10 @@ import {
   DeviationT2,
   DeviationT3,
   DeviationT1,
+  EntityVortex,
+  EntityPotionEffect,
+  EntityDangerZone,
+  EntityStrongDangerZone,
 } from "../main";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";
