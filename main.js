@@ -16,6 +16,7 @@ import {
 import { Ingredients, PotionBases } from "@potionous/dataset";
 import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
 
+const LuckyInfinity = 1437;
 const SaltAngle = (2 * Math.PI) / 1000.0; // angle per salt in radian.
 const MinimalPour = 8e-3; // minimal pouring unit of current version of plotter. All pours are multiply of this.
 const VortexRadiusLarge = 2.39;
@@ -31,6 +32,8 @@ const EntityDangerZone = ["DangerZonePart", "StrongDangerZonePart", "WeakDangerZ
 const EntityStrongDangerZone = ["DangerZonePart", "StrongDangerZonePart"];
 const Salt = { Moon: "moon", Sun: "sun" };
 let Display = true; // Macro to switch instruction display.
+let RoundStirring = true; // macro to control whether round stirrings.
+let StirringUnit = 1e-3; // minimal stir unit of hand-added stirring instructions. Stirring instructions add by scripts can be infinitely precise.
 let Step = 1;
 let TotalSun = 0;
 let TotalMoon = 0;
@@ -70,6 +73,15 @@ function logError() {
  */
 function setDisplay(display) {
   Display = display;
+}
+
+/**
+ * Sets the stir rounding flag to control whether rounding the stir length.
+ * @param {boolean} stirRounding - A boolean value to enable or disable rounding the stir length.
+ */
+
+function setStirRounding(stirRounding) {
+  RoundStirring = stirRounding;
 }
 
 /**
@@ -202,7 +214,7 @@ function logAddHeatVortex(length) {
     console.log("Step " + Step + ": Heat the vortex by " + length + " distance.");
     Step += 1;
   }
-  addHeatVortex(length);
+  addHeatVortex(Math.min(length, LuckyInfinity));
 }
 
 /**
@@ -217,7 +229,8 @@ function logAddStirCauldron(length) {
     console.log("Step " + Step + ": Stir the cauldron by " + length + " distance.");
     Step += 1;
   }
-  addStirCauldron(length);
+  addStirCauldron(Math.min(length, LuckyInfinity));
+  return;
 }
 /**
  * Logs the addition of a pour solvent instruction and adds it to the current plot.
@@ -231,7 +244,7 @@ function logAddPourSolvent(length) {
     console.log("Step " + Step + ": Pour solvent by " + length + " distance");
     Step += 1;
   }
-  addPourSolvent(length);
+  addPourSolvent(Math.min(length, LuckyInfinity));
 }
 
 /**
@@ -309,6 +322,11 @@ function stirIntoVortex(buffer = 1e-5) {
       const l2 = -unit.y * (nextVortex.x - current.x) + unit.x * (nextVortex.y - current.y);
       const vortexRadius = getTargetVortexInfo(nextVortex.x, nextVortex.y).r;
       const approximatedLastStirLength = l1 - Math.sqrt(vortexRadius ** 2 - l2 ** 2);
+      let finalStirLength = currentStirLength + approximatedLastStirLength;
+      if (RoundStirring) {
+        logAddStirCauldron(Math.ceil(finalStirLength / StirringUnit) * StirringUnit);
+        return;
+      }
       logAddStirCauldron(currentStirLength + approximatedLastStirLength + buffer);
       return;
     }
@@ -355,7 +373,13 @@ function stirToEdge(buffer = 1e-5) {
   const l2 = -unit.y * (vortex.x - current.x) + unit.x * (vortex.y - current.y);
   const vortexRadius = getTargetVortexInfo(vortex.x, vortex.y).r;
   const approximatedLastStirLength = l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2);
-  logAddStirCauldron(stirLength + approximatedLastStirLength - buffer);
+  const finalStirLength = stirLength + approximatedLastStirLength;
+  if (RoundStirring) {
+    logAddStirCauldron(Math.floor(finalStirLength / StirringUnit) * StirringUnit);
+    return;
+  }
+  logAddStirCauldron(finalStirLength - buffer);
+  return;
 }
 
 /**
@@ -404,6 +428,10 @@ function stirToTurn(
       currentUnit != undefined &&
       currentUnit.x * nextUnit.x + currentUnit.y * nextUnit.y < minCosine
     ) {
+      if (RoundStirring) {
+        logAddStirCauldron(Math.floor(stirLength / StirringUnit) * StirringUnit);
+        return;
+      }
       logAddStirCauldron(stirLength);
       return;
     } else {
@@ -412,6 +440,9 @@ function stirToTurn(
       currentIndex = nextIndex;
       currentUnit = nextUnit;
       if (stirLength >= maxStirLength) {
+        if (RoundStirring) {
+          logAddStirCauldron(Math.floor(maxStirLength / StirringUnit) * StirringUnit);
+        }
         logAddStirCauldron(maxStirLength);
         return;
       }
@@ -456,6 +487,9 @@ function stirToDangerZoneExit() {
       }
     }
   }
+  if (RoundStirring) {
+    stirDistance = Math.ceil(stirDistance / StirringUnit) * StirringUnit;
+  }
   logAddStirCauldron(stirDistance); // calculation by plotter is accurate enough.
   return leastHealth;
 }
@@ -463,6 +497,7 @@ function stirToDangerZoneExit() {
 /**
  * Stirs the potion to the closest point to the target position within the given
  * maximum stir length.
+ * This is not affected by automatic rounding.
  * @param {number} targetX The x-coordinate of the target.
  * @param {number} targetY The y-coordinate of the target.
  * @param {number} [maxStirLength=Infinity] The maximum length to stir the potion.
@@ -543,7 +578,7 @@ function stirToNearestTarget(
 /**
  * Stirs the potion to the specified tier, adjusting the stir length based on
  * the current angle and position.
- *
+ * This is not affected by automatic stir rounding.
  * @param {number} targetX - The x-coordinate of the target.
  * @param {number} targetY - The y-coordinate of the target.
  * @param {number} targetAngle - The angle of the target.
@@ -652,7 +687,7 @@ function stirToTier(
 
 /**
  * Stirs the potion to consume a specified length while in a vortex.
- *
+ * This is not affected by stir rounding, since the stir length is manually input.
  * @param {number} consumeLength - The length of stirring to consume.
  * @throws {EvalError} If the bottle is not in a vortex.
  */
@@ -1340,6 +1375,9 @@ function straighten(
     }
     if (grains > 0) {
       if (nextStirLength > 0.0) {
+        if (RoundStirring) {
+          nextStirLength = Math.ceil(nextStirLength / StirringUnit) * StirringUnit;
+        }
         logAddStirCauldron(nextStirLength);
         stirredLength += nextStirLength;
       }
@@ -1365,6 +1403,9 @@ function straighten(
       if (nextStirLength + stirredLength >= maxStirLength) {
         /** If the stir length is capped, stir the remaining length and terminate. */
         nextStirLength = maxStirLength - stirredLength;
+        if (RoundStirring) {
+          nextStirLength = Math.ceil(nextStirLength / StirringUnit) * StirringUnit;
+        }
         logAddStirCauldron(nextStirLength);
         console.log("Straignten terminated by maximal length stirred.");
         break;

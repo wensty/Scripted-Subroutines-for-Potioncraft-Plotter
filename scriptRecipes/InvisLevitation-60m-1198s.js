@@ -23,6 +23,7 @@ import {
   checkBase,
   straighten,
 } from "../main";
+import { EntityVortex } from "../main";
 
 import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
@@ -82,7 +83,7 @@ function beta() {
   // match the angle entering vortex.
   straighten(Infinity, degToRad(-65.9), "sun", saltToReverse);
   stirIntoVortex();
-  console.log(radToDeg(getBottlePolarAngleByEntity(false)));
+  console.log(radToDeg(getBottlePolarAngleByEntity(EntityVortex, false)));
   logAddHeatVortex(4.6);
   pourToEdge();
   heatAndPourToEdge(1, 9);
@@ -91,7 +92,7 @@ function beta() {
   logAddStirCauldron(9.5);
   straighten(Infinity, degToRad(5), "sun", 99);
   // last salt for precise centering
-  logAddStirCauldron(0.736);
+  logAddStirCauldron(0.933);
   logAddSunSalt(1);
   logAddStirCauldron(3);
   console.log("path deviation: " + stirToNearestTarget(-4.22, 36.37));
