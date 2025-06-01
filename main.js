@@ -58,7 +58,7 @@ function createSetPosition(x, y) {
 /**
  * Fixes undefined coordinates in a PotionBaseEntity object by setting them to 0.0.
  *
- * @param {PotionBaseEntity | undefined} entity - The entity to fix.
+ * @param {import("@potionous/dataset").PotionBaseEntity | undefined} entity - The entity to fix.
  * @returns {{x: number, y: number} | undefined} The entity with defined coordinates or undefined if the input is undefined.
  */
 function fixUndef(entity) {
