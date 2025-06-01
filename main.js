@@ -56,6 +56,17 @@ function createSetPosition(x, y) {
 }
 
 /**
+ * Fixes undefined coordinates in a PotionBaseEntity object by setting them to 0.0.
+ *
+ * @param {PotionBaseEntity | undefined} entity - The entity to fix.
+ * @returns {{x: number, y: number} | undefined} The entity with defined coordinates or undefined if the input is undefined.
+ */
+function fixUndef(entity) {
+  if (entity === undefined) return undefined;
+  return { x: entity.x || 0.0, y: entity.y || 0.0 };
+}
+
+/**
  * Logs the error message if an error occurred during this script.
  * If no error occurred, it logs a success message.
  */
@@ -298,7 +309,7 @@ const isPotionEffect = isEntityType(EntityPotionEffect);
 function stirIntoVortex(buffer = 1e-5) {
   if (ret) return;
   const pendingPoints = currentPlot.pendingPoints;
-  const currentVortex = pendingPoints[0].bottleCollisions.find(isVortex);
+  const currentVortex = fixUndef(pendingPoints[0].bottleCollisions.find(isVortex));
   let currentStirLength = 0.0;
   let index = 0;
   let current = { x: pendingPoints[0].x || 0.0, y: pendingPoints[0].y || 0.0 };
@@ -309,7 +320,7 @@ function stirIntoVortex(buffer = 1e-5) {
       err = "Error while stirring into vortex: no vortex found.";
       return;
     }
-    const nextVortex = pendingPoints[index].bottleCollisions.find(isVortex);
+    const nextVortex = fixUndef(pendingPoints[index].bottleCollisions.find(isVortex));
     if (
       nextVortex != undefined &&
       (currentVortex == undefined ||
@@ -344,7 +355,7 @@ function stirIntoVortex(buffer = 1e-5) {
 function stirToEdge(buffer = 1e-5) {
   if (ret) return;
   const pendingPoints = currentPlot.pendingPoints;
-  const vortex = pendingPoints[0].bottleCollisions.find(isVortex);
+  const vortex = fixUndef(pendingPoints[0].bottleCollisions.find(isVortex));
   let stirLength = 0.0;
   if (vortex === undefined) {
     ret = 1;
@@ -354,7 +365,7 @@ function stirToEdge(buffer = 1e-5) {
   let index = 0;
   while (true) {
     index += 1;
-    const result = pendingPoints[index].bottleCollisions.find(isVortex);
+    const result = fixUndef(pendingPoints[index].bottleCollisions.find(isVortex));
     if (result === undefined || result.x != vortex.x || result.y != vortex.y) {
       break;
     } else {
@@ -717,7 +728,7 @@ function stirToConsume(consumeLength) {
 function pourToEdge() {
   if (ret) return;
   const currentPoint = currentPlot.pendingPoints[0];
-  const vortex = currentPoint.bottleCollisions.find(isVortex);
+  const vortex = fixUndef(currentPoint.bottleCollisions.find(isVortex));
   if (vortex === undefined) {
     ret = 1;
     err = "Error while pouring to edge: bottle not in a vortex.";
@@ -785,7 +796,7 @@ function pourIntoVortex(targetVortexX, targetVortexY) {
  */
 function heatAndPourToEdge(length, repeats) {
   if (ret) return;
-  const vortex = currentPlot.pendingPoints[0].bottleCollisions.find(isVortex);
+  const vortex = fixUndef(currentPlot.pendingPoints[0].bottleCollisions.find(isVortex));
   if (vortex === undefined) {
     ret = 1;
     err = "Error while pouring to edge: bottle not in a vortex.";
@@ -1135,7 +1146,9 @@ function getBottlePolarAngleByEntity(expectedEntityTypes = EntityVortex, toBottl
   let entity = undefined;
   // online plotter do not support for-of statement.
   for (let i = 0; i < expectedEntityTypes.length; i++) {
-    entity = currentPoint.bottleCollisions.find((x) => x.entityType === expectedEntityTypes[i]);
+    entity = fixUndef(
+      currentPoint.bottleCollisions.find((x) => x.entityType === expectedEntityTypes[i])
+    );
     if (entity !== undefined) break;
   }
   if (entity === undefined) {
@@ -1195,26 +1208,8 @@ function getCurrentStirDirection() {
  */
 function getCurrentVortexRadius() {
   if (ret) return VortexRadiusLarge;
-  const result = currentPlot.pendingPoints[0].bottleCollisions.find(isVortex);
-  if (result === undefined) {
-    ret = 1;
-    err = "Error while finding the radius of current vortex: current point is not in a vortex.";
-    return VortexRadiusLarge;
-  }
-  const vortex = result;
-  let testSmall = computePlot([
-    createSetPosition(vortex.x + 1.8, vortex.y),
-  ]).pendingPoints[0].bottleCollisions.find(isVortex);
-  if (testSmall === undefined || testSmall.x != vortex.x || testSmall.y != vortex.y) {
-    return VortexRadiusSmall;
-  }
-  let testMedium = computePlot([
-    createSetPosition(vortex.x + 2.2, vortex.y),
-  ]).pendingPoints[0].bottleCollisions.find(isVortex);
-  if (testMedium === undefined || testMedium.x != vortex.x || testMedium.y != vortex.y) {
-    return VortexRadiusMedium;
-  }
-  return VortexRadiusLarge;
+  const currentPoint = currentPlot.pendingPoints[0];
+  return getTargetVortexInfo(currentPoint.x || 0.0, currentPoint.y || 0.0).r;
 }
 
 /**
@@ -1228,8 +1223,9 @@ function getCurrentVortexRadius() {
 function getTargetVortexInfo(targetX, targetY) {
   let defaultOuput = { x: 0.0, y: 0.0, r: 0.0 };
   if (ret) return defaultOuput;
-  const plot = computePlot([createSetPosition(targetX, targetY)]);
-  const result = plot.pendingPoints[0].bottleCollisions.find(isVortex);
+  const result = computePlot([
+    createSetPosition(targetX, targetY),
+  ]).pendingPoints[0].bottleCollisions.find(isVortex);
   if (result == undefined) {
     ret = 1;
     err = "Error while getting target vortex radius: there is no vortex at target position.";
