@@ -48,6 +48,7 @@ import {
   getTotalMoon,
   getTotalSun,
   setDisplay,
+  setStirRounding,
   logError,
   logSalt,
 } from "../main";
@@ -64,6 +65,7 @@ import {
   EntityPotionEffect,
   EntityDangerZone,
   EntityStrongDangerZone,
+  Salt,
 } from "../main";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";

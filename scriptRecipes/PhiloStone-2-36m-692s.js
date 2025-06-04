@@ -20,13 +20,15 @@ import {
   checkBase,
   straighten,
   getTotalSun,
+  setStirRounding,
 } from "../main";
-import { DeviationT1 } from "../main";
+import { DeviationT1, Salt } from "../main";
 
 import { Ingredients } from "@potionous/dataset";
 
 function main() {
   checkBase("water");
+  setStirRounding(true);
   logSkirt();
   logAddStirCauldron(5);
   logAddSunSalt(263);
@@ -38,7 +40,7 @@ function main() {
   logAddHeatVortex(3.76);
   derotateToAngle(-154.5);
   // MagicVision
-  stirToTier(21.27, 10.44, 0.0, DeviationT1, true);
+  stirToTier(21.27, 10.44, 0.0, 3.6, DeviationT1, true);
   pourIntoVortex(16, 6);
   logAddHeatVortex(8);
   pourToEdge();
@@ -46,7 +48,7 @@ function main() {
   logAddHeatVortex(5.9);
   derotateToAngle(-79);
   // Dexterity
-  stirToTier(20.86, 3.19, 0.0, DeviationT1, true);
+  stirToTier(20.86, 3.19, 0.0, 2.0, DeviationT1, true);
   logAddPourSolvent(6.05); // 2 empirical value
   stirToDangerZoneExit();
   logAddPourSolvent(5.96);
@@ -87,6 +89,6 @@ function main() {
   stirIntoVortex();
   derotateToAngle(0);
   logAddHeatVortex(4.2);
-  logAddPourSolvent(1.3);
+  logAddPourSolvent(1.2);
   logAddHeatVortex(Infinity);
 }

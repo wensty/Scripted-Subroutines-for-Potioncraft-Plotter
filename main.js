@@ -10,6 +10,7 @@ import {
   addPourSolvent,
   addSetPosition,
   createPourSolvent,
+  createStirCauldron,
   // createSetPosition,
 } from "@potionous/instructions";
 
@@ -304,7 +305,6 @@ const isPotionEffect = isEntityType(EntityPotionEffect);
  * the current and target vortex positions.
  *
  * @param {number} [buffer=1e-5] - The buffer to adjust the final stir length.
- * @throws {EvalError} If no vortex is found in the pending points.
  */
 function stirIntoVortex(buffer = 1e-5) {
   if (ret) return;
@@ -349,8 +349,6 @@ function stirIntoVortex(buffer = 1e-5) {
 /**
  * Stirs the potion to the edge of the current vortex.
  * @param {number} [buffer=1e-5] - The buffer to adjust the final stir length.
- * @throws {EvalError} If the bottle is not in a vortex or cannot reach the edge of the
- * current vortex.
  */
 function stirToEdge(buffer = 1e-5) {
   if (ret) return;
@@ -395,21 +393,35 @@ function stirToEdge(buffer = 1e-5) {
 
 /**
  * Stirs the potion until a change in direction is detected or the maximum stir length is reached.
- *
- * @param {number} [maxStirLength=Infinity] - The maximum length to stir the potion.
- * @param {number} [directionBuffer=20 * SaltAngle] - The angular buffer in radians to determine direction change.
- * @param {number} [leastSegmentLength=1e-7] - The minimum length between points to consider in the calculation.
- * @throws {EvalError} Throws an error if no next node can be found in pending points.
  */
+
+/**
+ * Stirs the potion until a change in direction is detected or the maximum
+ * additional stir length is reached.
+ *
+ * @param {number} [minStirLength=0.0] - The minimum initial stir length.
+ * @param {number} [maxExtraStirLength=Infinity] - The maximum additional stir length
+ *     allowed beyond the initial length before stopping.
+ * @param {number} [directionBuffer=20 * SaltAngle] - The buffer angle used to
+ *     determine the change in direction.
+ * @param {number} [leastSegmentLength=1e-7] - The minimum length between points
+ *     to be considered for a direction change.
+ */
+
 function stirToTurn(
-  maxStirLength = Infinity,
+  minStirLength = 0.0,
+  maxExtraStirLength = Infinity,
   directionBuffer = 20 * SaltAngle,
   leastSegmentLength = 1e-7
 ) {
   if (ret) return;
   const minCosine = Math.cos(directionBuffer);
-  const pendingPoints = currentPlot.pendingPoints;
-  // let currentDirection = getCurrentStirDirection();
+  let pendingPoints = currentPlot.pendingPoints;
+  if (minStirLength > 0.0) {
+    pendingPoints = computePlot(
+      currentRecipeItems.concat([createStirCauldron(minStirLength)])
+    ).pendingPoints;
+  }
   let currentUnit = undefined;
   let currentIndex = 0;
   let nextIndex = currentIndex;
@@ -440,21 +452,23 @@ function stirToTurn(
       currentUnit.x * nextUnit.x + currentUnit.y * nextUnit.y < minCosine
     ) {
       if (RoundStirring) {
-        logAddStirCauldron(Math.floor(stirLength / StirringUnit) * StirringUnit);
+        logAddStirCauldron(Math.floor((minStirLength + stirLength) / StirringUnit) * StirringUnit);
         return;
       }
-      logAddStirCauldron(stirLength);
+      logAddStirCauldron(minStirLength + stirLength);
       return;
     } else {
       stirLength += nextStirSegmentLength;
       nextStirSegmentLength = 0.0;
       currentIndex = nextIndex;
       currentUnit = nextUnit;
-      if (stirLength >= maxStirLength) {
+      if (stirLength >= maxExtraStirLength) {
         if (RoundStirring) {
-          logAddStirCauldron(Math.floor(maxStirLength / StirringUnit) * StirringUnit);
+          logAddStirCauldron(
+            Math.floor((minStirLength + maxExtraStirLength) / StirringUnit) * StirringUnit
+          );
         }
-        logAddStirCauldron(maxStirLength);
+        logAddStirCauldron(minStirLength + maxExtraStirLength);
         return;
       }
     }
@@ -464,13 +478,17 @@ function stirToTurn(
 
 /**
  * Stirs the potion to the edge of the current or next danger zone.
- *
- * @return {number} The least health value encountered while stirring.
- * @throws {EvalError} If the potion is not in a danger zone or cannot reach a safe zone.
+ * @param {number} [minStirLength=0.0] - The minimum initial stir length.
+ * @returns {number} The least health value encountered while stirring.
  */
-function stirToDangerZoneExit() {
+function stirToDangerZoneExit(minStirLength = 0.0) {
   if (ret) return 1.0;
-  const pendingPoints = currentPlot.pendingPoints;
+  let pendingPoints = currentPlot.pendingPoints;
+  if (minStirLength > 0.0) {
+    pendingPoints = computePlot(
+      currentRecipeItems.concat(createStirCauldron(minStirLength))
+    ).pendingPoints;
+  }
   let inDangerZone = false;
   if (pendingPoints[0].bottleCollisions.find(isDangerZone) != undefined) {
     inDangerZone = true;
@@ -501,30 +519,40 @@ function stirToDangerZoneExit() {
   if (RoundStirring) {
     stirDistance = Math.ceil(stirDistance / StirringUnit) * StirringUnit;
   }
-  logAddStirCauldron(stirDistance); // calculation by plotter is accurate enough.
+  // calculation by plotter is accurate enough.
+  logAddStirCauldron(minStirLength + stirDistance);
   return leastHealth;
 }
 
 /**
- * Stirs the potion to the closest point to the target position within the given
- * maximum stir length.
- * This is not affected by automatic rounding.
- * @param {number} targetX The x-coordinate of the target.
- * @param {number} targetY The y-coordinate of the target.
- * @param {number} [maxStirLength=Infinity] The maximum length to stir the potion.
- * @param {number} [leastSegmentLength=1e-9] The minimum length between points to
- *     consider in the optimization.
- * @return {number} The minimum distance between the target and the potion after
- *     stirring.
+ * Stirs the potion towards the nearest point to the given target coordinates,
+ * within the specified constraints on stir lengths.
+ *
+ * This stir is not rounded for precision.
+ * @param {number} targetX - The x-coordinate of the target position.
+ * @param {number} targetY - The y-coordinate of the target position.
+ * @param {number} [minstirLength=0.0] - The minimum length to stir initially.
+ * @param {number} [maxExtraStirLength=Infinity] - The maximum additional length
+ *     allowed for stirring beyond the initial length.
+ * @param {number} [leastSegmentLength=1e-7] - The minimum length between points
+ *     to be considered in the calculation.
+ * @returns {number} The optimal distance to the target after stirring.
  */
 function stirToNearestTarget(
   targetX,
   targetY,
-  maxStirLength = Infinity,
-  leastSegmentLength = 1e-9
+  minstirLength = 0.0,
+  maxExtraStirLength = Infinity,
+  leastSegmentLength = 1e-7
 ) {
   if (ret) return 0.0;
-  const pendingPoints = currentPlot.pendingPoints;
+  let pendingPoints = currentPlot.pendingPoints;
+  if (minstirLength > 0.0) {
+    pendingPoints = computePlot(
+      currentRecipeItems.concat([createStirCauldron(minstirLength)])
+    ).pendingPoints;
+  }
+  // const pendingPoints = currentPlot.pendingPoints;
   const initialX = pendingPoints[0].x || 0.0;
   const initialY = pendingPoints[0].y || 0.0;
   const initialDistance = Math.sqrt((initialX - targetX) ** 2 + (initialY - targetY) ** 2);
@@ -552,7 +580,7 @@ function stirToNearestTarget(
     if (nextSegmentLength <= leastSegmentLength) {
       continue;
     }
-    if (currentStirLength + nextSegmentLength > maxStirLength) {
+    if (currentStirLength + nextSegmentLength > maxExtraStirLength) {
       isLastSegment = true;
     }
     const nextX = pendingPoints[nextIndex].x || 0.0;
@@ -582,17 +610,20 @@ function stirToNearestTarget(
     currentStirLength += nextSegmentLength;
     nextSegmentLength = 0.0;
   }
-  logAddStirCauldron(optimalStirLength);
+  logAddStirCauldron(minstirLength + optimalStirLength);
   return optimalDistance;
 }
 
 /**
  * Stirs the potion to the specified tier, adjusting the stir length based on
  * the current angle and position.
- * This is not affected by automatic stir rounding.
+ *
+ * This stir is not rounded for precision.
  * @param {number} targetX - The x-coordinate of the target.
  * @param {number} targetY - The y-coordinate of the target.
  * @param {number} targetAngle - The angle of the target.
+ * @param {number} [minStirLength=0.0] - The minimum stir length to reach the
+ *     target tier.
  * @param {number} [maxDeviation=DeviationT2] - The maximum angle deviation to
  *     the target.
  * @param {boolean} [ignoreAngle=false] - If true, the function will ignore angle
@@ -606,13 +637,19 @@ function stirToTier(
   targetX,
   targetY,
   targetAngle,
+  minStirLength = 0.0,
   maxDeviation = DeviationT2,
   ignoreAngle = false,
   leastSegmentLength = 1e-9,
   afterBuffer = 1e-5
 ) {
-  if (ret) return 0.0;
-  const pendingPoints = currentPlot.pendingPoints;
+  if (ret) return;
+  let pendingPoints = currentPlot.pendingPoints;
+  if (minStirLength > 0.0) {
+    pendingPoints = computePlot(
+      currentRecipeItems.concat(createStirCauldron(minStirLength))
+    ).pendingPoints;
+  }
   const currentPoint = currentPlot.pendingPoints[0];
   const currentAngle = -currentPoint.angle || 0.0;
   const angleDelta = radToDeg(
@@ -664,9 +701,9 @@ function stirToTier(
         const lineDistance = -nextUnit.y * (targetX - currentX) + nextUnit.x * (targetY - currentY);
         const approximatedLastStirLength =
           lastStirLength - Math.sqrt(requiredDistance ** 2 - lineDistance ** 2);
-        // findExactStir(approximatedLastStirLength);
         logAddStirCauldron(
-          currentStirLength +
+          minStirLength +
+            currentStirLength +
             Math.min(approximatedLastStirLength + afterBuffer, currentSegmentLength)
         );
         return;
@@ -677,9 +714,10 @@ function stirToTier(
         const approximatedLastStirLength =
           lastStirLength - Math.sqrt(requiredDistance ** 2 - nextDistance ** 2);
         if (nextDistance < requiredDistance) {
-          // findExactStir(approximatedLastStirLength);
           logAddStirCauldron(
-            currentStirLength + Math.min(approximatedLastStirLength + afterBuffer, lastStirLength)
+            minStirLength +
+              currentStirLength +
+              Math.min(approximatedLastStirLength + afterBuffer, lastStirLength)
           );
           return;
         }
@@ -700,7 +738,6 @@ function stirToTier(
  * Stirs the potion to consume a specified length while in a vortex.
  * This is not affected by stir rounding, since the stir length is manually input.
  * @param {number} consumeLength - The length of stirring to consume.
- * @throws {EvalError} If the bottle is not in a vortex.
  */
 function stirToConsume(consumeLength) {
   if (ret) return;
@@ -722,8 +759,6 @@ function stirToConsume(consumeLength) {
 
 /**
  * Pours solvent to the edge of the current vortex.
- *
- * @throws {EvalError} If the bottle is not in a vortex or cannot reach the vortex edge.
  */
 function pourToEdge() {
   if (ret) return;
@@ -760,7 +795,6 @@ function pourToEdge() {
  *
  * @param {number} targetVortexX - The x-coordinate of the target vortex.
  * @param {number} targetVortexY - The y-coordinate of the target vortex.
- * @throws {EvalError} If the bottle is not behind the target vortex.
  */
 function pourIntoVortex(targetVortexX, targetVortexY) {
   if (ret) return;
@@ -792,7 +826,6 @@ function pourIntoVortex(targetVortexX, targetVortexY) {
  *
  * @param {number} length - The maximum length of solvent to pour.
  * @param {number} repeats - The number of times to repeat the heating and pouring process.
- * @throws {EvalError} If the bottle is not currently in a vortex.
  */
 function heatAndPourToEdge(length, repeats) {
   if (ret) return;
@@ -836,7 +869,6 @@ function heatAndPourToEdge(length, repeats) {
  * Pours the solvent towards danger zone with precision.
  *
  * @param {number} maxPourLength - The maximum length of solvent to pour.
- * @throws {EvalError} If the bottle is already in a danger zone or cannot reach one.
  */
 function pourToDangerZone(maxPourLength) {
   if (ret) return;
@@ -1000,7 +1032,6 @@ function radToSalt(rad) {
  * @param {"moon"|"sun"} salt The salt type ("moon" or "sun")
  * @param {number} grains The number of grains of salt
  * @returns {number} The degree equivalent of the given salt and grains
- * @throws {EvalError} If the salt is not "moon" or "sun"
  */
 function saltToDeg(salt, grains) {
   if (ret) return 0.0;
@@ -1041,7 +1072,6 @@ function saltToRad(salt, grains) {
  * @param {number} x The x-component of the vector.
  * @param {number} y The y-component of the vector.
  * @returns {{x: number, y: number}} The unit vector with components x and y.
- * @throws {EvalError} If the input vector is a zero vector.
  */
 function getUnit(x, y) {
   if (ret) return { x: 0.0, y: 1.0 };
@@ -1059,7 +1089,6 @@ function getUnit(x, y) {
  * @param {number} direction The direction angle in radians
  * @param {number} [baseDirection=0.0] The base direction angle in radians
  * @returns {{x: number, y: number}} The 2D vector with components x and y
- * @throws {EvalError} If an error occurs while computing the vector
  */
 function getVectorByDirection(direction, baseDirection = 0.0) {
   if (ret) return { x: 0.0, y: 1.0 };
@@ -1112,7 +1141,6 @@ function getDirectionByVector(x, y, baseDirection = 0.0) {
  * @param {boolean} [toBottle=true] - If true, calculates the direction from the current position to the origin.
  *                              If false, calculates the direction from the origin to the current position.
  * @returns {number} The direction angle in radians.
- * @throws {EvalError} If the bottle is at the origin.
  */
 function getBottlePolarAngle(toBottle = true) {
   if (ret) return 0.0;
@@ -1216,9 +1244,8 @@ function getCurrentVortexRadius() {
  * Retrieves information about the target vortex at specified coordinates.
  * @param {number} targetX - The x-coordinate of the target vortex.
  * @param {number} targetY - The y-coordinate of the target vortex.
- * @returns {{x:number, y:number, r:number}} An object containing the x and y coordinates and the radius
- * of the target vortex.
- * @throws {EvalError} If there is no vortex at the target position.
+ * @returns {{x:number, y:number, r:number}} An object containing the x and y
+ * coordinates and the radius of the target vortex.
  */
 function getTargetVortexInfo(targetX, targetY) {
   let defaultOuput = { x: 0.0, y: 0.0, r: 0.0 };
@@ -1487,6 +1514,7 @@ export {
   getTotalMoon,
   getTotalSun,
   setDisplay,
+  setStirRounding,
   logError,
   logSalt,
 };
@@ -1504,4 +1532,5 @@ export {
   EntityPotionEffect,
   EntityDangerZone,
   EntityStrongDangerZone,
+  Salt,
 };

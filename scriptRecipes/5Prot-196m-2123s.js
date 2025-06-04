@@ -26,8 +26,7 @@ import {
   straighten,
   getTotalSun,
   setDisplay,
-  logError,
-  logSalt,
+  setStirRounding,
 } from "../main";
 import { SaltAngle, DeviationT1, EntityPotionEffect } from "../main";
 
@@ -37,6 +36,7 @@ function main() {
   // part 1
   checkBase("oil");
   setDisplay(false);
+  setStirRounding(true);
   logAddSunSalt(110);
   logSkirt();
   logAddPourSolvent(Infinity);
@@ -89,9 +89,8 @@ function main() {
   console.log(getCurrentStirDirection());
   console.log(getDirectionByVector(x2 - x, y2 - y));
   straighten(Infinity, getDirectionByVector(28.91 - x2, 1.7 - y2), "sun", 345);
-  logAddStirCauldron(7.7); //roughly
   // Fire protection.
-  stirToTier(28.91, 1.7, 0.0, DeviationT1, true);
+  stirToTier(28.91, 1.7, 0.0, 7.6, DeviationT1, true);
   console.log(getBottlePolarAngleByEntity(EntityPotionEffect) + Math.PI);
   logAddSunSalt(Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36));
   logAddPourSolvent(7.8);
@@ -122,7 +121,7 @@ function main() {
   logAddHeatVortex(5.65); // consume the inappropriate segment.
   logAddSunSalt(150);
   // Acid protection.
-  stirToTier(23.57, -30.32, 0.0, DeviationT1, true);
+  stirToTier(23.57, -30.32, 0.0, 11.1, DeviationT1, true);
   // part 3
   logAddPourSolvent(10.7);
   console.log(getBottlePolarAngle());
@@ -137,9 +136,9 @@ function main() {
   heatAndPourToEdge(3, 4);
   logAddHeatVortex(6.7);
   derotateToAngle(56.3);
-  logAddStirCauldron(7.7);
+  // logAddStirCauldron(7.7);
   // Lightning Protection
-  stirToTier(3.66, -30.72, 0.0, DeviationT1, true);
+  stirToTier(3.66, -30.72, 0.0, 7.7, DeviationT1, true);
   // return to origin.
   logAddPourSolvent(9.7);
   logAddStirCauldron(1.65);
@@ -177,5 +176,5 @@ function main() {
   logAddHeatVortex(2.84);
   logAddSunSalt(112);
   // Frost protection.
-  stirToTier(-27.97, -4.09, 0.0, DeviationT1, true);
+  stirToTier(-27.97, -4.09, 0.0, 8.7, DeviationT1, true);
 }

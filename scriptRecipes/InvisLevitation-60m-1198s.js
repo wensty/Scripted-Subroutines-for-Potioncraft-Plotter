@@ -22,6 +22,7 @@ import {
   getCurrentStirDirection,
   checkBase,
   straighten,
+  setStirRounding,
 } from "../main";
 import { EntityVortex } from "../main";
 
@@ -30,6 +31,7 @@ import { currentPlot } from "@potionous/plot";
 
 function beta() {
   checkBase("water");
+  setStirRounding(true);
   const delay = 300; // need more test
   logAddSunSalt(243);
   logAddIngredient(Ingredients.PhantomSkirt, 1);
@@ -54,16 +56,14 @@ function beta() {
   heatAndPourToEdge(0.3, 17); // heavier continuous pour&stir save 1 more moon.
   logAddHeatVortex(0.15);
   logAddMoonSalt(61);
-  logAddStirCauldron(3.13); // roughly.
-  stirToTurn();
+  stirToTurn(3.13); // roughly
   pourIntoVortex(13, 26);
   derotateToAngle(0.0);
   logAddHeatVortex(5.7);
   pourToEdge();
   heatAndPourToEdge(1, 9);
   logAddHeatVortex(1.75); // Empirical
-  logAddStirCauldron(7.1); // roughly
-  stirToTier(10.46, 35.57, 0.0);
+  stirToTier(10.46, 35.57, 0.0, 7.1); // roughly
   logAddPourSolvent(5.35); // Empirical
   let returnSalt = 280; // Empirical. Add less is not necessarily better.
   logAddSunSalt(returnSalt);
@@ -94,6 +94,5 @@ function beta() {
   // last salt for precise centering
   logAddStirCauldron(0.933);
   logAddSunSalt(1);
-  logAddStirCauldron(3);
-  console.log("path deviation: " + stirToNearestTarget(-4.22, 36.37));
+  console.log("path deviation: " + stirToNearestTarget(-4.22, 36.37, 4.1));
 }
