@@ -73,7 +73,9 @@ Actual optimization on plotter, even with scripts, still requires skill and expe
 
 ## credits
 
-- `@sunset` at [PotionCraft discord](https://discord.com/channels/801182992793075743). Creator of the [potionous](https://potionous.app) app and the potionous plotter tool.
+- `@sunset` at [PotionCraft discord](https://discord.com/channels/801182992793075743). Creator of the [potionous](https://potionous.app) app and the potionous [plotter tool](https://potionous.app/plotter).
+
+- The [Beta version potionous](https://beta.potionous.app) and [beta plotter tool](https://beta.potionous.app/plotter)
 
 ---
 
@@ -206,16 +208,16 @@ Used to detection of certain entities.
 - `getCurrentVortexRadius()`: returns the radius of the current vortex.
 - `getTargetVortexInfo(targetX, targetY)`: returns the coordinates and radius of the target vortex.
   - return: `{x:number, y:number, r:number}` be a object with `x`, `y`, `r` as keys.
-- `getCurrentTargetError(targetX, targetY, targetAngle)`: returns the error between the current bottle position and the target effect.
-  - `targetX`, `targetY`, `targetAngle`: the coordinates and tilted angle of the target effect.
 
 ### Complex subroutines.
 
-- `straighten(maxStirLength, direction, salt?, maxGrains?, ignoreReverse?)`: straighten the potion path with rotation salts, i.e. automatically adding proper number of rotation salt while stirring to make the potion path straight.
-  - `maxStirLength`, `maxGrains`: stopping conditions of the straightening process.
+- `straighten(direction, salt, {maxStirLength?, maxGrains?, ignoreReverse?, leastSegmentLength?})`: straighten the potion path with rotation salts, i.e. automatically adding proper number of rotation salt while stirring to make the potion path straight.
   - `direction`: the direction to be stirred in radian.
   - `salt`: the type of salt to be added, it must be "moon" or "sun".
+  - `maxStirLength`, `maxGrains`: stopping conditions of the straightening process. Default to be `Infinity`, i.e. stopping condition not set.
   - `ignoreReverse`: Controls the behavior when reversed direction(i.e. should add another rotation salt to bend it to the given direction) is detected. If set, no salt will be added and the process continues. If not set, the function terminate when a reversed direction is detected.
+    - Default to be `true`, i.e. not set the reversed direction terminate condition.
+  - Generally you should set at least one of the terminate condition.
   - Straightening is important for many highly-salty recipes with brute-force bending of path, like `AntiMagic-15m-1115s.js`.
     > Under some assumption, we can prove that that the optimal path is:
     >
@@ -231,6 +233,8 @@ Used to detection of certain entities.
 - `getTotalSun()`: get the total amount of sun salt added so far _in this script_.
 - `setDisplay(display)`: set the display mode of the plotter.
   - `display`: `true` or `false`.
+- `setStirRounding(stirRounding)`: set the stir rounding mode of the plotter. This mode rounds most numbers to 3 digits after the decimal point, same as manual instructions on the online plotter.
+  - `stirRounding`: `true` or `false`.
 - `logError()`: log the current error.
 - `logSalt()`: log the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
   - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.

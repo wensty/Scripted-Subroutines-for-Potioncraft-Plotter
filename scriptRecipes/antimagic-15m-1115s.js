@@ -24,7 +24,7 @@ function main() {
   derotateToAngle(saltToDeg("sun", 28));
   stirIntoVortex();
   logAddHeatVortex(Infinity);
-  straighten(3, degToRad(17.4), "sun"); // Distance specified straightening.
+  straighten(degToRad(17.4), "sun", { maxStirLength: 3 }); // Distance specified straightening.
   logAddStirCauldron(6);
   let direction = getDirectionByVector(
     29.63 - currentPlot.pendingPoints[0].x,
@@ -32,18 +32,15 @@ function main() {
   );
   logAddSunSalt(37);
   logAddStirCauldron(3.3);
-  /**
-   * Salt specified straightening.
-   */
-  straighten(Infinity, direction + degToRad(+0.0), "sun", 400, false);
-  straighten(Infinity, direction + degToRad(+0.0), "moon", 15, true);
+  // Salt specified straightening. Defalt option is not ignoring the reverse direction.
+  straighten(direction + degToRad(+0.0), "sun", { maxGrains: 400, ignoreReverse: false });
+  straighten(direction + degToRad(+0.0), "moon", { maxGrains: 15 });
   stirIntoVortex();
   heatAndPourToEdge(0.1, 33);
   logAddHeatVortex(2.28);
   derotateToAngle(saltToDeg("moon", 202 + 33));
-  straighten(4, degToRad(11), "sun", 201, true);
-  logAddStirCauldron(1.46);
+  straighten(degToRad(11), "sun", { maxStirLength: 4, maxGrains: 201 });
+  logAddStirCauldron(3.11);
   logAddSunSalt(1);
-  logAddStirCauldron(2.9);
-  console.log("path deviation: " + stirToNearestTarget(32.77, 29.94));
+  console.log("path deviation: " + stirToNearestTarget(32.77, 29.94, 1.2));
 }

@@ -41,16 +41,19 @@ function beta() {
   logAddPourSolvent(Infinity);
   stirIntoVortex();
   logAddHeatVortex(Infinity);
-  straighten(2.8, degToRad(15.2), "sun", Infinity);
+  straighten(degToRad(15.2), "sun", { maxStirLength: 2.8 });
   // winding the swamp
   logAddStirCauldron(6.1);
   logAddSunSalt(39);
   logAddStirCauldron(1.55);
   logAddSunSalt(81);
   stirToTurn();
-  straighten(0.8, degToRad(90), "sun");
+  straighten(degToRad(90), "sun", { maxStirLength: 0.8 });
   logAddSunSalt(73);
-  straighten(1, getCurrentStirDirection(), "sun", 780 - getTotalSun());
+  straighten(getCurrentStirDirection(), "sun", {
+    maxStirLength: 1,
+    maxGrains: 780 - getTotalSun(),
+  });
   // 779 sun into vortex.
   stirIntoVortex();
   stirToConsume(0.26);
@@ -86,7 +89,7 @@ function beta() {
   const y2 = currentPlot.pendingPoints[0].y;
   console.log(getCurrentStirDirection());
   console.log(getDirectionByVector(x2 - x, y2 - y));
-  straighten(Infinity, getDirectionByVector(28.91 - x2, 1.7 - y2), "sun", 345);
+  straighten(getDirectionByVector(28.91 - x2, 1.7 - y2), "sun", { maxGrains: 345 });
   // Fire protection.
   stirToTier(28.91, 1.7, 0.0, 7.6, DeviationT1, true);
   console.log(getBottlePolarAngleByEntity(EntityPotionEffect) + Math.PI);
@@ -94,7 +97,7 @@ function beta() {
   logAddPourSolvent(7.8);
   logAddStirCauldron(4);
   stirToTurn();
-  straighten(1.1, getCurrentStirDirection(), "sun", 64);
+  straighten(getCurrentStirDirection(), "sun", { maxStirLength: 1.1, maxGrains: 64 });
   stirToDangerZoneExit();
   logAddPourSolvent(0.9);
   stirToDangerZoneExit();
@@ -112,7 +115,7 @@ function beta() {
   logAddPourSolvent(0.5);
   derotateToAngle(0);
   logAddHeatVortex(Infinity);
-  straighten(3.8, degToRad(-178), "sun", 210);
+  straighten(degToRad(-178), "sun", { maxStirLength: 3.8, maxGrains: 210 });
   stirToTurn();
   logAddSunSalt(139);
   stirIntoVortex();
@@ -165,7 +168,7 @@ function beta() {
   logAddStirCauldron(1);
   const x3 = currentPlot.pendingPoints[0].x;
   const y3 = currentPlot.pendingPoints[0].y;
-  straighten(1.6, getDirectionByVector(-20.8 - x3, 5.34 - y3), "sun");
+  straighten(getDirectionByVector(-20.8 - x3, 5.34 - y3), "sun", { maxStirLength: 1.6 });
   stirIntoVortex();
   logAddHeatVortex(4);
   pourToEdge();

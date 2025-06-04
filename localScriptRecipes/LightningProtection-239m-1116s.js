@@ -8,13 +8,17 @@ import {
   stirToNearestTarget,
   derotateToAngle,
   degToRad,
+  radToDeg,
   getDirectionByVector,
   getBottlePolarAngle,
+  getCurrentStirDirection,
   checkBase,
   straighten,
   getTotalMoon,
   getTotalSun,
 } from "../main";
+import { Salt } from "../main";
+
 import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
 
@@ -32,7 +36,7 @@ function main() {
   logAddIngredient(Ingredients.PhantomSkirt, 1);
   derotateToAngle(0);
   logAddStirCauldron(4.6);
-  straighten(1.35, getBottlePolarAngle() - degToRad(3), "sun");
+  straighten(getBottlePolarAngle() - degToRad(3), Salt.Sun, { maxStirLength: 1.35 });
   logAddStirCauldron(4.8);
   logAddSunSalt(42);
   logAddStirCauldron(1.25);
@@ -42,19 +46,22 @@ function main() {
   stirToTurn();
   let x2 = currentPlot.pendingPoints[0].x;
   let y2 = currentPlot.pendingPoints[0].y;
-  straighten(
-    4,
-    getDirectionByVector(x2 - x1, y2 - y1),
-    "sun",
-    Math.ceil((currentPlot.pendingPoints[0].angle + 180.01) / 0.36)
-  );
-  straighten(4, getDirectionByVector(x2 - x1, y2 - y1), "sun", 315);
+  straighten(getDirectionByVector(x2 - x1, y2 - y1), Salt.Sun, {
+    maxStirLength: 4,
+    maxGrains: Math.ceil((currentPlot.pendingPoints[0].angle + 180.01) / 0.36),
+  });
+  straighten(getDirectionByVector(x2 - x1, y2 - y1), Salt.Sun, {
+    maxStirLength: 4.0,
+    maxGrains: 315,
+  });
   stirToTurn();
-  straighten(6.61, degToRad(-169.5), "moon", 88);
+  console.log(radToDeg(getCurrentStirDirection()));
+  straighten(degToRad(-169.5), Salt.Moon, { maxStirLength: 6.61 });
   logAddMoonSalt(239 - getTotalMoon());
   logAddStirCauldron(2.3);
-  straighten(Infinity, degToRad(154.5), "sun", 1115 - getTotalSun());
+  straighten(degToRad(155), Salt.Sun, { maxGrains: 1115 - getTotalSun() });
   console.log("Minimal health: " + stirToDangerZoneExit());
+  logAddStirCauldron(1.41);
   logAddSunSalt(1);
   console.log("Minimal distance: " + stirToNearestTarget(3.66, -30.72));
 }

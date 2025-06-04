@@ -406,15 +406,13 @@ function stirToEdge(buffer = 1e-5) {
  *     allowed beyond the initial length before stopping.
  * @param {number} [directionBuffer=20 * SaltAngle] - The buffer angle used to
  *     determine the change in direction.
- * @param {number} [leastSegmentLength=1e-7] - The minimum length between points
- *     to be considered for a direction change.
+ * @param {number} [leastSegmentLength=1e-9] - The minimal length of each segment of the potion path.
  */
-
 function stirToTurn(
   minStirLength = 0.0,
   maxExtraStirLength = Infinity,
   directionBuffer = 20 * SaltAngle,
-  leastSegmentLength = 1e-7
+  leastSegmentLength = 1e-9
 ) {
   if (ret) return;
   const minCosine = Math.cos(directionBuffer);
@@ -455,7 +453,7 @@ function stirToTurn(
     ) {
       if (RoundStirring) {
         logAddStirCauldron(
-          Math.floor((minStirLength + stirLength) * StirringUnitInverse) / StirringUnitInverse
+          Math.ceil((minStirLength + stirLength) * StirringUnitInverse) / StirringUnitInverse
         );
         return;
       }
@@ -469,7 +467,7 @@ function stirToTurn(
       if (stirLength >= maxExtraStirLength) {
         if (RoundStirring) {
           logAddStirCauldron(
-            Math.floor((minStirLength + maxExtraStirLength) * StirringUnitInverse) *
+            Math.ceil((minStirLength + maxExtraStirLength) * StirringUnitInverse) *
               StirringUnitInverse
           );
         }
@@ -539,8 +537,7 @@ function stirToDangerZoneExit(minStirLength = 0.0) {
  * @param {number} [minstirLength=0.0] - The minimum length to stir initially.
  * @param {number} [maxExtraStirLength=Infinity] - The maximum additional length
  *     allowed for stirring beyond the initial length.
- * @param {number} [leastSegmentLength=1e-7] - The minimum length between points
- *     to be considered in the calculation.
+ * @param {number} [leastSegmentLength=1e-9] - The minimal length of each segment of the potion path.
  * @returns {number} The optimal distance to the target after stirring.
  */
 function stirToNearestTarget(
@@ -548,7 +545,7 @@ function stirToNearestTarget(
   targetY,
   minstirLength = 0.0,
   maxExtraStirLength = Infinity,
-  leastSegmentLength = 1e-7
+  leastSegmentLength = 1e-9
 ) {
   if (ret) return 0.0;
   let pendingPoints = currentPlot.pendingPoints;
@@ -620,23 +617,17 @@ function stirToNearestTarget(
 }
 
 /**
- * Stirs the potion to the specified tier, adjusting the stir length based on
- * the current angle and position.
- *
+ * Stirs the potion to the specified tier of certain effect.
  * This stir is not rounded for precision.
- * @param {number} targetX - The x-coordinate of the target.
- * @param {number} targetY - The y-coordinate of the target.
- * @param {number} targetAngle - The angle of the target.
- * @param {number} [minStirLength=0.0] - The minimum stir length to reach the
- *     target tier.
- * @param {number} [maxDeviation=DeviationT2] - The maximum angle deviation to
- *     the target.
- * @param {boolean} [ignoreAngle=false] - If true, the function will ignore angle
- *     deviation.
- * @param {number} [leastSegmentLength=1e-9] - The minimum length between points to
- *     consider in the optimization.
- * @param {number} [afterBuffer=1e-5] - The buffer to adjust the final stir
- *     length.
+ * @param {number} targetX - The x-coordinate of the target effect.
+ * @param {number} targetY - The y-coordinate of the target effect.
+ * @param {number} targetAngle - The angle of the target effect in degree.
+ * @param {number} [minStirLength=0.0] - The minimal stir length to ensure the stir length is not too short.
+ * @param {number} [maxDeviation=DeviationT2] - The maximal angle deviation to the target effect.
+ * @param {boolean} [ignoreAngle=false] - Whether to ignore the angle deviation.
+ * @param {number} [leastSegmentLength=1e-9] - The minimal length of each segment of the potion path.
+ * @param {number} [afterBuffer=1e-5] - The buffer after the stir to make sure the stir is not too short.
+ * @return {number} - The final distance to the target effect.
  */
 function stirToTier(
   targetX,
@@ -1056,7 +1047,6 @@ function saltToDeg(salt, grains) {
  * @param {"moon"|"sun"} salt The salt type ("moon" or "sun")
  * @param {number} grains The number of grains of salt
  * @returns {number} The radian equivalent of the given salt and grains
- * @throws {Error} If the salt is not "moon" or "sun"
  */
 function saltToRad(salt, grains) {
   if (ret) return 0.0;
@@ -1171,7 +1161,6 @@ function getBottlePolarAngle(toBottle = true) {
  * @param {boolean} [toBottle=true] - If true, calculates the direction from the current position to the entity.
  *                              If false, calculates the direction from the entity to the current position.
  * @returns {number} The direction angle in radians.
- * @throws {Error} If the given entity is not found or the bottle coincides the entity.
  */
 function getBottlePolarAngleByEntity(expectedEntityTypes = EntityVortex, toBottle = true) {
   if (ret) return 0.0;
@@ -1203,20 +1192,22 @@ function getBottlePolarAngleByEntity(expectedEntityTypes = EntityVortex, toBottl
 }
 
 /**
- * Computes the angle of the current stir in radians.
+ * Computes the direction angle of the current bottle position relative to the
+ * next point in the stirring path.
  *
- * @returns {number} The angle of the current stir in radians
- * @throws {Error} If the bottle is not in a stir
+ * @param {number} [leastSegmentLength=1e-9] - The minimal length of each segment of the potion path.
+ * @returns {number} The direction angle in radians.
  */
-function getCurrentStirDirection() {
+function getCurrentStirDirection(leastSegmentLength = 1e-9) {
   if (ret) return 0.0;
+  const pendingPoints = currentPlot.pendingPoints;
   /** the points have no coordinate at origin */
-  const fromX = currentPlot.pendingPoints[0].x || 0.0;
-  const fromY = currentPlot.pendingPoints[0].y || 0.0;
+  const fromX = pendingPoints[0].x || 0.0;
+  const fromY = pendingPoints[0].y || 0.0;
   let nextIndex = 0;
-  while (nextIndex < currentPlot.pendingPoints.length) {
+  while (nextIndex < pendingPoints.length) {
     nextIndex += 1;
-    if (pointDistance(currentPlot.pendingPoints[0], currentPlot.pendingPoints[nextIndex]) > 1e-7) {
+    if (pointDistance(pendingPoints[0], pendingPoints[nextIndex]) > leastSegmentLength) {
       break;
     }
   }
@@ -1237,7 +1228,6 @@ function getCurrentStirDirection() {
 /**
  * Retrieves the radius of the current vortex.
  * @returns {number} The radius of the current vortex.
- * @throws {Error} If the bottle is not in a vortex.
  */
 function getCurrentVortexRadius() {
   if (ret) return VortexRadiusLarge;
@@ -1325,29 +1315,35 @@ function getTotalMoon() {
  */
 
 /**
+ * TODO: add `preStirLength` option.
  * Straighten the potion path with the least amount of salt.
  *
- * @param {number} maxStirLength The maximum distance to be stirred.
  * @param {number} direction The direction to be stirred in radian.
- * @param {string} [salt="moon"] The type of salt to be added. It must be "moon" or "sun".
- * @param {number} [maxGrains=Infinity] The maximum amount of salt to be added.
- * @param {boolean} [ignoreReverse=true] If set to false, the function will terminate when a reversed direction is detected.
+ * @param {string} salt The type of salt to be added. It must be "moon" or "sun".
+ * @param {Object} [options] Options for the straightening process.
+ * @param {number} [options.maxStirLength=Infinity] The maximum distance to be stirred.
+ * @param {number} [options.maxGrains=Infinity] The maximum amount of salt to be added.
+ * @param {boolean} [options.ignoreReverse=true] If set to false, the function will terminate when a reversed direction is detected.
+ * @param {number} [option.preStirLength] The amount of stirring to be added before the straightening process.
+ * @param {number} [options.leastSegmentLength=1e-9] The minimal length of each segment of the potion path.
  * @returns {number} The total amount of salt added.
  */
-function straighten(
-  maxStirLength,
-  direction,
-  salt = "moon",
-  maxGrains = Infinity,
-  ignoreReverse = true,
-  leastSegmentLength = 1e-7
-) {
+function straighten(direction, salt, options = {}) {
   if (ret) return 0;
   if (salt != "moon" && salt != "sun") {
     ret = 1;
     err = "Error while straightening: salt must be moon or sun.";
     return 0;
   }
+  // optional parameters.
+  // generally at least one of the `maxStirLength`, `maxGrains`,`ignoreReverse` should be altered.
+  const {
+    maxStirLength = Infinity,
+    maxGrains = Infinity,
+    ignoreReverse = true,
+    preStirLength = 0.0, // currently not implemented.
+    leastSegmentLength = 1e-9,
+  } = options;
   let stirredLength = 0.0;
   let nextStirLength = 0.0;
   let nextSegmentLength = 0.0;

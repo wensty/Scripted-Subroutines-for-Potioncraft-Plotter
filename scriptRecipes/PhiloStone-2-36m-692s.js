@@ -32,7 +32,6 @@ function main() {
   logSkirt();
   logAddStirCauldron(5);
   logAddSunSalt(263);
-  // logAddStirCauldron(12)
   stirIntoVortex();
   stirToTurn();
   logAddSunSalt(501 - getTotalSun());
@@ -56,9 +55,9 @@ function main() {
   logAddPourSolvent(Infinity);
   const delay = 103;
   const direction = 178;
-  straighten(Infinity, degToRad(direction), Salt.Sun, delay);
+  straighten(degToRad(direction), Salt.Sun, { maxGrains: delay });
   logAddIngredient(Ingredients.GraveTruffle);
-  straighten(Infinity, degToRad(direction), Salt.Sun, 130 - delay); // 501+130 sun
+  straighten(degToRad(direction), Salt.Sun, { maxGrains: 130 - delay }); // 501+130 sun
   // Strength
   stirIntoVortex();
   console.log(radToDeg(getBottlePolarAngleByEntity()) + 180);
