@@ -32,8 +32,7 @@ import { SaltAngle, DeviationT1, EntityPotionEffect } from "../main";
 
 import { currentPlot } from "@potionous/plot";
 
-function main() {
-  // part 1
+function beta() {
   checkBase("oil");
   setDisplay(false);
   setStirRounding(true);
@@ -42,16 +41,16 @@ function main() {
   logAddPourSolvent(Infinity);
   stirIntoVortex();
   logAddHeatVortex(Infinity);
-  straighten(2.8, degToRad(15.6), "sun", Infinity);
+  straighten(2.8, degToRad(15.2), "sun", Infinity);
   // winding the swamp
-  logAddStirCauldron(6.5);
-  logAddSunSalt(54);
-  logAddStirCauldron(1.2);
-  logAddSunSalt(65);
+  logAddStirCauldron(6.1);
+  logAddSunSalt(39);
+  logAddStirCauldron(1.55);
+  logAddSunSalt(81);
   stirToTurn();
   straighten(0.8, degToRad(90), "sun");
   logAddSunSalt(73);
-  straighten(1, getCurrentStirDirection(), "sun", 779 - getTotalSun());
+  straighten(1, getCurrentStirDirection(), "sun", 780 - getTotalSun());
   // 779 sun into vortex.
   stirIntoVortex();
   stirToConsume(0.26);
@@ -82,8 +81,7 @@ function main() {
   logAddSunSalt(80);
   logSkirt();
   logAddSunSalt(10);
-  logAddStirCauldron(4.0); // roughly
-  stirToTurn(0.1, 0.01 * SaltAngle);
+  stirToTurn(4.0, 0.1, 0.01 * SaltAngle);
   const x2 = currentPlot.pendingPoints[0].x;
   const y2 = currentPlot.pendingPoints[0].y;
   console.log(getCurrentStirDirection());
@@ -136,7 +134,6 @@ function main() {
   heatAndPourToEdge(3, 4);
   logAddHeatVortex(6.7);
   derotateToAngle(56.3);
-  // logAddStirCauldron(7.7);
   // Lightning Protection
   stirToTier(3.66, -30.72, 0.0, 7.7, DeviationT1, true);
   // return to origin.
