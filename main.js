@@ -20,6 +20,7 @@ import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
 const LuckyInfinity = 1437;
 const SaltAngle = (2 * Math.PI) / 1000.0; // angle per salt in radian.
 const MinimalPour = 8e-3; // minimal pouring unit of current version of plotter. All pours are multiply of this.
+const MinimalPourInverse = 125.0;
 const VortexRadiusLarge = 2.39;
 const VortexRadiusMedium = 1.99;
 const VortexRadiusSmall = 1.74;
@@ -35,6 +36,7 @@ const Salt = { Moon: "moon", Sun: "sun" };
 let Display = true; // Macro to switch instruction display.
 let RoundStirring = true; // macro to control whether round stirrings.
 let StirringUnit = 1e-3; // minimal stir unit of hand-added stirring instructions. Stirring instructions add by scripts can be infinitely precise.
+let StirringUnitInverse = 1000.0;
 let Step = 1;
 let TotalSun = 0;
 let TotalMoon = 0;
@@ -335,7 +337,7 @@ function stirIntoVortex(buffer = 1e-5) {
       const approximatedLastStirLength = l1 - Math.sqrt(vortexRadius ** 2 - l2 ** 2);
       let finalStirLength = currentStirLength + approximatedLastStirLength;
       if (RoundStirring) {
-        logAddStirCauldron(Math.ceil(finalStirLength / StirringUnit) * StirringUnit);
+        logAddStirCauldron(Math.ceil(finalStirLength * StirringUnitInverse) / StirringUnitInverse);
         return;
       }
       logAddStirCauldron(currentStirLength + approximatedLastStirLength + buffer);
@@ -384,7 +386,7 @@ function stirToEdge(buffer = 1e-5) {
   const approximatedLastStirLength = l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2);
   const finalStirLength = stirLength + approximatedLastStirLength;
   if (RoundStirring) {
-    logAddStirCauldron(Math.floor(finalStirLength / StirringUnit) * StirringUnit);
+    logAddStirCauldron(Math.floor(finalStirLength * StirringUnitInverse) / StirringUnitInverse);
     return;
   }
   logAddStirCauldron(finalStirLength - buffer);
@@ -452,7 +454,9 @@ function stirToTurn(
       currentUnit.x * nextUnit.x + currentUnit.y * nextUnit.y < minCosine
     ) {
       if (RoundStirring) {
-        logAddStirCauldron(Math.floor((minStirLength + stirLength) / StirringUnit) * StirringUnit);
+        logAddStirCauldron(
+          Math.floor((minStirLength + stirLength) * StirringUnitInverse) / StirringUnitInverse
+        );
         return;
       }
       logAddStirCauldron(minStirLength + stirLength);
@@ -465,7 +469,8 @@ function stirToTurn(
       if (stirLength >= maxExtraStirLength) {
         if (RoundStirring) {
           logAddStirCauldron(
-            Math.floor((minStirLength + maxExtraStirLength) / StirringUnit) * StirringUnit
+            Math.floor((minStirLength + maxExtraStirLength) * StirringUnitInverse) *
+              StirringUnitInverse
           );
         }
         logAddStirCauldron(minStirLength + maxExtraStirLength);
@@ -517,7 +522,7 @@ function stirToDangerZoneExit(minStirLength = 0.0) {
     }
   }
   if (RoundStirring) {
-    stirDistance = Math.ceil(stirDistance / StirringUnit) * StirringUnit;
+    stirDistance = Math.ceil(stirDistance * StirringUnitInverse) / StirringUnitInverse;
   }
   // calculation by plotter is accurate enough.
   logAddStirCauldron(minStirLength + stirDistance);
@@ -774,8 +779,8 @@ function pourToEdge() {
   const l1 = pourUnit.x * (vortex.x - currentPoint.x) + pourUnit.y * (vortex.y - currentPoint.y);
   const l2 = -pourUnit.y * (vortex.x - currentPoint.x) + pourUnit.x * (vortex.y - currentPoint.y);
   const approximatedPourLength = Math.max(
-    Math.floor((l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2)) / MinimalPour) * MinimalPour -
-      MinimalPour / 2.0,
+    Math.floor((l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2)) * MinimalPourInverse - 0.5) /
+      MinimalPourInverse,
     0.0
   );
   const result = computePlot([
@@ -783,7 +788,7 @@ function pourToEdge() {
     createPourSolvent(approximatedPourLength),
   ]).pendingPoints[0].bottleCollisions.find(isVortex);
   if (result === undefined) {
-    logAddPourSolvent(approximatedPourLength - MinimalPour);
+    logAddPourSolvent(approximatedPourLength - 1.0 / MinimalPourInverse);
     return;
   }
   logAddPourSolvent(approximatedPourLength);
@@ -816,7 +821,7 @@ function pourIntoVortex(targetVortexX, targetVortexY) {
     return;
   }
   const actualPourLength =
-    Math.floor(approximatedPourLength / MinimalPour) * MinimalPour + MinimalPour / 2.0;
+    (Math.ceil(approximatedPourLength * MinimalPourInverse) + 0.5) / MinimalPourInverse;
   logAddPourSolvent(actualPourLength);
   return;
 }
@@ -857,7 +862,7 @@ function heatAndPourToEdge(length, repeats) {
         break;
       }
       maxLength = maxLength * 0.75;
-      maxLength = Math.floor(maxLength / MinimalPour) * MinimalPour + MinimalPour / 2.0;
+      maxLength = (Math.floor(maxLength * MinimalPourInverse) + 0.5) / MinimalPourInverse;
     }
     logAddHeatVortex(Math.min(length, maxLength));
     pourToEdge();
@@ -903,7 +908,7 @@ function pourToDangerZone(maxPourLength) {
     );
   }
   pourLength = Math.max(
-    Math.floor(pourLength / MinimalPour) * MinimalPour - MinimalPour / 2.0,
+    (Math.floor(pourLength * MinimalPourInverse) - 0.5) / MinimalPourInverse,
     0.0
   );
   logAddPourSolvent(pourLength);
@@ -1399,7 +1404,7 @@ function straighten(
     if (grains > 0) {
       if (nextStirLength > 0.0) {
         if (RoundStirring) {
-          nextStirLength = Math.ceil(nextStirLength / StirringUnit) * StirringUnit;
+          nextStirLength = Math.ceil(nextStirLength * StirringUnitInverse) / StirringUnitInverse;
         }
         logAddStirCauldron(nextStirLength);
         stirredLength += nextStirLength;
@@ -1427,7 +1432,7 @@ function straighten(
         /** If the stir length is capped, stir the remaining length and terminate. */
         nextStirLength = maxStirLength - stirredLength;
         if (RoundStirring) {
-          nextStirLength = Math.ceil(nextStirLength / StirringUnit) * StirringUnit;
+          nextStirLength = Math.ceil(nextStirLength * StirringUnitInverse) / StirringUnitInverse;
         }
         logAddStirCauldron(nextStirLength);
         console.log("Straignten terminated by maximal length stirred.");
