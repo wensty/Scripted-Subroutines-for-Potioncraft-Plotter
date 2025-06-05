@@ -16,8 +16,9 @@ import {
   straighten,
   getTotalMoon,
   getTotalSun,
+  logSkirt,
 } from "../main";
-import { Salt } from "../main";
+import { Salt, Effects } from "../main";
 
 import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
@@ -33,7 +34,7 @@ import { currentPlot } from "@potionous/plot";
 function main() {
   checkBase("oil");
   logAddMoonSalt(156);
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
+  logSkirt();
   derotateToAngle(0);
   logAddStirCauldron(4.6);
   straighten(getBottlePolarAngle() - degToRad(3), Salt.Sun, { maxStirLength: 1.35 });
@@ -63,5 +64,5 @@ function main() {
   console.log("Minimal health: " + stirToDangerZoneExit());
   logAddStirCauldron(1.41);
   logAddSunSalt(1);
-  console.log("Minimal distance: " + stirToNearestTarget(3.66, -30.72));
+  console.log("Minimal distance: " + stirToNearestTarget(Effects.Oil.LightningProtection));
 }

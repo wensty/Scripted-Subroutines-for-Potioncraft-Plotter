@@ -1,5 +1,5 @@
 import {
-  logAddIngredient,
+  logSkirt,
   logAddMoonSalt,
   logAddSunSalt,
   logAddHeatVortex,
@@ -23,11 +23,9 @@ import {
   checkBase,
   straighten,
   setStirRounding,
-  logSkirt,
 } from "../main";
-import { EntityVortex } from "../main";
+import { EntityVortex, Effects } from "../main";
 
-import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
 
 function main() {
@@ -64,7 +62,7 @@ function main() {
   pourToEdge();
   heatAndPourToEdge(1, 9);
   logAddHeatVortex(1.75); // Empirical
-  stirToTier(10.46, 35.57, 0.0, 7.1); // roughly
+  stirToTier(Effects.Water.Invisibility, { preStirLength: 7.1 }); // roughly
   logAddPourSolvent(5.35); // Empirical
   let returnSalt = 280; // Empirical. Add less is not necessarily better.
   logAddSunSalt(returnSalt);
@@ -94,7 +92,9 @@ function main() {
   // last salt for precise centering
   logAddStirCauldron(1.286);
   logAddSunSalt(1);
-  console.log("path deviation: " + stirToNearestTarget(-4.22, 36.37, 3.2));
+  console.log(
+    "path deviation: " + stirToNearestTarget(Effects.Water.Levitation, { preStirLength: 3.2 })
+  );
 }
 
 function beta() {
@@ -131,7 +131,7 @@ function beta() {
   pourToEdge();
   heatAndPourToEdge(1, 9);
   logAddHeatVortex(1.75); // Empirical
-  stirToTier(10.46, 35.57, 0.0, 7.1); // roughly
+  stirToTier(Effects.Water.Invisibility, { preStirLength: 7.1 }); // roughly
   logAddPourSolvent(5.35); // Empirical
   let returnSalt = 280; // Empirical. Add less is not necessarily better.
   logAddSunSalt(returnSalt);
@@ -162,5 +162,7 @@ function beta() {
   // last salt for precise centering
   logAddStirCauldron(0.269);
   logAddSunSalt(1);
-  console.log("path deviation: " + stirToNearestTarget(-4.22, 36.37, 4.5));
+  console.log(
+    "path deviation: " + stirToNearestTarget(Effects.Water.Levitation, { preStirLength: 4.5 })
+  );
 }

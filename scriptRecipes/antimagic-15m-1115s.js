@@ -1,5 +1,5 @@
 import {
-  logAddIngredient,
+  logSkirt,
   logAddSunSalt,
   logAddHeatVortex,
   logAddStirCauldron,
@@ -13,14 +13,15 @@ import {
   checkBase,
   straighten,
 } from "../main";
-import { Ingredients } from "@potionous/dataset";
+import { Effects } from "../main";
+
 import { currentPlot } from "@potionous/plot";
 
 function main() {
   checkBase("oil");
   logAddSunSalt(28);
   logAddSunSalt(138);
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
+  logSkirt();
   derotateToAngle(saltToDeg("sun", 28));
   stirIntoVortex();
   logAddHeatVortex(Infinity);
@@ -42,5 +43,7 @@ function main() {
   straighten(degToRad(11), "sun", { maxStirLength: 4, maxGrains: 201 });
   logAddStirCauldron(3.11);
   logAddSunSalt(1);
-  console.log("path deviation: " + stirToNearestTarget(32.77, 29.94, 1.2));
+  console.log(
+    "path deviation: " + stirToNearestTarget(Effects.Oil.AntiMagic, { preStirLength: 1.2 })
+  );
 }

@@ -1,5 +1,5 @@
 import {
-  logAddIngredient,
+  logSkirt,
   logAddSunSalt,
   logAddHeatVortex,
   logAddStirCauldron,
@@ -11,12 +11,11 @@ import {
   checkBase,
   straighten,
 } from "../main";
-import { Ingredients } from "@potionous/dataset";
 
 function main() {
   checkBase("water");
   logAddSunSalt(87);
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
+  logSkirt();
   logAddSunSalt(21);
   logAddStirCauldron(3);
   straighten(1.82, "sun", { maxGrains: 253 - 21 });

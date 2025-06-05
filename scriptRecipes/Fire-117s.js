@@ -1,5 +1,5 @@
 import {
-  logAddIngredient,
+  logSkirt,
   logAddSunSalt,
   logAddHeatVortex,
   logAddStirCauldron,
@@ -16,12 +16,11 @@ import {
   checkBase,
   straighten,
 } from "../main";
-
-import { Ingredients } from "@potionous/dataset";
+import { Effects } from "../main";
 
 function beta() {
   checkBase("water");
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
+  logSkirt();
   logAddStirCauldron(5.525);
   logAddPourSolvent(Infinity);
   console.log(radToDeg(getCurrentStirDirection()));
@@ -46,5 +45,5 @@ function beta() {
   logAddHeatVortex(3.13);
   logAddStirCauldron(0.832);
   logAddHeatVortex(4.58);
-  stirToNearestTarget(-14, 1.12);
+  stirToNearestTarget(Effects.Water.Fire);
 }

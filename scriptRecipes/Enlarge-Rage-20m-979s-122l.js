@@ -1,5 +1,5 @@
 import {
-  logAddIngredient,
+  logSkirt,
   logAddMoonSalt,
   logAddSunSalt,
   logAddHeatVortex,
@@ -18,10 +18,8 @@ import {
   getBottlePolarAngleByEntity,
   checkBase,
   straighten,
-  logSkirt,
 } from "../main";
-
-import { Ingredients } from "@potionous/dataset";
+import { Effects } from "../main";
 
 function main() {
   checkBase("water");
@@ -93,7 +91,7 @@ function beta_20m_978s_125hT() {
   logAddStirCauldron(1.38);
   logAddSunSalt(1);
   logAddStirCauldron(1.39);
-  stirToTier(-20.34, 22.58, 0.0);
+  stirToTier(Effects.Water.Rage);
   logAddStirCauldron(0.001);
   logAddSunSalt(260);
   stirIntoVortex();
@@ -110,6 +108,6 @@ function beta_20m_978s_125hT() {
   logAddStirCauldron(2.369);
   logAddSunSalt(1);
   logAddStirCauldron(5.7);
-  stirToNearestTarget(-58.06, 12.09);
+  stirToNearestTarget(Effects.Water.Enlargement);
   logAddSunSalt(201);
 }

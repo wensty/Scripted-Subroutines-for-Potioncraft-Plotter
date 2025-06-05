@@ -41,7 +41,7 @@ project
 - Copy the whole `main.js` file into the online script editor.
 - Delete all the import statements. Add a `main();` statement calling the main script function.
 - Write your script recipe in the `main()` function. All the defined utility functions and subroutines can be used.
-- This produce a too long link to share. To share it you flatten it into a regular instruction recipe
+- This produce a too long link to share. To share it you flatten it into a regular instruction recipe.
 
 ### beta version
 
@@ -50,7 +50,6 @@ project
 - <del>This produce a script recipe link that can be shared.</del>
 - <del>but is volatile to future changes in the `main.js` file.</del>
 - Still, you can copy the whole `main.js` file as in LTS version.
-- The dev branch enables `createSetPosition()` so it only works with beta version, but with better efficiency.
 
 ## What can scripts do and what _can't_ scripts do
 
@@ -150,14 +149,22 @@ Used to detection of certain entities.
   - `directionBuffer`: the angular threshold in radians to be considered as "vast" change.
   - `leastSegmentLength`: the minimum length between points to consider in the calculation.
 - `StirIntoDangerZoneExit()`: stir to the nearest exit point of danger zone. The bottle will find a danger zone if it is not currently in.
-- `stirToNearestTarget(targetX, targetY, maxStirLength?)`: stir to the nearest point to the target position within the given maximum stir length.
-  - `targetX`, `targetY`: the target coordinates.
-  - `maxStirLength`: the maximal length it will stir.
-- `stirToTier(targetX, targetY, targetAngle, maxDeviation?, ignoreAngle?)`: stir to the specified tier of certain effect, adjusting the stir length based on the current angle and position.
-  - `targetX`, `targetY`: the coordinates of the target effect.
-  - `targetAngle`: the angle of the target effect.
-  - `maxDeviation`: the maximum angle deviation to the target effect.
-  - `ignoreAngle`: whether to ignore the angle deviation.
+- `stirToNearestTarget(target, options?)`: stir to the nearest point to the target position within the given maximum stir length.
+  - `target`: the target effect. An object with `x` and `y` properties.
+    - Can be one of the pre-defined `Effects` constant.
+  - `options`: an object with the following options:
+    - `preStirLength`: the stir length before the optimization. Default to `0.0`.
+    - `maxStirLength`: the maximal stir length allowed in the optimization. Default to be `Infinity`.
+    - `leastSegmentLength`: the minimal length of each segment in the optimization process. Default to be `1e-9`.
+- `stirToTier(target, options?)`: stir to the specified tier of certain effect, adjusting the stir length based on the current angle and position.
+  - `target`: the target effect. An object with `x`, `y` and `angle` properties.
+    - Can be one of the pre-defined `Effects` constant.
+  - `options`: an object with the following options:
+    - `preStirLength`: the stir length before the optimization. Default to `0.0`.
+    - `maxDeviation`: the maximum angle deviation to the target effect. Default to be `DeviationT2`, i.e. the max deviation to get tier 2 effect.
+    - `ignoreAngle`: whether to ignore the angle deviation. whether T1 effects are reached is not affected by angle deviation.
+    - `leastSegmentLength`: the minimal length of each segment in the optimization process. Default to be `1e-9`
+    - `afterBuffer`: the buffer added after stirring. Default to be `1e-5`.
 - `stirToConsume(consumeLength)`: stir to consume a specified length while in a vortex.
   - `consumeLength`: the length of stirring to consume.
   - <em>The consume is virtual</em>. Consider if it can be translated to real path consuming.
@@ -236,6 +243,7 @@ Used to detection of certain entities.
   - `display`: `true` or `false`.
 - `setStirRounding(stirRounding)`: set the stir rounding mode of the plotter. This mode rounds most numbers to 3 digits after the decimal point, same as manual instructions on the online plotter.
   - `stirRounding`: `true` or `false`.
+  - some operations that potentially require high precision is not rounded. For example stirring to certain target effect.
 - `logError()`: log the current error.
 - `logSalt()`: log the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
   - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.
@@ -243,9 +251,9 @@ Used to detection of certain entities.
 ### Constants
 
 - `SaltAngle`: the angle of one grain of rotation salt in radian.
-- `MinimalPour`: the minimal actual pouring distance unit in online plotter. The value is `0.008`.
 - `VortexRadiusLarge`, `VortexRadiusMedium`, `VortexRadiusSmall`: the radius of the vortex. The value is `2.39`, `1.99`, `1.74` respectively.
 - `DeviationT2`, `DeviationT3`, `DeviationT1`: the deviation of the vortex. The value is `600`, `100`, `2754` respectively.
 - `EntityVortex`, `EntityPotionEffect`, `EntityDangerZone`, `EntityStrongDangerZone`: Predefined arrays of related entity names.
+- `Salt.Moon`, `Salt.Sun`: Predefined salt names.
 
 ---

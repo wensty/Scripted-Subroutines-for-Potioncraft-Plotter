@@ -1,5 +1,5 @@
 import {
-  logAddIngredient,
+  logSkirt,
   logAddSunSalt,
   logAddStirCauldron,
   logAddPourSolvent,
@@ -10,14 +10,14 @@ import {
   checkBase,
   straighten,
 } from "../main";
+import { Effects } from "../main";
 
-import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
 
 function beta() {
   checkBase("wine");
   let totalSun = 0;
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
+  logSkirt();
   totalSun += straighten(degToRad(87), "sun", { maxGrains: 337 });
   logAddStirCauldron(9);
   stirToTurn();
@@ -29,6 +29,6 @@ function beta() {
   totalSun += straighten(degToRad(42.1), "sun", { maxStirLength: 1.3, maxGrains: s });
   logAddStirCauldron(0.207); // centering.
   totalSun += logAddSunSalt(1);
-  console.log(stirToNearestTarget(26.56, 10.66));
+  console.log(stirToNearestTarget(Effects.Wine.Luck));
   logAddSunSalt(s + 501 - totalSun);
 }

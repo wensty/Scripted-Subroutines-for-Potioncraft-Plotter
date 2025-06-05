@@ -1,5 +1,5 @@
 import {
-  logAddIngredient,
+  logSkirt,
   logAddMoonSalt,
   logAddSunSalt,
   logAddStirCauldron,
@@ -9,12 +9,12 @@ import {
   straighten,
   getTotalSun,
 } from "../main";
+import { Effects } from "../main";
 
-import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
 
 function main() {
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
+  logSkirt();
   logAddStirCauldron(5.8);
   logAddPourSolvent(Infinity);
   logAddMoonSalt(45);
@@ -28,6 +28,6 @@ function main() {
   logAddStirCauldron(2.503);
   logAddSunSalt(1);
   logAddStirCauldron(8.15);
-  stirToNearestTarget(-17.67, 3.61);
+  stirToNearestTarget(Effects.Wine.Libido);
   logAddMoonSalt(165);
 }

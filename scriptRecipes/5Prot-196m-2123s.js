@@ -1,7 +1,6 @@
 /**
  * Full import script.
  */
-
 import {
   logSkirt,
   logAddMoonSalt,
@@ -28,7 +27,7 @@ import {
   setDisplay,
   setStirRounding,
 } from "../main";
-import { SaltAngle, DeviationT1, EntityPotionEffect } from "../main";
+import { SaltAngle, DeviationT1, EntityPotionEffect, Effects } from "../main";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -91,7 +90,11 @@ function beta() {
   console.log(getDirectionByVector(x2 - x, y2 - y));
   straighten(getDirectionByVector(28.91 - x2, 1.7 - y2), "sun", { maxGrains: 345 });
   // Fire protection.
-  stirToTier(28.91, 1.7, 0.0, 7.6, DeviationT1, true);
+  stirToTier(Effects.Oil.FireProtection, {
+    preStirLength: 7.6,
+    maxDeviation: DeviationT1,
+    ignoreAngle: true,
+  });
   console.log(getBottlePolarAngleByEntity(EntityPotionEffect) + Math.PI);
   logAddSunSalt(Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36));
   logAddPourSolvent(7.8);
@@ -122,7 +125,11 @@ function beta() {
   logAddHeatVortex(5.65); // consume the inappropriate segment.
   logAddSunSalt(150);
   // Acid protection.
-  stirToTier(23.57, -30.32, 0.0, 11.1, DeviationT1, true);
+  stirToTier(Effects.Oil.AcidProtection, {
+    preStirLength: 11.1,
+    maxDeviation: DeviationT1,
+    ignoreAngle: true,
+  });
   // part 3
   logAddPourSolvent(10.7);
   console.log(getBottlePolarAngle());
@@ -138,7 +145,11 @@ function beta() {
   logAddHeatVortex(6.7);
   derotateToAngle(56.3);
   // Lightning Protection
-  stirToTier(3.66, -30.72, 0.0, 7.7, DeviationT1, true);
+  stirToTier(Effects.Oil.LightningProtection, {
+    preStirLength: 7.7,
+    maxDeviation: DeviationT1,
+    ignoreAngle: true,
+  });
   // return to origin.
   logAddPourSolvent(9.7);
   logAddStirCauldron(1.65);
@@ -176,5 +187,9 @@ function beta() {
   logAddHeatVortex(2.84);
   logAddSunSalt(112);
   // Frost protection.
-  stirToTier(-27.97, -4.09, 0.0, 8.7, DeviationT1, true);
+  stirToTier(Effects.Oil.FrostProtection, {
+    preStirLength: 8.7,
+    maxDeviation: DeviationT1,
+    ignoreAngle: true,
+  });
 }

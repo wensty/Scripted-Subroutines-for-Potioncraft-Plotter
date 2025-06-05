@@ -1,5 +1,5 @@
 import {
-  logAddIngredient,
+  logSkirt,
   logAddSunSalt,
   logAddStirCauldron,
   logAddPourSolvent,
@@ -10,21 +10,20 @@ import {
   radToDeg,
   saltToDeg,
   getDirectionByVector,
-  getBottlePolarAngle,
   checkBase,
   straighten,
   getTotalSun,
   setDisplay,
 } from "../main";
+import { Effects } from "../main";
 
-import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
 
 function beta() {
   checkBase("wine");
   setDisplay(false);
   logAddSunSalt(70);
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
+  logSkirt();
   derotateToAngle(saltToDeg("sun", 53 - 0.9));
   const direction = degToRad(28.4);
   straighten(direction, "sun", { maxGrains: 167 });
@@ -49,5 +48,5 @@ function beta() {
   straighten(degToRad(48.5), "sun", { maxStirLength: 1.3, maxGrains: 825 - getTotalSun() });
   logAddStirCauldron(1.13);
   logAddSunSalt(1);
-  console.log("least distance: " + stirToNearestTarget(19.25, 16.3));
+  console.log("least distance: " + stirToNearestTarget(Effects.Wine.Hallucinations));
 }

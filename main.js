@@ -19,7 +19,9 @@ import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
 
 const LuckyInfinity = 1437;
 const SaltAngle = (2 * Math.PI) / 1000.0; // angle per salt in radian.
-const MinimalPour = 8e-3; // minimal pouring unit of current version of plotter. All pours are multiply of this.
+// Minimal pouring unit of current version of plotter. All pours are multiply of this.
+// The inverse is used for float accuracy.
+// const MinimalPour = 8e-3;
 const MinimalPourInverse = 125.0;
 const VortexRadiusLarge = 2.39;
 const VortexRadiusMedium = 1.99;
@@ -35,13 +37,107 @@ const EntityStrongDangerZone = ["DangerZonePart", "StrongDangerZonePart"];
 const Salt = { Moon: "moon", Sun: "sun" };
 let Display = true; // Macro to switch instruction display.
 let RoundStirring = true; // macro to control whether round stirrings.
-let StirringUnit = 1e-3; // minimal stir unit of hand-added stirring instructions. Stirring instructions add by scripts can be infinitely precise.
+// Minimal stir unit of hand-added stirring instructions. Stirring instructions add by scripts can be infinitely precise.
+// The inverse is used for float accuracy.
+// let StirringUnit = 1e-3;
 let StirringUnitInverse = 1000.0;
 let Step = 1;
 let TotalSun = 0;
 let TotalMoon = 0;
 let ret = 0; // The return code of last function.
 let err = ""; // The return into string of last error.
+
+const Effects = {
+  Water: {
+    Healing: { x: 5.3, y: -5.84, angle: 0 },
+    Poison: { x: -5.65, y: -5.889, angle: 0 },
+    Frost: { x: 11.54, y: -0.24, angle: 0 },
+    Fire: { x: -14, y: 1.12, angle: 0 },
+    Strength: { x: 0.74, y: -16.28, angle: 0 },
+    WildGrowth: { x: 16.84, y: -11.97, angle: 0 },
+    Mana: { x: 11.69, y: 11.69, angle: 0 },
+    Explosion: { x: -13.08, y: 12.72, angle: 0 },
+    Dexterity: { x: 20.86, y: 3.19, angle: 0 },
+    Swiftness: { x: -0.89, y: 18.6, angle: 0 },
+    StoneSkin: { x: -0.72, y: -23, angle: 0 },
+    Sleep: { x: 21.85, y: -5.98, angle: 0 },
+    PoisonProtection: { x: 23.62, y: -29.02, angle: 45 },
+    Light: { x: -24.9, y: 0, angle: 0 },
+    Lightning: { x: 10.37, y: 19.6, angle: 0 },
+    Gluing: { x: 17.86, y: -59.08, angle: 90 },
+    Stench: { x: -51.12, y: -48.1, angle: -135 },
+    Slowness: { x: 8.41, y: -29.56, angle: 0 },
+    Slipperiness: { x: 56.1, y: -7.75, angle: 90 },
+    Fragrance: { x: 58.04, y: -23.72, angle: -135 },
+    Acid: { x: -31.49, y: -18.27, angle: 0 },
+    Charm: { x: -11.1, y: 27.12, angle: 0 },
+    AcidProtection: { x: 33.39, y: 47.03, angle: 135 },
+    FrostProtection: { x: -51.1, y: 0, angle: 45 },
+    FireProtection: { x: 39.87, y: 0.52, angle: -45 },
+    LightningProtection: { x: -5.28, y: -48.98, angle: 45 },
+    Rage: { x: -20.34, y: 22.58, angle: 0 },
+    Curse: { x: -60.56, y: -21.61, angle: -135 },
+    MagicalVision: { x: 21.27, y: 10.44, angle: 0 },
+    Rejuvenation: { x: 38.96, y: -55.19, angle: 180 },
+    Fear: { x: -32.36, y: 52.87, angle: -150 },
+    Libido: { x: -30.38, y: 14.2, angle: 0 },
+    Invisibility: { x: 10.46, y: 35.57, angle: 0 },
+    Enlargement: { x: -58.06, y: 12.09, angle: 135 },
+    Hallucinations: { x: 35.55, y: 38.98, angle: 180 },
+    Shrinking: { x: 59.66, y: 7.63, angle: -135 },
+    Levitation: { x: -4.22, y: 36.37, angle: 0 },
+    Inspiration: { x: 7.64, y: 61.12, angle: 105 },
+    AntiMagic: { x: 47.59, y: 48.6, angle: 180 },
+    Luck: { x: 59.77, y: 31.3, angle: 135 },
+    Necromancy: { x: -27.41, y: 30.4, angle: 0 },
+  },
+  Oil: {
+    Healing: { x: 3.8, y: -3.96, angle: 15 },
+    Poison: { x: -3.85, y: -3.74, angle: -15 },
+    Fire: { x: -11.65, y: -0.98, angle: 60 },
+    WildGrowth: { x: 17.25, y: -12.41, angle: 90 },
+    Explosion: { x: -8.96, y: 9.3, angle: 90 },
+    StoneSkin: { x: 0, y: -14.19, angle: 180 },
+    PoisonProtection: { x: 16.22, y: -20.38, angle: 0 },
+    Light: { x: -20.89, y: 1.48, angle: 135 },
+    Lightning: { x: 7.84, y: 16.46, angle: -90 },
+    Gluing: { x: -3.95, y: -23.57, angle: 0 },
+    Stench: { x: -16.83, y: -19.91, angle: 0 },
+    Slipperiness: { x: 24.7, y: -4.11, angle: 0 },
+    AcidProtection: { x: 23.57, y: -30.32, angle: 0 },
+    FrostProtection: { x: -27.97, y: -4.09, angle: 0 },
+    FireProtection: { x: 28.91, y: 1.7, angle: 0 },
+    LightningProtection: { x: 3.66, y: -30.72, angle: 0 },
+    Rejuvenation: { x: 37.18, y: -32.56, angle: 0 },
+    Invisibility: { x: -2.55, y: 27.94, angle: -135 },
+    Enlargement: { x: -43.1, y: 3.73, angle: 0 },
+    Shrinking: { x: 44.43, y: -3.63, angle: 0 },
+    AntiMagic: { x: 32.77, y: 29.94, angle: 0 },
+  },
+  Wine: {
+    Healing: { x: 3, y: -3, angle: -25 },
+    Frost: { x: 7.87, y: 0.34, angle: -70 },
+    Strength: { x: 0.66, y: -9, angle: 60 },
+    Mana: { x: 7.38, y: 6.79, angle: 45 },
+    Dexterity: { x: 14.21, y: 3.53, angle: 30 },
+    Swiftness: { x: 1, y: 9, angle: -45 },
+    Sleep: { x: 15.65, y: -2.25, angle: -60 },
+    Slowness: { x: 0.48, y: -16, angle: 50 },
+    Fragrance: { x: 22.82, y: -7.41, angle: 0 },
+    Acid: { x: -13.14, y: -9.02, angle: -115 },
+    Charm: { x: -6.25, y: 11.79, angle: 120 },
+    Rage: { x: -13.04, y: 10.59, angle: -40 },
+    Curse: { x: -21.93, y: -9.02, angle: 0 },
+    MagicalVision: { x: 18.63, y: 9.79, angle: 90 },
+    Fear: { x: -19.45, y: 14.64, angle: 0 },
+    Libido: { x: -17.67, y: 3.61, angle: -20 },
+    Hallucinations: { x: 19.25, y: 16.3, angle: 0 },
+    Levitation: { x: -1.12, y: 18.65, angle: -150 },
+    Inspiration: { x: 2.52, y: 25.77, angle: 0 },
+    Luck: { x: 26.56, y: 10.66, angle: 0 },
+    Necromancy: { x: -12.28, y: -17.33, angle: 180 },
+  },
+};
 
 /**
  * Generally, functions named by "into" some entities move the bottle cross the boundary into it.
@@ -530,28 +626,27 @@ function stirToDangerZoneExit(minStirLength = 0.0) {
 /**
  * Stirs the potion towards the nearest point to the given target coordinates,
  * within the specified constraints on stir lengths.
- *
  * This stir is not rounded for precision.
- * @param {number} targetX - The x-coordinate of the target position.
- * @param {number} targetY - The y-coordinate of the target position.
- * @param {number} [minstirLength=0.0] - The minimum length to stir initially.
- * @param {number} [maxExtraStirLength=Infinity] - The maximum additional length
- *     allowed for stirring beyond the initial length.
- * @param {number} [leastSegmentLength=1e-9] - The minimal length of each segment of the potion path.
+ * @param {object} target - The target effect.
+ * @param {number} target.x - The x-coordinate of the target effect.
+ * @param {number} target.y - The y-coordinate of the target effect.
+ * @param {object} options - Options for the stirToNearestTarget function.
+ * @param {number} [options.preStirLength=0.0] - The initial stir length before
+ *   the optimization.
+ * @param {number} [options.maxStirLength=Infinity] - The maximal stir length
+ *   allowed in the optimization.
+ * @param {number} [options.leastSegmentLength=1e-9] - The minimal length of
+ *   each segment in the optimization process.
  * @returns {number} The optimal distance to the target after stirring.
  */
-function stirToNearestTarget(
-  targetX,
-  targetY,
-  minstirLength = 0.0,
-  maxExtraStirLength = Infinity,
-  leastSegmentLength = 1e-9
-) {
+function stirToNearestTarget(target, options = {}) {
   if (ret) return 0.0;
+  const { x: targetX, y: targetY } = target;
+  const { preStirLength = 0.0, maxStirLength = Infinity, leastSegmentLength = 1e-9 } = options;
   let pendingPoints = currentPlot.pendingPoints;
-  if (minstirLength > 0.0) {
+  if (preStirLength > 0.0) {
     pendingPoints = computePlot(
-      currentRecipeItems.concat([createStirCauldron(minstirLength)])
+      currentRecipeItems.concat([createStirCauldron(preStirLength)])
     ).pendingPoints;
   }
   // const pendingPoints = currentPlot.pendingPoints;
@@ -582,7 +677,7 @@ function stirToNearestTarget(
     if (nextSegmentLength <= leastSegmentLength) {
       continue;
     }
-    if (currentStirLength + nextSegmentLength > maxExtraStirLength) {
+    if (currentStirLength + nextSegmentLength > maxStirLength) {
       isLastSegment = true;
     }
     const nextX = pendingPoints[nextIndex].x || 0.0;
@@ -612,37 +707,44 @@ function stirToNearestTarget(
     currentStirLength += nextSegmentLength;
     nextSegmentLength = 0.0;
   }
-  logAddStirCauldron(minstirLength + optimalStirLength);
+  logAddStirCauldron(preStirLength + optimalStirLength);
   return optimalDistance;
 }
 
 /**
- * Stirs the potion to the specified tier of certain effect.
+ * Stirs the potion to the specified tier of a certain effect, adjusting
+ * the stir length based on the target's angle and position.
  * This stir is not rounded for precision.
- * @param {number} targetX - The x-coordinate of the target effect.
- * @param {number} targetY - The y-coordinate of the target effect.
- * @param {number} targetAngle - The angle of the target effect in degree.
- * @param {number} [minStirLength=0.0] - The minimal stir length to ensure the stir length is not too short.
- * @param {number} [maxDeviation=DeviationT2] - The maximal total deviation to the target effect.
- * @param {boolean} [ignoreAngle=false] - Whether to ignore the angle deviation.
- * @param {number} [leastSegmentLength=1e-9] - The minimal length of each segment of the potion path.
- * @param {number} [afterBuffer=1e-5] - The buffer after the stir to make sure the stir is not too precise.
+ * @param {object} target - The target effect.
+ * @param {number} target.x - The x-coordinate of the target effect.
+ * @param {number} target.y - The y-coordinate of the target effect.
+ * @param {number} target.angle - The angle of the target effect in degrees.
+ * @param {object} options - Options for the stirring process.
+ * @param {number} [options.preStirLength=0.0] - The minimal stir length
+ *     to ensure the stir is not too short.
+ * @param {number} [options.maxDeviation=DeviationT2] - The maximal allowable
+ *     deviation from the target effect's angle.
+ * @param {boolean} [options.ignoreAngle=false] - Whether to ignore the
+ *     angle deviation in the stirring process.
+ * @param {number} [options.leastSegmentLength=1e-9] - The minimal length
+ *     of each segment in the stirring path.
+ * @param {number} [options.afterBuffer=1e-5] - The buffer added after
+ *     stirring to ensure precision.
  */
-function stirToTier(
-  targetX,
-  targetY,
-  targetAngle,
-  minStirLength = 0.0,
-  maxDeviation = DeviationT2,
-  ignoreAngle = false,
-  leastSegmentLength = 1e-9,
-  afterBuffer = 1e-5
-) {
+function stirToTier(target, options = {}) {
   if (ret) return;
+  const { x: targetX, y: targetY, angle: targetAngle } = target;
+  const {
+    preStirLength = 0.0,
+    maxDeviation = DeviationT2,
+    ignoreAngle = false,
+    leastSegmentLength = 1e-9,
+    afterBuffer = 1e-5,
+  } = options;
   let pendingPoints = currentPlot.pendingPoints;
-  if (minStirLength > 0.0) {
+  if (preStirLength > 0.0) {
     pendingPoints = computePlot(
-      currentRecipeItems.concat(createStirCauldron(minStirLength))
+      currentRecipeItems.concat(createStirCauldron(preStirLength))
     ).pendingPoints;
   }
   const currentPoint = currentPlot.pendingPoints[0];
@@ -697,7 +799,7 @@ function stirToTier(
         const approximatedLastStirLength =
           lastStirLength - Math.sqrt(requiredDistance ** 2 - lineDistance ** 2);
         logAddStirCauldron(
-          minStirLength +
+          preStirLength +
             currentStirLength +
             Math.min(approximatedLastStirLength + afterBuffer, currentSegmentLength)
         );
@@ -710,7 +812,7 @@ function stirToTier(
           lastStirLength - Math.sqrt(requiredDistance ** 2 - nextDistance ** 2);
         if (nextDistance < requiredDistance) {
           logAddStirCauldron(
-            minStirLength +
+            preStirLength +
               currentStirLength +
               Math.min(approximatedLastStirLength + afterBuffer, lastStirLength)
           );
@@ -1527,7 +1629,6 @@ export {
 
 export {
   SaltAngle,
-  MinimalPour,
   VortexRadiusLarge,
   VortexRadiusMedium,
   VortexRadiusSmall,
@@ -1539,4 +1640,5 @@ export {
   EntityDangerZone,
   EntityStrongDangerZone,
   Salt,
+  Effects,
 };
