@@ -623,11 +623,10 @@ function stirToNearestTarget(
  * @param {number} targetY - The y-coordinate of the target effect.
  * @param {number} targetAngle - The angle of the target effect in degree.
  * @param {number} [minStirLength=0.0] - The minimal stir length to ensure the stir length is not too short.
- * @param {number} [maxDeviation=DeviationT2] - The maximal angle deviation to the target effect.
+ * @param {number} [maxDeviation=DeviationT2] - The maximal total deviation to the target effect.
  * @param {boolean} [ignoreAngle=false] - Whether to ignore the angle deviation.
  * @param {number} [leastSegmentLength=1e-9] - The minimal length of each segment of the potion path.
- * @param {number} [afterBuffer=1e-5] - The buffer after the stir to make sure the stir is not too short.
- * @return {number} - The final distance to the target effect.
+ * @param {number} [afterBuffer=1e-5] - The buffer after the stir to make sure the stir is not too precise.
  */
 function stirToTier(
   targetX,
@@ -1315,7 +1314,6 @@ function getTotalMoon() {
  */
 
 /**
- * TODO: add `preStirLength` option.
  * Straighten the potion path with the least amount of salt.
  *
  * @param {number} direction The direction to be stirred in radian.
@@ -1324,7 +1322,7 @@ function getTotalMoon() {
  * @param {number} [options.maxStirLength=Infinity] The maximum distance to be stirred.
  * @param {number} [options.maxGrains=Infinity] The maximum amount of salt to be added.
  * @param {boolean} [options.ignoreReverse=true] If set to false, the function will terminate when a reversed direction is detected.
- * @param {number} [option.preStirLength] The amount of stirring to be added before the straightening process.
+ * @param {number} [options.preStirLength=1e-9] The amount of stirring to be added before the straightening process.
  * @param {number} [options.leastSegmentLength=1e-9] The minimal length of each segment of the potion path.
  * @returns {number} The total amount of salt added.
  */
@@ -1341,7 +1339,7 @@ function straighten(direction, salt, options = {}) {
     maxStirLength = Infinity,
     maxGrains = Infinity,
     ignoreReverse = true,
-    preStirLength = 0.0, // currently not implemented.
+    preStirLength = 0.0,
     leastSegmentLength = 1e-9,
   } = options;
   let stirredLength = 0.0;
@@ -1349,8 +1347,12 @@ function straighten(direction, salt, options = {}) {
   let nextSegmentLength = 0.0;
   let totalGrains = 0;
   let currentIndex = 0;
-  let pendingPoints = currentPlot.pendingPoints;
+  // let pendingPoints = currentPlot.pendingPoints;
+  let pendingPoints = computePlot(
+    currentRecipeItems.concat([createStirCauldron(preStirLength)])
+  ).pendingPoints;
   let lastSegment = false;
+  let _preStirLength = preStirLength;
   while (!lastSegment) {
     const currentX = pendingPoints[currentIndex].x;
     const currentY = pendingPoints[currentIndex].y;
@@ -1399,6 +1401,8 @@ function straighten(direction, salt, options = {}) {
     }
     if (grains > 0) {
       if (nextStirLength > 0.0) {
+        nextStirLength += _preStirLength;
+        _preStirLength = 0.0;
         if (RoundStirring) {
           nextStirLength = Math.ceil(nextStirLength * StirringUnitInverse) / StirringUnitInverse;
         }
@@ -1426,7 +1430,8 @@ function straighten(direction, salt, options = {}) {
       nextSegmentLength = 0.0;
       if (nextStirLength + stirredLength >= maxStirLength) {
         /** If the stir length is capped, stir the remaining length and terminate. */
-        nextStirLength = maxStirLength - stirredLength;
+        nextStirLength = maxStirLength - stirredLength + _preStirLength;
+        _preStirLength = 0.0;
         if (RoundStirring) {
           nextStirLength = Math.ceil(nextStirLength * StirringUnitInverse) / StirringUnitInverse;
         }

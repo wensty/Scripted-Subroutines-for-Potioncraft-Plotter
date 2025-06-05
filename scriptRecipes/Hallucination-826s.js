@@ -27,7 +27,7 @@ function beta() {
   logAddIngredient(Ingredients.PhantomSkirt, 1);
   derotateToAngle(saltToDeg("sun", 53 - 0.9));
   const direction = degToRad(28.4);
-  straighten(Infinity, direction, "sun", 167);
+  straighten(direction, "sun", { maxGrains: 167 });
   const x1 = currentPlot.pendingPoints[0].x;
   const y1 = currentPlot.pendingPoints[0].y;
   logAddStirCauldron(7);
@@ -36,7 +36,7 @@ function beta() {
   const y2 = currentPlot.pendingPoints[0].y;
   console.log("Direction of concave part: " + radToDeg(getDirectionByVector(x2 - x1, y2 - y1)));
   const s1 = Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36);
-  straighten(Infinity, direction, "sun", s1);
+  straighten(direction, "sun", { maxGrains: s1 });
   logAddStirCauldron(0.7);
   logAddPourSolvent(6.34);
   const s2 = Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36);
@@ -46,7 +46,7 @@ function beta() {
     "Final salt after last pouring: " +
       (getTotalSun() + Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36))
   );
-  straighten(1.3, degToRad(48.5), "sun", 825 - getTotalSun());
+  straighten(degToRad(48.5), "sun", { maxStirLength: 1.3, maxGrains: 825 - getTotalSun() });
   logAddStirCauldron(1.13);
   logAddSunSalt(1);
   console.log("least distance: " + stirToNearestTarget(19.25, 16.3));

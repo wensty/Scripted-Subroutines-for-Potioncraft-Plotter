@@ -211,10 +211,11 @@ Used to detection of certain entities.
 
 ### Complex subroutines.
 
-- `straighten(direction, salt, {maxStirLength?, maxGrains?, ignoreReverse?, leastSegmentLength?})`: straighten the potion path with rotation salts, i.e. automatically adding proper number of rotation salt while stirring to make the potion path straight.
+- `straighten(direction, salt, {maxStirLength?, maxGrains?, ignoreReverse?,preStirLength?, leastSegmentLength?})`: straighten the potion path with rotation salts, i.e. automatically adding proper number of rotation salt while stirring to make the potion path straight.
   - `direction`: the direction to be stirred in radian.
   - `salt`: the type of salt to be added, it must be "moon" or "sun".
   - `maxStirLength`, `maxGrains`: stopping conditions of the straightening process. Default to be `Infinity`, i.e. stopping condition not set.
+  - `preStirLength`: the amount of stirring to be added before the straightening process. Default to be `0`.
   - `ignoreReverse`: Controls the behavior when reversed direction(i.e. should add another rotation salt to bend it to the given direction) is detected. If set, no salt will be added and the process continues. If not set, the function terminate when a reversed direction is detected.
     - Default to be `true`, i.e. not set the reversed direction terminate condition.
   - Generally you should set at least one of the terminate condition.

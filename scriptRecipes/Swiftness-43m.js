@@ -18,5 +18,5 @@ function main() {
   logAddStirCauldron(3.8);
   let currentStirAngle = getCurrentStirDirection();
   console.log("Current stir angle: " + radToDeg(currentStirAngle));
-  straighten(10, currentStirAngle, "moon", 43);
+  straighten(currentStirAngle, "moon", { maxStirLength: 10, maxGrains: 43 });
 }

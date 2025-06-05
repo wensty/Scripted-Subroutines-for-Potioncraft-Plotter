@@ -18,15 +18,15 @@ function beta() {
   checkBase("wine");
   let totalSun = 0;
   logAddIngredient(Ingredients.PhantomSkirt, 1);
-  totalSun += straighten(Infinity, degToRad(87), "sun", 337);
+  totalSun += straighten(degToRad(87), "sun", { maxGrains: 337 });
   logAddStirCauldron(9);
   stirToTurn();
-  totalSun += straighten(Infinity, getBottlePolarAngle(), "sun", 501 - totalSun);
+  totalSun += straighten(getBottlePolarAngle(), "sun", { maxGrains: 501 - totalSun });
   logAddPourSolvent(1.67);
   const s = Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36);
   console.log("Final Salt: " + (s + 501));
   logAddStirCauldron(11);
-  totalSun += straighten(1.3, degToRad(42.1), "sun", s);
+  totalSun += straighten(degToRad(42.1), "sun", { maxStirLength: 1.3, maxGrains: s });
   logAddStirCauldron(0.207); // centering.
   totalSun += logAddSunSalt(1);
   console.log(stirToNearestTarget(26.56, 10.66));

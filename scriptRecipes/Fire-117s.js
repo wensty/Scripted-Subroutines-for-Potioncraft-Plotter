@@ -37,7 +37,7 @@ function beta() {
   for (let i = 0; i < 3; i++) {
     stirToTurn();
   }
-  straighten(0.8, getCurrentStirDirection(), "sun");
+  straighten(getCurrentStirDirection(), "sun", { maxStirLength: 0.8 });
   stirToDangerZoneExit();
   logAddSunSalt(117 - 60);
   stirIntoVortex();

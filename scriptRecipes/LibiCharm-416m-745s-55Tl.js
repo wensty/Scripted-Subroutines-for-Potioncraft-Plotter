@@ -20,7 +20,7 @@ function main() {
   logAddIngredient(Ingredients.GraveTruffle, 1);
   logAddSunSalt(195);
   stirToTurn();
-  straighten(Infinity, degToRad(-81), "moon", 298);
+  straighten(degToRad(-81), "moon", { maxGrains: 298 });
   logAddMoonSalt(415 - getTotalMoon());
   logAddStirCauldron(1.09);
   logAddMoonSalt(1);

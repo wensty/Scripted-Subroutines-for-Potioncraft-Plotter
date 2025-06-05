@@ -90,10 +90,9 @@ function main() {
   heatAndPourToEdge(1, 9);
   logAddHeatVortex(5.12);
   derotateToAngle(saltToDeg("moon", 100 + 33.3));
-  logAddStirCauldron(9.5);
-  straighten(degToRad(5), "sun", { maxGrains: 99 });
+  straighten(degToRad(5), "sun", { maxGrains: 99, preStirLength: 9.5 });
   // last salt for precise centering
-  logAddStirCauldron(1.803);
+  logAddStirCauldron(1.286);
   logAddSunSalt(1);
   console.log("path deviation: " + stirToNearestTarget(-4.22, 36.37, 3.2));
 }
