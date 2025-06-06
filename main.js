@@ -643,6 +643,7 @@ function stirToNearestTarget(target, options = {}) {
   if (ret) return 0.0;
   const { x: targetX, y: targetY } = target;
   const { preStirLength = 0.0, maxStirLength = Infinity, leastSegmentLength = 1e-9 } = options;
+
   let pendingPoints = currentPlot.pendingPoints;
   if (preStirLength > 0.0) {
     pendingPoints = computePlot(
@@ -687,7 +688,7 @@ function stirToNearestTarget(target, options = {}) {
     if (lastStirLength > nextSegmentLength) {
       const nextDistance = Math.sqrt((targetX - nextX) ** 2 + (targetY - nextY) ** 2);
       if (nextDistance < optimalDistance) {
-        optimalStirLength = currentStirLength + lastStirLength;
+        optimalStirLength = currentStirLength + nextSegmentLength;
         optimalDistance = nextDistance;
       }
     } else {
@@ -708,7 +709,7 @@ function stirToNearestTarget(target, options = {}) {
     nextSegmentLength = 0.0;
   }
   logAddStirCauldron(preStirLength + optimalStirLength);
-  return optimalDistance;
+  return preStirLength + optimalDistance;
 }
 
 /**
