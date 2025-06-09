@@ -42,7 +42,6 @@ import {
   checkBase,
   getCurrentVortexRadius,
   getTargetVortexInfo,
-  getCurrentTargetError,
   straighten,
   getUnit,
   getTotalMoon,

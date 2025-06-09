@@ -229,9 +229,9 @@ Used to detection of certain entities.
   - Straightening is important for many highly-salty recipes with brute-force bending of path, like `AntiMagic-15m-1115s.js`.
     > Under some assumption, we can prove that that the optimal path is:
     >
-    > 1. a part of the ingredient.
-    > 2. a straightened part.
-    > 3. last part of the ingredient.
+    > 1. A part of the ingredient.
+    > 2. A straightened part.
+    > 3. Last part of the ingredient.
     >    And there are geometric relations between the straighten direction and some other directions.
 
 ### Other utilities
@@ -255,5 +255,7 @@ Used to detection of certain entities.
 - `DeviationT2`, `DeviationT3`, `DeviationT1`: the deviation of the vortex. The value is `600`, `100`, `2754` respectively.
 - `EntityVortex`, `EntityPotionEffect`, `EntityDangerZone`, `EntityStrongDangerZone`: Predefined arrays of related entity names.
 - `Salt.Moon`, `Salt.Sun`: Predefined salt names.
+- `Effects`: Predefined objects of effect positions and angles.
+  - For example, `Effects.Water.Healing` stores the position and angle of the healing effect in water base.
 
 ---
