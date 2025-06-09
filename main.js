@@ -166,6 +166,18 @@ function fixUndef(entity) {
 }
 
 /**
+ * Extracts the x and y coordinates from a given plot point, defaulting to the current point.
+ * Sets undefined coordinates to 0.0.
+ * @param {import("@potionous/plot").PlotPoint} [point=currentPlot.pendingPoints[0]] - The plot point to extract coordinates from.
+ * @returns {{x: number, y: number}} The extracted coordinates with defaults applied.
+ */
+
+function extractCoordinate(point = currentPlot.pendingPoints[0]) {
+  const { x, y } = point;
+  return { x: x || 0.0, y: y || 0.0 };
+}
+
+/**
  * Logs the error message if an error occurred during this script.
  * If no error occurred, it logs a success message.
  */
@@ -399,16 +411,21 @@ const isPotionEffect = isEntityType(EntityPotionEffect);
 
 /**
  * Stirs the solution into next vortex.
- *
+ * @param {number} [preStirLength=0.0] The stir length before stirring into vortex.
  * @param {number} [buffer=1e-5] - The buffer to adjust the final stir length.
  */
-function stirIntoVortex(buffer = 1e-5) {
+function stirIntoVortex(preStirLength = 0.0, buffer = 1e-5) {
   if (ret) return;
-  const pendingPoints = currentPlot.pendingPoints;
+  let pendingPoints = currentPlot.pendingPoints;
+  if (preStirLength > 0.0) {
+    pendingPoints = computePlot(
+      currentRecipeItems.concat(createStirCauldron(preStirLength))
+    ).pendingPoints;
+  }
   const currentVortex = fixUndef(pendingPoints[0].bottleCollisions.find(isVortex));
   let currentStirLength = 0.0;
   let index = 0;
-  let current = { x: pendingPoints[0].x || 0.0, y: pendingPoints[0].y || 0.0 };
+  let current = extractCoordinate(pendingPoints[0]);
   while (true) {
     index += 1;
     if (index == pendingPoints.length) {
@@ -423,7 +440,7 @@ function stirIntoVortex(buffer = 1e-5) {
         nextVortex.x != currentVortex.x ||
         nextVortex.y != currentVortex.y)
     ) {
-      const next = { x: pendingPoints[index].x || 0.0, y: pendingPoints[index].y || 0.0 };
+      const next = extractCoordinate(pendingPoints[index]);
       const unit = getUnit(next.x - current.x, next.y - current.y);
       const l1 = unit.x * (nextVortex.x - current.x) + unit.y * (nextVortex.y - current.y);
       const l2 = -unit.y * (nextVortex.x - current.x) + unit.x * (nextVortex.y - current.y);
@@ -438,7 +455,7 @@ function stirIntoVortex(buffer = 1e-5) {
       return;
     }
     currentStirLength += pointDistance(pendingPoints[index - 1], pendingPoints[index]);
-    current = { x: pendingPoints[index].x || 0.0, y: pendingPoints[index].y || 0.0 };
+    current = extractCoordinate(pendingPoints[index]);
   }
 }
 
@@ -471,8 +488,8 @@ function stirToEdge(buffer = 1e-5) {
       stirLength += pointDistance(pendingPoints[index - 1], pendingPoints[index]);
     }
   }
-  const current = { x: pendingPoints[index - 1].x || 0.0, y: pendingPoints[index - 1].y || 0.0 };
-  const next = { x: pendingPoints[index].x || 0.0, y: pendingPoints[index].y || 0.0 };
+  const current = extractCoordinate(pendingPoints[index - 1]);
+  const next = extractCoordinate(pendingPoints[index]);
   const unit = getUnit(next.x - current.x, next.y - current.y);
   const l1 = unit.x * (vortex.x - current.x) + unit.y * (vortex.y - current.y);
   const l2 = -unit.y * (vortex.x - current.x) + unit.x * (vortex.y - current.y);
@@ -533,10 +550,9 @@ function stirToTurn(
         break;
       }
     }
-    const nextUnit = getUnit(
-      pendingPoints[nextIndex].x - pendingPoints[currentIndex].x,
-      pendingPoints[nextIndex].y - pendingPoints[currentIndex].y
-    );
+    const current = extractCoordinate(pendingPoints[currentIndex]);
+    const next = extractCoordinate(pendingPoints[nextIndex]);
+    const nextUnit = getUnit(next.x - current.x, next.y - current.y);
     if (
       currentUnit != undefined &&
       currentUnit.x * nextUnit.x + currentUnit.y * nextUnit.y < minCosine
@@ -634,7 +650,7 @@ function stirToDangerZoneExit(minStirLength = 0.0) {
  */
 function stirToNearestTarget(target, options = {}) {
   if (ret) return 0.0;
-  const { x: targetX, y: targetY } = target;
+  // const { x: target.x, y: target.y } = target;
   const { preStirLength = 0.0, maxStirLength = Infinity, leastSegmentLength = 1e-9 } = options;
   let pendingPoints = currentPlot.pendingPoints;
   if (preStirLength > 0.0) {
@@ -642,9 +658,8 @@ function stirToNearestTarget(target, options = {}) {
       currentRecipeItems.concat([createStirCauldron(preStirLength)])
     ).pendingPoints;
   }
-  const initialX = pendingPoints[0].x || 0.0;
-  const initialY = pendingPoints[0].y || 0.0;
-  const initialDistance = Math.sqrt((initialX - targetX) ** 2 + (initialY - targetY) ** 2);
+  const initial = extractCoordinate(pendingPoints[0]);
+  const initialDistance = Math.sqrt((initial.x - target.x) ** 2 + (initial.y - target.y) ** 2);
   let isLastSegment = false;
   let currentStirLength = 0.0;
   let optimalStirLength = 0.0;
@@ -652,8 +667,7 @@ function stirToNearestTarget(target, options = {}) {
   let currentIndex = 0;
   let nextIndex = currentIndex;
   let nextSegmentLength = 0.0;
-  let currentX = initialX;
-  let currentY = initialY;
+  let current = initial;
   while (!isLastSegment) {
     while (true) {
       nextIndex += 1;
@@ -672,12 +686,12 @@ function stirToNearestTarget(target, options = {}) {
     if (currentStirLength + nextSegmentLength > maxStirLength) {
       isLastSegment = true;
     }
-    const nextX = pendingPoints[nextIndex].x || 0.0;
-    const nextY = pendingPoints[nextIndex].y || 0.0;
-    const nextUnit = getUnit(nextX - currentX, nextY - currentY);
-    const lastStirLength = nextUnit.x * (targetX - currentX) + nextUnit.y * (targetY - currentY);
+    const next = extractCoordinate(pendingPoints[nextIndex]);
+    const nextUnit = getUnit(next.x - current.x, next.y - current.y);
+    const lastStirLength =
+      nextUnit.x * (target.x - current.x) + nextUnit.y * (target.y - current.y);
     if (lastStirLength > nextSegmentLength) {
-      const nextDistance = Math.sqrt((targetX - nextX) ** 2 + (targetY - nextY) ** 2);
+      const nextDistance = Math.sqrt((target.x - next.x) ** 2 + (target.y - next.y) ** 2);
       if (nextDistance < optimalDistance) {
         optimalStirLength = currentStirLength + nextSegmentLength;
         optimalDistance = nextDistance;
@@ -685,7 +699,7 @@ function stirToNearestTarget(target, options = {}) {
     } else {
       if (lastStirLength >= 0) {
         const lastOptimalDistance = Math.abs(
-          -nextUnit.y * (targetX - currentX) + nextUnit.x * (targetY - currentY)
+          -nextUnit.y * (target.x - current.x) + nextUnit.x * (target.y - current.y)
         );
         if (lastOptimalDistance < optimalDistance) {
           optimalDistance = lastOptimalDistance;
@@ -694,13 +708,12 @@ function stirToNearestTarget(target, options = {}) {
       }
     }
     currentIndex = nextIndex;
-    currentX = pendingPoints[currentIndex].x || 0.0;
-    currentY = pendingPoints[currentIndex].y || 0.0;
+    current = extractCoordinate(pendingPoints[currentIndex]);
     currentStirLength += nextSegmentLength;
     nextSegmentLength = 0.0;
   }
   logAddStirCauldron(preStirLength + optimalStirLength);
-  return preStirLength + optimalDistance;
+  return optimalDistance;
 }
 
 /**
@@ -724,7 +737,6 @@ function stirToNearestTarget(target, options = {}) {
  */
 function stirToTier(target, options = {}) {
   if (ret) return;
-  const { x: targetX, y: targetY, angle: targetAngle } = target;
   const {
     preStirLength = 0.0,
     maxDeviation = DeviationT2,
@@ -738,10 +750,10 @@ function stirToTier(target, options = {}) {
       currentRecipeItems.concat(createStirCauldron(preStirLength))
     ).pendingPoints;
   }
-  const currentPoint = currentPlot.pendingPoints[0];
+  const currentPoint = pendingPoints[0];
   const currentAngle = -currentPoint.angle || 0.0;
   const angleDelta = radToDeg(
-    Math.abs(getRelativeDirection(degToRad(currentAngle), degToRad(targetAngle)))
+    Math.abs(getRelativeDirection(degToRad(currentAngle), degToRad(target.angle)))
   );
   let angleDeviation = angleDelta * (100.0 / 12.0);
   if (ignoreAngle) {
@@ -753,15 +765,12 @@ function stirToTier(target, options = {}) {
     return;
   }
   const requiredDistance = (maxDeviation - angleDeviation) / 1800.0;
-  const initialX = currentPlot.pendingPoints[0].x || 0.0;
-  const initialY = currentPlot.pendingPoints[0].y || 0.0;
   let lastSegment = false;
   let currentStirLength = 0.0;
   let currentSegmentLength = 0.0;
   let currentIndex = 0;
   let nextIndex = currentIndex;
-  let currentX = initialX;
-  let currentY = initialY;
+  let current = extractCoordinate(pendingPoints[0]);
   // assume the initial position do not reach the tier.
   let nextDistance = 0.0;
   while (!lastSegment) {
@@ -779,14 +788,14 @@ function stirToTier(target, options = {}) {
     if (currentSegmentLength <= leastSegmentLength) {
       continue;
     }
-    const nextX = pendingPoints[nextIndex].x || 0.0;
-    const nextY = pendingPoints[nextIndex].y || 0.0;
-    const nextUnit = getUnit(nextX - currentX, nextY - currentY);
-    nextDistance = Math.sqrt((targetX - nextX) ** 2 + (targetY - nextY) ** 2);
-    let lastStirLength = nextUnit.x * (targetX - currentX) + nextUnit.y * (targetY - currentY);
+    const next = extractCoordinate(pendingPoints[nextIndex]);
+    const nextUnit = getUnit(next.x - current.x, next.y - current.y);
+    nextDistance = Math.sqrt((target.x - next.x) ** 2 + (target.y - next.y) ** 2);
+    let lastStirLength = nextUnit.x * (target.x - current.x) + nextUnit.y * (target.y - current.y);
     if (lastStirLength > currentSegmentLength) {
       if (nextDistance < requiredDistance) {
-        const lineDistance = -nextUnit.y * (targetX - currentX) + nextUnit.x * (targetY - currentY);
+        const lineDistance =
+          -nextUnit.y * (target.x - current.x) + nextUnit.x * (target.y - current.y);
         const approximatedLastStirLength =
           lastStirLength - Math.sqrt(requiredDistance ** 2 - lineDistance ** 2);
         logAddStirCauldron(
@@ -798,7 +807,8 @@ function stirToTier(target, options = {}) {
       }
     } else {
       if (lastStirLength >= 0) {
-        const nextDistance = -nextUnit.y * (targetX - currentX) + nextUnit.x * (targetY - currentY);
+        const nextDistance =
+          -nextUnit.y * (target.x - current.x) + nextUnit.x * (target.y - current.y);
         const approximatedLastStirLength =
           lastStirLength - Math.sqrt(requiredDistance ** 2 - nextDistance ** 2);
         if (nextDistance < requiredDistance) {
@@ -812,8 +822,7 @@ function stirToTier(target, options = {}) {
       }
     }
     currentIndex = nextIndex;
-    currentX = nextX;
-    currentY = nextY;
+    current = next;
     currentStirLength += currentSegmentLength;
     currentSegmentLength = 0.0;
   }
@@ -885,8 +894,7 @@ function pourToEdge() {
 function pourIntoVortex(targetVortexX, targetVortexY) {
   if (ret) return;
   const vortex = getTargetVortexInfo(targetVortexX, targetVortexY);
-  const currentPoint = currentPlot.pendingPoints[0];
-  const current = { x: currentPoint.x || 0.0, y: currentPoint.y || 0.0 };
+  const current = extractCoordinate();
   const pourUnit = getUnit(-current.x, -current.y);
   const l1 = pourUnit.x * (vortex.x - current.x) + pourUnit.y * (vortex.y - current.y);
   const l2 = -pourUnit.y * (vortex.x - current.x) + pourUnit.x * (vortex.y - current.y);
@@ -932,9 +940,7 @@ function heatAndPourToEdge(length, repeats) {
     y: -sinTheta * vortexUnit.x + cosTheta * vortexUnit.y,
   };
   for (let i = 0; i < repeats; i++) {
-    const pendingPoints = currentPlot.pendingPoints;
-    const x = pendingPoints[0].x || 0.0;
-    const y = pendingPoints[0].y || 0.0; // unnecessary since origin is not in a vortex.
+    const { x, y } = extractCoordinate();
     let maxLength = Infinity;
     if (edgeLimit.x * (x - vortex.x) + edgeLimit.y * (y - vortex.y) > 0) {
       maxLength = -edgeLimit.y * (x - vortex.x) + edgeLimit.x * (y - vortex.y);
@@ -965,12 +971,8 @@ function pourToDangerZone(maxPourLength) {
     return;
   }
   const initialCommittedIndex = Math.max(currentPlot.committedPoints.length - 1, 0);
-  const initialX = currentPlot.pendingPoints[0].x || 0.0;
-  const initialY = currentPlot.pendingPoints[0].y || 0.0;
-  const plot = computePlot([
-    createSetPosition(initialX, initialY),
-    createPourSolvent(maxPourLength),
-  ]);
+  const { x, y } = extractCoordinate();
+  const plot = computePlot([createSetPosition(x, y), createPourSolvent(maxPourLength)]);
   let nextIndex = 0;
   let pourLength = 0.0;
   while (true) {
@@ -997,73 +999,69 @@ function pourToDangerZone(maxPourLength) {
 }
 
 /**
- * Derotates the bottle to a target angle.
- *
+ * Derotates the bottle to the target angle.
  * @param {number} targetAngle - The target angle to derotate to, in degree.
- * @param {{epsilon: number, buffer: number, toAngle: boolean}} [options] - Options to control the derotation process.
- * @param {number} [options.epsilon=PourEpsilon] - The precision of the derotation process.
- * @param {number} [options.buffer=0.012] - The buffer to adjust the initial pour length estimation.
- * @param {boolean} [options.toAngle=false] - Whether to derotate to the target angle or derotate by the target angle.
+ * @param {{epsilon?: number, buffer?: number, toAngle?: boolean}} - Optional parameters.
  */
-function derotateToAngle(targetAngle, options = {}) {
+function derotateToAngle(
+  targetAngle,
+  { epsilon = PourEpsilon, buffer = 0.012, toAngle = true } = {}
+) {
   if (ret) return;
-  const { epsilon = PourEpsilon, buffer = 0.012, toAngle = true } = options;
-  const pendingPoints = currentPlot.pendingPoints;
-  const x = pendingPoints[0].x || 0.0;
-  const y = pendingPoints[0].y || 0.0;
+  const initialPoint = currentPlot.pendingPoints[0];
+  const { x, y } = extractCoordinate();
   let derotateType = "none";
   if (x == 0.0 || y == 0.0) {
     derotateType = "origin";
   } else {
-    const result = pendingPoints[0].bottleCollisions.find(isVortex);
+    const result = initialPoint.bottleCollisions.find(isVortex);
     if (result != undefined) {
       derotateType = "vortex";
-    }
-  }
-  let _targetAngle = targetAngle;
-  if (!toAngle) {
-    const currentAngle = -pendingPoints[0].angle;
-    if (_targetAngle >= 0) {
-      _targetAngle = Math.max(currentAngle - targetAngle, 0.0);
-    } else {
-      _targetAngle = Math.min(currentAngle + targetAngle, 0.0);
     }
   }
   if (derotateType == "none") {
     ret = 1;
     err = "Error while derotating: Cannot derotate outside origin or vortex.";
     return;
-  } else {
-    const currentAngle = -pendingPoints[0].angle;
-    if (toAngle && _targetAngle * (_targetAngle - currentAngle) <= 0) {
-      // target is reachable.
-      logAddSetPosition(0, 0);
-      if (_targetAngle == 0.0) {
-        // Do not need precision for full derotation.
-        logAddPourSolvent(Infinity);
-      } else {
-        const approximatedPour = Math.abs(currentAngle - _targetAngle) / 9.0;
-        let left = Math.max(approximatedPour - buffer, 0.0);
-        let right = approximatedPour + buffer;
-        while (right - left > epsilon) {
-          const mid = left + (right - left) / 2;
-          const plot = computePlot(currentRecipeItems.concat(createPourSolvent(mid)));
-          const angle = -plot.pendingPoints[0].angle;
-          if (Math.abs(angle) > Math.abs(_targetAngle)) {
-            left = mid;
-          } else {
-            right = mid;
-          }
-        }
-        logAddPourSolvent(left + (right - left) / 2);
-      }
-      logAddSetPosition(x, y);
+  }
+  const currentAngle = -initialPoint.angle;
+  let _targetAngle = targetAngle;
+  if (!toAngle) {
+    if (_targetAngle >= 0) {
+      _targetAngle = Math.max(currentAngle - targetAngle, 0.0);
     } else {
-      ret = 1;
-      err = "Error while derotating: Cannot derotate to larger or reversed angle.";
-      return;
+      _targetAngle = Math.min(currentAngle + targetAngle, 0.0);
     }
   }
+  if (!toAngle || _targetAngle * (_targetAngle - currentAngle) <= 0) {
+    // target is reachable.
+    logAddSetPosition(0, 0);
+    if (_targetAngle == 0.0) {
+      // Do not need precision for full derotation.
+      logAddPourSolvent(Infinity);
+    } else {
+      const approximatedPour = Math.abs(currentAngle - _targetAngle) / 9.0;
+      let left = Math.max(approximatedPour - buffer, 0.0);
+      let right = approximatedPour + buffer;
+      while (right - left > epsilon) {
+        const mid = left + (right - left) / 2;
+        const plot = computePlot(currentRecipeItems.concat(createPourSolvent(mid)));
+        const angle = -plot.pendingPoints[0].angle;
+        if (Math.abs(angle) > Math.abs(_targetAngle)) {
+          left = mid;
+        } else {
+          right = mid;
+        }
+      }
+      logAddPourSolvent(left + (right - left) / 2);
+    }
+    logAddSetPosition(x, y);
+  } else {
+    ret = 1;
+    err = "Error while derotating: Cannot derotate to larger or reversed angle.";
+    return;
+  }
+
   return;
 }
 
@@ -1232,9 +1230,7 @@ function getDirectionByVector(x, y, baseDirection = 0.0) {
  */
 function getBottlePolarAngle(toBottle = true) {
   if (ret) return 0.0;
-  const currentPoint = currentPlot.pendingPoints[0];
-  let x = currentPoint.x || 0.0;
-  let y = currentPoint.y || 0.0;
+  let { x, y } = extractCoordinate();
   if (x == 0.0 && y == 0.0) {
     ret = 1;
     err = "Error while getting bottle polar angle: bottle at origin.";
@@ -1291,8 +1287,7 @@ function getCurrentStirDirection(leastSegmentLength = 1e-9) {
   if (ret) return 0.0;
   const pendingPoints = currentPlot.pendingPoints;
   /** the points have no coordinate at origin */
-  const fromX = pendingPoints[0].x || 0.0;
-  const fromY = pendingPoints[0].y || 0.0;
+  const from = extractCoordinate();
   let nextIndex = 0;
   while (nextIndex < pendingPoints.length) {
     nextIndex += 1;
@@ -1305,9 +1300,8 @@ function getCurrentStirDirection(leastSegmentLength = 1e-9) {
     err = "Error while getting current stir direction: no next node.";
     return 0.0;
   } // Did not find a pendingPoints that is not the current point.
-  const toX = currentPlot.pendingPoints[nextIndex].x || 0.0;
-  const toY = currentPlot.pendingPoints[nextIndex].y || 0.0;
-  return getDirectionByVector(toX - fromX, toY - fromY);
+  const to = extractCoordinate(pendingPoints[nextIndex]);
+  return getDirectionByVector(to.x - from.x, to.y - from.y);
 }
 
 /**
@@ -1414,8 +1408,7 @@ function straighten(direction, salt, options = {}) {
   let lastSegment = false;
   let _preStirLength = preStirLength;
   while (!lastSegment) {
-    const currentX = pendingPoints[currentIndex].x;
-    const currentY = pendingPoints[currentIndex].y;
+    const current = extractCoordinate(pendingPoints[currentIndex]);
     let nextIndex = currentIndex;
     while (true) {
       nextIndex += 1;
@@ -1431,9 +1424,8 @@ function straighten(direction, salt, options = {}) {
     if (nextSegmentLength <= leastSegmentLength) {
       continue;
     }
-    const nextX = pendingPoints[nextIndex].x;
-    const nextY = pendingPoints[nextIndex].y;
-    const nextDirection = getDirectionByVector(nextX - currentX, nextY - currentY, direction);
+    const next = extractCoordinate(pendingPoints[nextIndex]);
+    const nextDirection = getDirectionByVector(next.x - current.x, next.y - current.y, direction);
     let grains;
 
     if (salt == "moon") {

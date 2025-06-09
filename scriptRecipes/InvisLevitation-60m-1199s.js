@@ -116,7 +116,7 @@ function beta() {
   logAddHeatVortex(2.5);
   heatAndPourToEdge(1, 10);
   derotateToAngle(-113);
-  logAddHeatVortex(0.788); // Empirical
+  logAddHeatVortex(0.78); // Empirical
   stirIntoVortex();
   heatAndPourToEdge(0.3, 7);
   logAddHeatVortex(3.98); //Empirical
@@ -145,24 +145,24 @@ function beta() {
   logAddHeatVortex(Infinity);
   console.log(Math.ceil((180 + currentPlot.pendingPoints[0].angle) / 0.36) + 280);
   // predict 2nd part of sun salt
-  straighten(degToRad(51), "sun", { maxGrains: 104 });
+  straighten(degToRad(55), "sun", { maxGrains: 104 });
   // pass the skeleton
   const saltToReverse = Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36);
   // match the angle entering vortex.
-  straighten(degToRad(-65.9), "sun", { maxGrains: saltToReverse });
+  straighten(degToRad(-65.0), "sun", { maxGrains: saltToReverse });
   stirIntoVortex();
   console.log(radToDeg(getBottlePolarAngleByEntity(EntityVortex, false)));
   logAddHeatVortex(4.6);
   pourToEdge();
   heatAndPourToEdge(1, 9);
-  logAddHeatVortex(5.12);
-  derotateToAngle(saltToDeg("moon", 100 + 33.3));
+  logAddHeatVortex(5.15);
+  derotateToAngle(saltToDeg("moon", 101 + 33.3));
   logAddStirCauldron(9.5);
-  straighten(degToRad(9), "sun", { maxGrains: 99 });
+  straighten(degToRad(15), "sun", { maxGrains: 100 });
   // last salt for precise centering
-  logAddStirCauldron(0.269);
+  logAddStirCauldron(0.862);
   logAddSunSalt(1);
   console.log(
-    "path deviation: " + stirToNearestTarget(Effects.Water.Levitation, { preStirLength: 4.5 })
+    "path deviation: " + stirToNearestTarget(Effects.Water.Levitation, { preStirLength: 0.0 })
   );
 }

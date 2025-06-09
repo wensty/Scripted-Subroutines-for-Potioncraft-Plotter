@@ -181,7 +181,9 @@ Used to detection of certain entities.
   - `targetVortexX`, `targetVortexY`: the rough coordinates of the target vortex.
 - `derotateToAngle(targetAngle, buffer?, epsilon?)`: derotate the bottle to a target angle, can be used if the bottle is at the origin or in a vortex.
   - `targetAngle`: the target angle in degrees.
-  - `buffer`, `epsilon`: the parameters for the binary search to decide exact de-rotation.
+  - `{epsilon, buffer, toAgle}`:
+    - `epsilon, buffer`: the parameters for the binary search to decide exact de-rotation.
+    - `toAngle`: derotate to the target angle or by the target angle.
   - **Note that this de-rotation process is not real de-rotation process. Check that it can be translated back to real de-rotation before using it**.
 
 ### Angle conversion functions
