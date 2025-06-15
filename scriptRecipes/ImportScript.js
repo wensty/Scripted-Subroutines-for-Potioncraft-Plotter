@@ -42,7 +42,6 @@ import {
   checkBase,
   getCurrentVortexRadius,
   getTargetVortexInfo,
-  getCurrentTargetError,
   straighten,
   getUnit,
   getTotalMoon,
@@ -54,7 +53,6 @@ import {
 } from "../main";
 import {
   SaltAngle,
-  MinimalPour,
   VortexRadiusLarge,
   VortexRadiusMedium,
   VortexRadiusSmall,
@@ -66,6 +64,7 @@ import {
   EntityDangerZone,
   EntityStrongDangerZone,
   Salt,
+  Effects,
 } from "../main";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";

@@ -12,6 +12,7 @@ import {
   getTotalMoon,
   getTotalSun,
 } from "../main";
+import { Effects } from "../main";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -20,12 +21,12 @@ function main() {
   logAddIngredient(Ingredients.GraveTruffle, 1);
   logAddSunSalt(195);
   stirToTurn();
-  straighten(Infinity, degToRad(-81), "moon", 298);
+  straighten(degToRad(-81), "moon", { maxGrains: 298 });
   logAddMoonSalt(415 - getTotalMoon());
   logAddStirCauldron(1.09);
   logAddMoonSalt(1);
   logAddStirCauldron(3.7);
-  stirToNearestTarget(-17.67, 3.61, 0.2);
+  stirToNearestTarget(Effects.Wine.Libido, { maxStirLength: 0.2 });
   logAddSunSalt(133);
   logAddPourSolvent(5.44);
   stirToTurn();

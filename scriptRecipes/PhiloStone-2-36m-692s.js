@@ -22,7 +22,7 @@ import {
   getTotalSun,
   setStirRounding,
 } from "../main";
-import { DeviationT1, Salt } from "../main";
+import { DeviationT1, Salt, Effects } from "../main";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -32,7 +32,6 @@ function main() {
   logSkirt();
   logAddStirCauldron(5);
   logAddSunSalt(263);
-  // logAddStirCauldron(12)
   stirIntoVortex();
   stirToTurn();
   logAddSunSalt(501 - getTotalSun());
@@ -40,7 +39,11 @@ function main() {
   logAddHeatVortex(3.76);
   derotateToAngle(-154.5);
   // MagicVision
-  stirToTier(21.27, 10.44, 0.0, 3.6, DeviationT1, true);
+  stirToTier(Effects.Water.MagicalVision, {
+    preStirLength: 3.6,
+    maxDeviation: DeviationT1,
+    ignoreAngle: true,
+  });
   pourIntoVortex(16, 6);
   logAddHeatVortex(8);
   pourToEdge();
@@ -48,7 +51,11 @@ function main() {
   logAddHeatVortex(5.9);
   derotateToAngle(-79);
   // Dexterity
-  stirToTier(20.86, 3.19, 0.0, 2.0, DeviationT1, true);
+  stirToTier(Effects.Water.Dexterity, {
+    preStirLength: 2.0,
+    maxDeviation: DeviationT1,
+    ignoreAngle: true,
+  });
   logAddPourSolvent(6.05); // 2 empirical value
   stirToDangerZoneExit();
   logAddPourSolvent(5.96);
@@ -56,9 +63,9 @@ function main() {
   logAddPourSolvent(Infinity);
   const delay = 103;
   const direction = 178;
-  straighten(Infinity, degToRad(direction), Salt.Sun, delay);
+  straighten(degToRad(direction), Salt.Sun, { maxGrains: delay });
   logAddIngredient(Ingredients.GraveTruffle);
-  straighten(Infinity, degToRad(direction), Salt.Sun, 130 - delay); // 501+130 sun
+  straighten(degToRad(direction), Salt.Sun, { maxGrains: 130 - delay }); // 501+130 sun
   // Strength
   stirIntoVortex();
   console.log(radToDeg(getBottlePolarAngleByEntity()) + 180);

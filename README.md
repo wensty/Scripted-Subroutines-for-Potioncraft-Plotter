@@ -41,7 +41,7 @@ project
 - Copy the whole `main.js` file into the online script editor.
 - Delete all the export statements. Add a `main();` statement calling the main script function.
 - Write your script recipe in the `main()` function. All the defined utility functions and subroutines can be used.
-- This produce a too long link to share. To share it you flatten it into a regular instruction recipe
+- This produce a too long link to share. To share it you flatten it into a regular instruction recipe.
 
 ### beta version
 
@@ -50,7 +50,6 @@ project
 - <del>This produce a script recipe link that can be shared.</del>
 - <del>but is volatile to future changes in the `main.js` file.</del>
 - Still, you can copy the whole `main.js` file as in LTS version.
-- The dev branch enables `createSetPosition()` so it only works with beta version, but with better efficiency.
 
 ## What can scripts do and what _can't_ scripts do
 
@@ -73,7 +72,9 @@ Actual optimization on plotter, even with scripts, still requires skill and expe
 
 ## credits
 
-- `@sunset` at [PotionCraft discord](https://discord.com/channels/801182992793075743). Creator of the [potionous](https://potionous.app) app and the potionous plotter tool.
+- `@sunset` at [PotionCraft discord](https://discord.com/channels/801182992793075743). Creator of the [potionous](https://potionous.app) app and the potionous [plotter tool](https://potionous.app/plotter).
+
+- The [Beta version potionous](https://beta.potionous.app) and [beta plotter tool](https://beta.potionous.app/plotter)
 
 ---
 
@@ -148,14 +149,22 @@ Used to detection of certain entities.
   - `directionBuffer`: the angular threshold in radians to be considered as "vast" change.
   - `leastSegmentLength`: the minimum length between points to consider in the calculation.
 - `StirIntoDangerZoneExit()`: stir to the nearest exit point of danger zone. The bottle will find a danger zone if it is not currently in.
-- `stirToNearestTarget(targetX, targetY, maxStirLength?)`: stir to the nearest point to the target position within the given maximum stir length.
-  - `targetX`, `targetY`: the target coordinates.
-  - `maxStirLength`: the maximal length it will stir.
-- `stirToTier(targetX, targetY, targetAngle, maxDeviation?, ignoreAngle?)`: stir to the specified tier of certain effect, adjusting the stir length based on the current angle and position.
-  - `targetX`, `targetY`: the coordinates of the target effect.
-  - `targetAngle`: the angle of the target effect.
-  - `maxDeviation`: the maximum angle deviation to the target effect.
-  - `ignoreAngle`: whether to ignore the angle deviation.
+- `stirToNearestTarget(target, options?)`: stir to the nearest point to the target position within the given maximum stir length.
+  - `target`: the target effect. An object with `x` and `y` properties.
+    - Can be one of the pre-defined `Effects` constant.
+  - `options`: an object with the following options:
+    - `preStirLength`: the stir length before the optimization. Default to `0.0`.
+    - `maxStirLength`: the maximal stir length allowed in the optimization. Default to be `Infinity`.
+    - `leastSegmentLength`: the minimal length of each segment in the optimization process. Default to be `1e-9`.
+- `stirToTier(target, options?)`: stir to the specified tier of certain effect, adjusting the stir length based on the current angle and position.
+  - `target`: the target effect. An object with `x`, `y` and `angle` properties.
+    - Can be one of the pre-defined `Effects` constant.
+  - `options`: an object with the following options:
+    - `preStirLength`: the stir length before the optimization. Default to `0.0`.
+    - `maxDeviation`: the maximum angle deviation to the target effect. Default to be `DeviationT2`, i.e. the max deviation to get tier 2 effect.
+    - `ignoreAngle`: whether to ignore the angle deviation. whether T1 effects are reached is not affected by angle deviation.
+    - `leastSegmentLength`: the minimal length of each segment in the optimization process. Default to be `1e-9`
+    - `afterBuffer`: the buffer added after stirring. Default to be `1e-5`.
 - `stirToConsume(consumeLength)`: stir to consume a specified length while in a vortex.
   - `consumeLength`: the length of stirring to consume.
   - <em>The consume is virtual</em>. Consider if it can be translated to real path consuming.
@@ -172,7 +181,9 @@ Used to detection of certain entities.
   - `targetVortexX`, `targetVortexY`: the rough coordinates of the target vortex.
 - `derotateToAngle(targetAngle, buffer?, epsilon?)`: derotate the bottle to a target angle, can be used if the bottle is at the origin or in a vortex.
   - `targetAngle`: the target angle in degrees.
-  - `buffer`, `epsilon`: the parameters for the binary search to decide exact de-rotation.
+  - `{epsilon, buffer, toAgle}`:
+    - `epsilon, buffer`: the parameters for the binary search to decide exact de-rotation.
+    - `toAngle`: derotate to the target angle or by the target angle.
   - **Note that this de-rotation process is not real de-rotation process. Check that it can be translated back to real de-rotation before using it**.
 
 ### Angle conversion functions
@@ -206,22 +217,23 @@ Used to detection of certain entities.
 - `getCurrentVortexRadius()`: returns the radius of the current vortex.
 - `getTargetVortexInfo(targetX, targetY)`: returns the coordinates and radius of the target vortex.
   - return: `{x:number, y:number, r:number}` be a object with `x`, `y`, `r` as keys.
-- `getCurrentTargetError(targetX, targetY, targetAngle)`: returns the error between the current bottle position and the target effect.
-  - `targetX`, `targetY`, `targetAngle`: the coordinates and tilted angle of the target effect.
 
 ### Complex subroutines.
 
-- `straighten(maxStirLength, direction, salt?, maxGrains?, ignoreReverse?)`: straighten the potion path with rotation salts, i.e. automatically adding proper number of rotation salt while stirring to make the potion path straight.
-  - `maxStirLength`, `maxGrains`: stopping conditions of the straightening process.
+- `straighten(direction, salt, {maxStirLength?, maxGrains?, ignoreReverse?,preStirLength?, leastSegmentLength?})`: straighten the potion path with rotation salts, i.e. automatically adding proper number of rotation salt while stirring to make the potion path straight.
   - `direction`: the direction to be stirred in radian.
   - `salt`: the type of salt to be added, it must be "moon" or "sun".
+  - `maxStirLength`, `maxGrains`: stopping conditions of the straightening process. Default to be `Infinity`, i.e. stopping condition not set.
+  - `preStirLength`: the amount of stirring to be added before the straightening process. Default to be `0`.
   - `ignoreReverse`: Controls the behavior when reversed direction(i.e. should add another rotation salt to bend it to the given direction) is detected. If set, no salt will be added and the process continues. If not set, the function terminate when a reversed direction is detected.
+    - Default to be `true`, i.e. not set the reversed direction terminate condition.
+  - Generally you should set at least one of the terminate condition.
   - Straightening is important for many highly-salty recipes with brute-force bending of path, like `AntiMagic-15m-1115s.js`.
     > Under some assumption, we can prove that that the optimal path is:
     >
-    > 1. a part of the ingredient.
-    > 2. a straightened part.
-    > 3. last part of the ingredient.
+    > 1. A part of the ingredient.
+    > 2. A straightened part.
+    > 3. Last part of the ingredient.
     >    And there are geometric relations between the straighten direction and some other directions.
 
 ### Other utilities
@@ -231,6 +243,9 @@ Used to detection of certain entities.
 - `getTotalSun()`: get the total amount of sun salt added so far _in this script_.
 - `setDisplay(display)`: set the display mode of the plotter.
   - `display`: `true` or `false`.
+- `setStirRounding(stirRounding)`: set the stir rounding mode of the plotter. This mode rounds most numbers to 3 digits after the decimal point, same as manual instructions on the online plotter.
+  - `stirRounding`: `true` or `false`.
+  - some operations that potentially require high precision is not rounded. For example stirring to certain target effect.
 - `logError()`: log the current error.
 - `logSalt()`: log the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
   - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.
@@ -238,9 +253,11 @@ Used to detection of certain entities.
 ### Constants
 
 - `SaltAngle`: the angle of one grain of rotation salt in radian.
-- `MinimalPour`: the minimal actual pouring distance unit in online plotter. The value is `0.008`.
 - `VortexRadiusLarge`, `VortexRadiusMedium`, `VortexRadiusSmall`: the radius of the vortex. The value is `2.39`, `1.99`, `1.74` respectively.
 - `DeviationT2`, `DeviationT3`, `DeviationT1`: the deviation of the vortex. The value is `600`, `100`, `2754` respectively.
 - `EntityVortex`, `EntityPotionEffect`, `EntityDangerZone`, `EntityStrongDangerZone`: Predefined arrays of related entity names.
+- `Salt.Moon`, `Salt.Sun`: Predefined salt names.
+- `Effects`: Predefined objects of effect positions and angles.
+  - For example, `Effects.Water.Healing` stores the position and angle of the healing effect in water base.
 
 ---

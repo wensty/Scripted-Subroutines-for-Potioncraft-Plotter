@@ -1,5 +1,5 @@
 import {
-  logAddIngredient,
+  logSkirt,
   logAddSunSalt,
   logAddStirCauldron,
   logAddPourSolvent,
@@ -15,23 +15,22 @@ import {
   straighten,
   getTotalSun,
 } from "../main";
-import { SaltAngle } from "../main";
-import { Ingredients } from "@potionous/dataset";
+import { SaltAngle, Effects } from "../main";
 
 function main() {
   checkBase("wine");
   logAddSunSalt(335);
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
+  logSkirt();
   derotateToAngle(0);
-  straighten(Infinity, degToRad(-65), "sun", 200);
+  straighten(degToRad(-65), "sun", { maxGrains: 200 });
   logAddStirCauldron(7.66);
   logAddSunSalt(39);
   logAddStirCauldron(0.9);
   logAddSunSalt(40);
   stirToTurn();
-  straighten(Infinity, getBottlePolarAngle(), "sun", 301 - 39 - 40);
+  straighten(getBottlePolarAngle(), "sun", { maxGrains: 301 - 39 - 40 });
   logAddPourSolvent(0.8);
-  straighten(Infinity, getBottlePolarAngle(), "sun", 39);
+  straighten(getBottlePolarAngle(), "sun", { maxGrains: 39 });
   logAddPourSolvent(0.05);
   stirToTurn();
   logAddPourSolvent(0.56);
@@ -57,22 +56,22 @@ function main() {
   }
   logAddStirCauldron(0.1);
   logAddPourSolvent(0.166);
-  stirToNearestTarget(-19.45, 14.64);
+  stirToNearestTarget(Effects.Wine.Fear);
 }
 function beta_1226s() {
   checkBase("wine");
   logAddSunSalt(335);
-  logAddIngredient("PhantomSkirt", 1);
+  logSkirt();
   derotateToAngle(0);
-  straighten(Infinity, degToRad(-65), "sun", 200);
+  straighten(degToRad(-65), "sun", { maxGrains: 200 });
   logAddStirCauldron(7.66);
   logAddSunSalt(39);
   logAddStirCauldron(0.9);
   logAddSunSalt(40);
   stirToTurn();
-  straighten(Infinity, getBottlePolarAngle(), "sun", 301 - 39 - 40);
+  straighten(getBottlePolarAngle(), "sun", { maxGrains: 301 - 39 - 40 });
   logAddPourSolvent(0.8);
-  straighten(Infinity, getBottlePolarAngle(), "sun", 39);
+  straighten(getBottlePolarAngle(), "sun", { maxGrains: 39 });
   logAddPourSolvent(0.05);
   stirToTurn();
   logAddPourSolvent(0.54);
@@ -99,5 +98,5 @@ function beta_1226s() {
   // New technique to avoid pouring centering.
   logAddStirCauldron(0.825);
   logAddPourSolvent(0.14);
-  console.log(stirToNearestTarget(-19.45, 14.64));
+  console.log(stirToNearestTarget(Effects.Wine.Fear));
 }

@@ -1,4 +1,6 @@
 import { logAddIngredient, logAddSunSalt, logAddStirCauldron, stirToNearestTarget } from "../main";
+import { Effects } from "../main";
+
 import { Ingredients } from "@potionous/dataset";
 
 function main() {
@@ -6,6 +8,6 @@ function main() {
   logAddSunSalt(6);
   logAddStirCauldron(2.635);
   logAddSunSalt(3);
-  let bestDistance = stirToNearestTarget(3.8, -3.96);
+  let bestDistance = stirToNearestTarget(Effects.Water.Healing);
   console.log(bestDistance);
 }

@@ -1,5 +1,5 @@
 import {
-  logAddIngredient,
+  logSkirt,
   logAddMoonSalt,
   logAddSunSalt,
   logAddHeatVortex,
@@ -19,13 +19,12 @@ import {
   checkBase,
   straighten,
 } from "../main";
-
-import { Ingredients } from "@potionous/dataset";
+import { Effects } from "../main";
 
 function main() {
   checkBase("water");
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
+  logSkirt();
+  logSkirt();
   logAddStirCauldron(5.25);
   logAddPourSolvent(Infinity);
   logAddMoonSalt(20);
@@ -37,7 +36,7 @@ function main() {
 
   logAddSunSalt(17);
   stirToTurn();
-  straighten(Infinity, degToRad(-7), "sun", 288 - 17);
+  straighten(degToRad(-7), "sun", { maxGrains: 288 - 17 });
   stirIntoVortex();
 
   console.log(radToDeg(getBottlePolarAngleByEntity()) - 180);
@@ -45,7 +44,7 @@ function main() {
   derotateToAngle(saltToDeg("sun", 200 - 0.99 - 48));
   logAddHeatVortex(Infinity);
   logAddStirCauldron(5);
-  straighten(Infinity, degToRad(-110), "sun", 47);
+  straighten(degToRad(-110), "sun", { maxGrains: 47 });
   logAddStirCauldron(1.6);
   logAddSunSalt(1);
   logAddStirCauldron(1.181);
@@ -70,8 +69,8 @@ function main() {
 
 function beta_20m_978s_125hT() {
   checkBase("water");
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
-  logAddIngredient(Ingredients.PhantomSkirt, 1);
+  logSkirt();
+  logSkirt();
   logAddStirCauldron(5.25);
   logAddPourSolvent(Infinity);
   logAddMoonSalt(20);
@@ -82,17 +81,17 @@ function beta_20m_978s_125hT() {
   logAddHeatVortex(Infinity);
   logAddSunSalt(17);
   stirToTurn();
-  straighten(Infinity, degToRad(-7), "sun", 288 - 17);
+  straighten(degToRad(-7), "sun", { maxGrains: 288 - 17 });
   stirIntoVortex();
   console.log(radToDeg(getBottlePolarAngleByEntity()) - 180);
   derotateToAngle(saltToDeg("sun", 200 - 0.99 - 47));
   logAddHeatVortex(Infinity);
   logAddStirCauldron(5);
-  straighten(Infinity, degToRad(-110), "sun", 46);
+  straighten(degToRad(-110), "sun", { maxGrains: 46 });
   logAddStirCauldron(1.38);
   logAddSunSalt(1);
   logAddStirCauldron(1.39);
-  stirToTier(-20.34, 22.58, 0.0);
+  stirToTier(Effects.Water.Rage);
   logAddStirCauldron(0.001);
   logAddSunSalt(260);
   stirIntoVortex();
@@ -109,6 +108,6 @@ function beta_20m_978s_125hT() {
   logAddStirCauldron(2.369);
   logAddSunSalt(1);
   logAddStirCauldron(5.7);
-  stirToNearestTarget(-58.06, 12.09);
+  stirToNearestTarget(Effects.Water.Enlargement);
   logAddSunSalt(201);
 }
