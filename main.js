@@ -148,7 +148,6 @@ const Effects = {
  * Simulation of plotter API `createSetPosition(x, y)`.
  * @param {number} x
  * @param {number} y
- * @returns
  */
 function createSetPosition(x, y) {
   return { type: "set-position", x: x, y: y };
@@ -917,7 +916,6 @@ function pourIntoVortex(targetVortexX, targetVortexY) {
 
 /**
  * Heats and pours to the edge of the current vortex.
- *
  * @param {number} length - The maximum length of solvent to pour.
  * @param {number} repeats - The number of times to repeat the heating and pouring process.
  */
@@ -999,16 +997,17 @@ function pourToDangerZone(maxPourLength) {
 }
 
 /**
- * Derotates the bottle to the target angle.
- * @param {number} targetAngle - The target angle to derotate to, in degree.
- * @param {{epsilon?: number, buffer?: number, toAngle?: boolean}} - Optional parameters.
+ * Derotates the bottle to a specified target angle.
+ * @param {number} targetAngle - The angle in degrees to derotate to or derotate by.
+ * @param {Object} [options] - Optional parameters for derotation.
+ * @param {number} [options.epsilon=PourEpsilon] - The precision for binary search of pouring length.
+ * @param {number} [options.buffer=0.012] - The buffer around estimated pouring.
+ * @param {boolean} [options.toAngle=true] - Determines if derotation is to the target angle or by the target angle.
  */
-function derotateToAngle(
-  targetAngle,
-  { epsilon = PourEpsilon, buffer = 0.012, toAngle = true } = {}
-) {
+function derotateToAngle(targetAngle, options = {}) {
   if (ret) return;
   const initialPoint = currentPlot.pendingPoints[0];
+  const { epsilon = PourEpsilon, buffer = 0.012, toAngle = true } = options;
   const { x, y } = extractCoordinate();
   let derotateType = "none";
   if (x == 0.0 || y == 0.0) {

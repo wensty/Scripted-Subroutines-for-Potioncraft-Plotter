@@ -72,9 +72,9 @@ Actual optimization on plotter, even with scripts, still requires skill and expe
 
 ## credits
 
-- `@sunset` at [PotionCraft discord](https://discord.com/channels/801182992793075743). Creator of the [potionous](https://potionous.app) app and the potionous [plotter tool](https://potionous.app/plotter).
+- `@sunset` at [PotionCraft discord](https://discord.com/channels/801182992793075743). Creator of the [potionous](https://potionous.app) app and the [potionous plotter tool](https://potionous.app/plotter).
 
-- The [Beta version potionous](https://beta.potionous.app) and [beta plotter tool](https://beta.potionous.app/plotter)
+- The [Beta version potionous](https://beta.potionous.app) and [beta version plotter tool](https://beta.potionous.app/plotter)
 
 ---
 
@@ -120,25 +120,22 @@ A `PlotPoint` item is a point on the map with the following information:
 
 ### Important notes:
 
-- New discovery: `createSetPosition(x, y)` can be simulated, so we can still use this API with some workaround.
-
 - Without exceptions, directions are based on north and use radian input and output, clockwise(sun salt direction) being positive, anticlockwise(moon salt direction) being negative.
-
   - `derotateToAngle()` uses degree input, this is because `.angle` of points is in degrees.
-
-- For the full details of the usages, see JSDoc.
+- For the full details of the usages, see the JSDoc of functions.
 
 ### logged instruction
 
 - `logAddIngredient` and similar: logged version of the instruction APIs. It print an information to console and add the instruction.
 
-### Detection functions
+### Detectors
 
 Used to detection of certain entities.
 
-- `isDangerZone`: test danger zone entities in collision of current point.
-- `isStrongDangerZone`: test strong danger zone entities in collision of current point.
-- `isVortex`: test vortex entities in collision of current point.
+- `isDangerZone`: test danger zone entities.
+- `isStrongDangerZone`: test strong danger zone entities.
+- `isVortex`: test vortex entities.
+- isPotionEffect: test potion effects.
 
 ### Stirring subroutines.
 

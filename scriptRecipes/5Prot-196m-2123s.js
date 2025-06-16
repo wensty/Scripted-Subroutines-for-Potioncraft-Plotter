@@ -53,7 +53,7 @@ function beta() {
     maxStirLength: 1,
     maxGrains: 780 - getTotalSun(),
   });
-  // 779 sun into vortex.
+  // 780 sun into vortex.
   stirIntoVortex();
   stirToConsume(0.26);
   heatAndPourToEdge(3, 9);
@@ -122,7 +122,7 @@ function beta() {
   stirToTurn();
   logAddSunSalt(139);
   stirIntoVortex();
-  logAddHeatVortex(5.65); // consume the inappropriate segment.
+  logAddHeatVortex(5.62);
   logAddSunSalt(150);
   // Acid protection.
   stirToTier(Effects.Oil.AcidProtection, {
@@ -138,7 +138,6 @@ function beta() {
   logAddMoonSalt(46);
   stirIntoVortex();
   console.log(getBottlePolarAngleByEntity() + Math.PI / 2);
-  // logSkirt()
   logAddHeatVortex(0.8);
   pourToEdge();
   heatAndPourToEdge(3, 4);
@@ -165,9 +164,9 @@ function beta() {
   stirIntoVortex();
   derotateToAngle(0);
   logAddHeatVortex(Infinity);
-  logAddPourSolvent(2.45);
+  logAddPourSolvent(2.42);
   stirToDangerZoneExit();
-  logAddPourSolvent(1.9);
+  logAddPourSolvent(1.93);
   console.log(getBottlePolarAngle());
   stirIntoVortex();
   console.log(getBottlePolarAngleByEntity() - Math.PI / 2);
