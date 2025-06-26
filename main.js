@@ -445,7 +445,7 @@ function stirIntoVortex(preStirLength = 0.0, buffer = 1e-5) {
       const l2 = -unit.y * (nextVortex.x - current.x) + unit.x * (nextVortex.y - current.y);
       const vortexRadius = getTargetVortexInfo(nextVortex.x, nextVortex.y).r;
       const approximatedLastStirLength = l1 - Math.sqrt(vortexRadius ** 2 - l2 ** 2);
-      let finalStirLength = currentStirLength + approximatedLastStirLength;
+      let finalStirLength = preStirLength + currentStirLength + approximatedLastStirLength;
       if (RoundStirring) {
         logAddStirCauldron(Math.ceil(finalStirLength * StirringUnitInverse) / StirringUnitInverse);
         return;
@@ -1026,7 +1026,7 @@ function derotateToAngle(targetAngle, options = {}) {
   const currentAngle = -initialPoint.angle;
   let _targetAngle = targetAngle;
   if (!toAngle) {
-    if (_targetAngle >= 0) {
+    if (currentAngle >= 0) {
       _targetAngle = Math.max(currentAngle - targetAngle, 0.0);
     } else {
       _targetAngle = Math.min(currentAngle + targetAngle, 0.0);
@@ -1378,7 +1378,7 @@ function getTotalMoon() {
  * @param {number} [options.maxStirLength=Infinity] The maximum distance to be stirred.
  * @param {number} [options.maxGrains=Infinity] The maximum amount of salt to be added.
  * @param {boolean} [options.ignoreReverse=true] If set to false, the function will terminate when a reversed direction is detected.
- * @param {number} [options.preStirLength=1e-9] The amount of stirring to be added before the straightening process.
+ * @param {number} [options.preStirLength=0.0] The amount of stirring to be added before the straightening process.
  * @param {number} [options.leastSegmentLength=1e-9] The minimal length of each segment of the potion path.
  * @returns {number} The total amount of salt added.
  */
@@ -1470,6 +1470,8 @@ function straighten(direction, salt, options = {}) {
         break;
       } else {
         totalGrains += grains;
+        logAddStirCauldron(_preStirLength);
+        _preStirLength = 0.0;
         logAddRotationSalt(salt, grains);
         // recalculate the new plotter after stir and salt.
         pendingPoints = currentPlot.pendingPoints;
