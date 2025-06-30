@@ -5,7 +5,7 @@ import {
   logAddPourSolvent,
   stirToTurn,
   stirToNearestTarget,
-  pourToDangerZone,
+  pourToZone,
   derotateToAngle,
   degToRad,
   getRelativeDirection,
@@ -47,12 +47,12 @@ function main() {
       logAddSunSalt(Math.round(-relativeDirection / SaltAngle));
     }
     stirToTurn(0.1 * SaltAngle);
-    pourToDangerZone(1);
+    pourToZone(1);
   }
   logAddSunSalt(1225 - getTotalSun());
   for (let i = 0; i < 38; i++) {
     stirToTurn(0.1 * SaltAngle);
-    pourToDangerZone(1);
+    pourToZone(1);
   }
   logAddStirCauldron(0.1);
   logAddPourSolvent(0.166);
@@ -88,12 +88,12 @@ function beta_1226s() {
       logAddSunSalt(Math.round(-relativeDirection / SaltAngle));
     }
     stirToTurn(Infinity, 0.001 * SaltAngle);
-    pourToDangerZone(0.4);
+    pourToZone(0.4);
   }
   logAddSunSalt(1226 - getTotalSun());
   for (let i = 0; i < 47; i++) {
     stirToTurn(0.1, 0.1 * SaltAngle);
-    pourToDangerZone(0.15);
+    pourToZone(0.15);
   }
   // New technique to avoid pouring centering.
   logAddStirCauldron(0.825);

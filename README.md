@@ -133,9 +133,7 @@ A `PlotPoint` item is a point on the map with the following information:
 Used to detection of certain entities.
 
 - `isDangerZone`: test danger zone entities.
-- `isStrongDangerZone`: test strong danger zone entities.
 - `isVortex`: test vortex entities.
-- isPotionEffect: test potion effects.
 
 ### Stirring subroutines.
 
@@ -172,8 +170,9 @@ Used to detection of certain entities.
 - `heatAndPourToEdge(length, repeats)`: repeatedly heating the vortex and pouring to edge of it, to move the bottle with the vortex and keep it at the boundary of the vortex.
   - `length`: the maximal length of pour. Overridden at the last stage where we can not heat too much.
   - `repeats`: the number of times to repeat the heating and pouring process.
-- `pourToDangerZone(maxPourLength?)`: pour until about to enter danger zone.
+- `pourToZone(maxPourLength, zone?)`: pour until about to enter assigned zone.
   - `maxPourLength`: the maximal length it will pour.
+  - `zone`: the zone to pour towards. Default to be `Entity.DangerZone`.
 - `pourIntoVortex(targetVortexX, targetVortexY)`: pour into the target vortex.
   - `targetVortexX`, `targetVortexY`: the rough coordinates of the target vortex.
 - `derotateToAngle(targetAngle, buffer?, epsilon?)`: derotate the bottle to a target angle, can be used if the bottle is at the origin or in a vortex.

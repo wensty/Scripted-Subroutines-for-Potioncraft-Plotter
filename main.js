@@ -11,7 +11,6 @@ import {
   addSetPosition,
   createPourSolvent,
   createStirCauldron,
-  // createSetPosition,
 } from "@potionous/instructions";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";
@@ -30,22 +29,24 @@ const PourEpsilon = 2e-3; // precision for binary search of pouring length.
 const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
 const DeviationT1 = 1.53 * 1800; // effect radius is 0.79, bottle radius is 0.74.
-const EntityVortex = ["Vortex"];
-const EntityPotionEffect = ["PotionEffect"];
-const EntityDangerZone = ["DangerZonePart", "StrongDangerZonePart", "WeakDangerZonePart"];
-const EntityStrongDangerZone = ["DangerZonePart", "StrongDangerZonePart"];
+const Entity = {
+  Vortex: ["Vortex"],
+  PotionEffect: ["PotionEffect"],
+  DangerZone: ["DangerZonePart", "StrongDangerZonePart", "WeakDangerZonePart"],
+  StrongDangerZone: ["DangerZonePart", "StrongDangerZonePart"],
+  HealZone: ["HealZonePart"],
+  Swamp: ["SwampZonePart"],
+};
 const Salt = { Moon: "moon", Sun: "sun" };
 let Display = true; // Macro to switch instruction display.
 let RoundStirring = true; // macro to control whether round stirrings.
-// Minimal stir unit of hand-added stirring instructions. Stirring instructions add by scripts can be infinitely precise.
-// The inverse is used for float accuracy.
-// let StirringUnit = 1e-3;
+// Minimal stir unit of hand-added stirring instructions. Stirring instructions add by scripts can be infinitely precise, and inverse is used for float accuracy.
 let StirringUnitInverse = 1000.0;
 let Step = 1;
 let TotalSun = 0;
 let TotalMoon = 0;
 let ret = 0; // The return code of last function.
-let err = ""; // The return into string of last error.
+let err = ""; // Last error string.
 
 const Effects = {
   Water: {
@@ -399,10 +400,8 @@ function isEntityType(expectedEntityTypes) {
   return (x) => expectedEntityTypes.includes(x.entityType);
 }
 
-const isDangerZone = isEntityType(EntityDangerZone);
-const isStrongDangerZone = isEntityType(EntityStrongDangerZone);
-const isVortex = isEntityType(EntityVortex);
-const isPotionEffect = isEntityType(EntityPotionEffect);
+const isDangerZone = isEntityType(Entity.DangerZone);
+const isVortex = isEntityType(Entity.Vortex);
 
 /**
  * Subroutines related to stirring.
@@ -510,16 +509,14 @@ function stirToEdge(buffer = 1e-5) {
  * @param {number} [minStirLength=0.0] - The minimum initial stir length.
  * @param {number} [maxExtraStirLength=Infinity] - The maximum additional stir length
  *     allowed beyond the initial length before stopping.
- * @param {number} [directionBuffer=20 * SaltAngle] - The buffer angle used to
+ * @param {object} [options] - Options for the stirring process.
+ * @param {number} [options.directionBuffer=20 * SaltAngle] - The buffer angle used to
  *     determine the change in direction.
- * @param {number} [leastSegmentLength=1e-9] - The minimal length of each segment of the potion path.
+ * @param {number} [options.leastSegmentLength=1e-9] - The minimal length of each
+ *     segment of the potion path.
  */
-function stirToTurn(
-  minStirLength = 0.0,
-  maxExtraStirLength = Infinity,
-  directionBuffer = 20 * SaltAngle,
-  leastSegmentLength = 1e-9
-) {
+function stirToTurn(minStirLength = 0.0, maxExtraStirLength = Infinity, options = {}) {
+  const { directionBuffer = 20 * SaltAngle, leastSegmentLength = 1e-9 } = options;
   if (ret) return;
   const minCosine = Math.cos(directionBuffer);
   let pendingPoints = currentPlot.pendingPoints;
@@ -956,19 +953,22 @@ function heatAndPourToEdge(length, repeats) {
 }
 
 /**
- * Pours the solvent towards danger zone with precision.
+ * Pours solvent to move the bottle towards assigned zone.
  *
+ * This relies on the accurate calculation on swamp path reduction and health.
+ * Use other accurate functions for other zones instead.
  * @param {number} maxPourLength - The maximum length of solvent to pour.
+ * @param {string[]} [zone=Entity.DangerZone] - The zone to pour towards. A string[] of entity type.
  */
-function pourToDangerZone(maxPourLength) {
+function pourToZone(maxPourLength, zone = Entity.DangerZone) {
   if (ret) return;
-  const initialResult = currentPlot.pendingPoints[0].bottleCollisions.find(isDangerZone);
+  const detector = isEntityType(zone);
+  const initialResult = currentPlot.pendingPoints[0].bottleCollisions.find(detector);
   if (initialResult != undefined) {
     ret = 1;
-    err = "Error while pouring to danger zone: already in danger zone.";
+    err = "Error while pouring to zone: already in.";
     return;
   }
-  const initialCommittedIndex = Math.max(currentPlot.committedPoints.length - 1, 0);
   const { x, y } = extractCoordinate();
   const plot = computePlot([createSetPosition(x, y), createPourSolvent(maxPourLength)]);
   let nextIndex = 0;
@@ -977,16 +977,13 @@ function pourToDangerZone(maxPourLength) {
     nextIndex += 1;
     if (nextIndex == plot.committedPoints.length) {
       ret = 1;
-      err = "Error while pouring to danger zone: cannot reach danger zone.";
+      err = "Error while pouring to zone: cannot reach.";
       return;
     }
-    if (plot.committedPoints[nextIndex].bottleCollisions.find(isDangerZone) != undefined) {
+    if (plot.committedPoints[nextIndex].bottleCollisions.find(detector) != undefined) {
       break;
     }
-    pourLength = pointDistance(
-      currentPlot.committedPoints[initialCommittedIndex],
-      plot.committedPoints[nextIndex]
-    );
+    pourLength = pointDistance(plot.committedPoints[0], plot.committedPoints[nextIndex]);
   }
   pourLength = Math.max(
     (Math.floor(pourLength * MinimalPourInverse) - 0.5) / MinimalPourInverse,
@@ -1248,7 +1245,7 @@ function getBottlePolarAngle(toBottle = true) {
  * @param {boolean} [toBottle=true] Calculates the direction to or from the bottle. Default to.
  * @returns {number} The direction angle in radians.
  */
-function getBottlePolarAngleByEntity(expectedEntityTypes = EntityVortex, toBottle = true) {
+function getBottlePolarAngleByEntity(expectedEntityTypes = Entity.Vortex, toBottle = true) {
   if (ret) return 0.0;
   const currentPoint = currentPlot.pendingPoints[0];
   let entity = undefined;
@@ -1528,7 +1525,6 @@ export {
   logAddSetPosition,
   // Zone detections.
   isDangerZone,
-  isStrongDangerZone,
   isVortex,
   // Stirring subroutines.
   stirIntoVortex,
@@ -1541,7 +1537,7 @@ export {
   // Pouring subroutines.
   pourToEdge,
   heatAndPourToEdge,
-  pourToDangerZone,
+  pourToZone,
   pourIntoVortex,
   derotateToAngle,
   // Angle conversions.
@@ -1582,10 +1578,7 @@ export {
   DeviationT2,
   DeviationT3,
   DeviationT1,
-  EntityVortex,
-  EntityPotionEffect,
-  EntityDangerZone,
-  EntityStrongDangerZone,
+  Entity,
   Salt,
   Effects,
 };
