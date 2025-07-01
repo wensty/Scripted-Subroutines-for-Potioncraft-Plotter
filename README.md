@@ -14,19 +14,19 @@ project
 |   jsconfig.json
 |   .gitignore
 │
-└───scriptRecipes
+└───exampleRecipes
 |   │   someRecipe.js
 |   │   anotherRecipe.js
 |
-└───localScriptRecipes
+└───recipes
     │   someRecipe.js
 ```
 
 - `main.js` : the main scripting file.
 - `public-types.ts` : containing signatures of all the APIs provided by the plotter tool. Since plotter tool itself is not fully open-source, this allows you to scripting offline with intellisense support.
-- `scriptRecipes` : Example recipes, containing some scripts finally made online.
-- `scriptRecipes/ImportScript.js` : Containing all the exported functions. Make it easier to import functions offline when storing scripts.
-- `localScriptRecipes/*.js` : Local script recipe dataset, recipes here are ignored by git. The one is forced to be added.
+- `exampleRecipes` : Example recipes, containing some scripts finally made online.
+- `exampleRecipes/ImportScript.js` : Containing all the exported functions. Make it easier to import functions offline when storing scripts.
+- `recipes/*.js` : Script recipe dataset. May not get updated when main file is updated.
 
 ## How to use this collection of functions and scripted subroutines.
 
