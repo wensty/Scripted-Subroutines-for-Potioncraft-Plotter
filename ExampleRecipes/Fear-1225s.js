@@ -76,7 +76,7 @@ function beta_1226s() {
   stirToTurn();
   logAddPourSolvent(0.54);
   logAddStirCauldron(4.53);
-  logAddSunSalt(30);
+  logAddSunSalt(29);
   logAddStirCauldron(1.61);
   logAddSunSalt(59);
   logAddStirCauldron(2.13);
@@ -87,16 +87,17 @@ function beta_1226s() {
     if (relativeDirection < -SaltAngle / 2) {
       logAddSunSalt(Math.round(-relativeDirection / SaltAngle));
     }
-    stirToTurn(Infinity, 0.001 * SaltAngle);
+    stirToTurn(0, 0.1, { directionBuffer: 0 });
     pourToZone(0.4);
   }
-  logAddSunSalt(1226 - getTotalSun());
-  for (let i = 0; i < 47; i++) {
-    stirToTurn(0.1, 0.1 * SaltAngle);
+  logAddSunSalt(1225 - getTotalSun());
+  for (let i = 0; i < 62; i++) {
+    stirToTurn(0, 0.1, { directionBuffer: 0 });
     pourToZone(0.15);
   }
   // New technique to avoid pouring centering.
-  logAddStirCauldron(0.825);
-  logAddPourSolvent(0.14);
+  logAddStirCauldron(0.3);
+  logAddPourSolvent(0.036);
   console.log(stirToNearestTarget(Effects.Wine.Fear));
+  logAddSunSalt(1); // do not enough derorate.
 }
