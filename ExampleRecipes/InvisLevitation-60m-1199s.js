@@ -55,7 +55,7 @@ function main() {
   heatAndPourToEdge(0.2, 24); // heavier continuous pour&stir save 1 more moon.
   logAddHeatVortex(0.15);
   logAddMoonSalt(61);
-  stirToTurn(3.13); // roughly
+  stirToTurn({ preStirLength: 3.13 }); // roughly
   pourIntoVortex(13, 26);
   derotateToAngle(0.0);
   logAddHeatVortex(5.7);
@@ -124,7 +124,7 @@ function beta() {
   heatAndPourToEdge(0.2, 24); // heavier continuous pour&stir save 1 more moon.
   logAddHeatVortex(0.15);
   logAddMoonSalt(61);
-  stirToTurn(3.13); // roughly
+  stirToTurn({ preStirLength: 3.13 }); // roughly
   pourIntoVortex(13, 26);
   derotateToAngle(0.0);
   logAddHeatVortex(5.7);

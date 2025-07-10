@@ -46,12 +46,12 @@ function main() {
     if (relativeDirection < -SaltAngle / 2) {
       logAddSunSalt(Math.round(-relativeDirection / SaltAngle));
     }
-    stirToTurn(0.1 * SaltAngle);
+    stirToTurn({ directionBuffer: 0.1 * SaltAngle });
     pourToZone(1);
   }
   logAddSunSalt(1225 - getTotalSun());
   for (let i = 0; i < 38; i++) {
-    stirToTurn(0.1 * SaltAngle);
+    stirToTurn({ directionBuffer: 0.1 * SaltAngle });
     pourToZone(1);
   }
   logAddStirCauldron(0.1);
@@ -87,12 +87,12 @@ function beta_1226s() {
     if (relativeDirection < -SaltAngle / 2) {
       logAddSunSalt(Math.round(-relativeDirection / SaltAngle));
     }
-    stirToTurn(0, 0.1, { directionBuffer: 0 });
+    stirToTurn({ maxStirLength: 0.0, directionBuffer: 0 });
     pourToZone(0.4);
   }
   logAddSunSalt(1225 - getTotalSun());
   for (let i = 0; i < 62; i++) {
-    stirToTurn(0, 0.1, { directionBuffer: 0 });
+    stirToTurn({ maxStirLength: 0.0, directionBuffer: 0 });
     pourToZone(0.15);
   }
   // New technique to avoid pouring centering.

@@ -25,7 +25,8 @@ const MinimalPourInverse = 125.0;
 const VortexRadiusLarge = 2.39;
 const VortexRadiusMedium = 1.99;
 const VortexRadiusSmall = 1.74;
-const PourEpsilon = 2e-3; // precision for binary search of pouring length.
+const EpsHigh = 2e-3; // precision for binary search of pouring length.
+const EpsLow = 1e-5;
 const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
 const DeviationT1 = 1.53 * 1800; // effect radius is 0.79, bottle radius is 0.74.
@@ -178,15 +179,17 @@ function extractCoordinate(point = currentPlot.pendingPoints[0]) {
 }
 
 /**
- * Logs the error message if an error occurred during this script.
- * If no error occurred, it logs a success message.
+ * Logs an error message with the operation and additional information.
+ * Terminates the script by attempting to reassign a constant.
+ * @param {string} operation - The operation that caused the error.
+ * @param {string} info - Additional information about the error.
  */
-function logError() {
-  if (ret) {
-    console.log(err);
-  } else {
-    console.log("No error during this script!");
-  }
+function logError(operation, info) {
+  console.log("Error while " + operation + ": " + info);
+  const terminator = 0;
+  // eslint-disable-next-line no-const-assign
+  terminator = 1;
+  throw Error(); // plotter do not catch this inside if statements. Inform linter script should end here.
 }
 
 /**
@@ -201,7 +204,6 @@ function setDisplay(display) {
  * Sets the stir rounding flag to control whether rounding the stir length.
  * @param {boolean} stirRounding - A boolean value to enable or disable rounding the stir length.
  */
-
 function setStirRounding(stirRounding) {
   RoundStirring = stirRounding;
 }
@@ -211,23 +213,18 @@ function setStirRounding(stirRounding) {
  * @param {"water"|"oil"|"wine"} expectedBase The expected base name.
  */
 function checkBase(expectedBase) {
-  if (ret) return;
   if (!["water", "oil", "wine"].includes(expectedBase)) {
-    ret = 1;
-    err = "Unknown expected base: " + expectedBase + ".";
-    return;
+    logError("checkBase", "Unknown expected base: " + expectedBase + ".");
   } else {
     const currentBase = PotionBases.current.id;
     if (currentBase != expectedBase) {
-      ret = 1;
-      err = "" + currentBase + " is not the expected base " + expectedBase + ".";
+      logError("checkBase", "" + currentBase + " is not the expected base " + expectedBase + ".");
       return;
     }
   }
 }
 
 function logSalt() {
-  if (ret) return;
   console.log("Total moon salt: " + TotalMoon + ", Total sun salt: " + TotalSun);
 }
 
@@ -242,7 +239,6 @@ function logSalt() {
  * If `display` is not given, the value of `Display` is used.
  */
 function logAddIngredient(ingredientId, grindPercent = 1.0, display = Display) {
-  if (ret) return;
   if (display) {
     console.log("Step " + Step + ": Adding " + grindPercent * 100 + "% of " + ingredientId);
     Step += 1;
@@ -256,7 +252,6 @@ function logAddIngredient(ingredientId, grindPercent = 1.0, display = Display) {
  * @param {boolean} [display=Display] - Whether to display the log message; defaults to the global Display setting.
  */
 function logSkirt(grindPercent = 1.0, display = Display) {
-  if (ret) return;
   if (display) {
     console.log("Step " + Step + ": Adding " + grindPercent * 100 + "% of skirt");
     Step += 1;
@@ -271,7 +266,6 @@ function logSkirt(grindPercent = 1.0, display = Display) {
  */
 
 function logAddSunSalt(grains) {
-  if (ret) return 0;
   if (grains <= 0) return 0;
   if (Display) {
     console.log("Step " + Step + ": Adding " + grains + " grains of sun salt");
@@ -287,7 +281,6 @@ function logAddSunSalt(grains) {
  * @param {number} grains The amount of moon salt to add in grains.
  */
 function logAddMoonSalt(grains) {
-  if (ret) return 0;
   if (grains <= 0) return 0;
   if (Display) {
     console.log("Step " + Step + ": Adding " + grains + " grains of moon salt");
@@ -304,10 +297,8 @@ function logAddMoonSalt(grains) {
  * @param {number} grains The amount of salt to add in grains.
  */
 function logAddRotationSalt(salt, grains) {
-  if (ret) return 0;
   if (salt != "moon" && salt != "sun") {
-    ret = 1;
-    err = "Error while adding rotation salt: salt must be moon or sun.";
+    logError("adding rotation salt", "salt must be moon or sun.");
     return;
   }
   if (grains <= 0) return 0;
@@ -330,7 +321,6 @@ function logAddRotationSalt(salt, grains) {
  * If "display" is not given, the value of "Display" is used.
  */
 function logAddHeatVortex(length) {
-  if (ret) return;
   if (length <= 0) return;
   if (Display) {
     console.log("Step " + Step + ": Heat the vortex by " + length + " distance.");
@@ -345,7 +335,6 @@ function logAddHeatVortex(length) {
  * If "display" is not given, the value of "Display" is used.
  */
 function logAddStirCauldron(length) {
-  if (ret) return;
   if (length <= 0) return;
   if (Display) {
     console.log("Step " + Step + ": Stir the cauldron by " + length + " distance.");
@@ -360,7 +349,6 @@ function logAddStirCauldron(length) {
  * If "display" is not given, the value of "Display" is used.
  */
 function logAddPourSolvent(length) {
-  if (ret) return;
   if (length <= 0) return;
   if (Display) {
     console.log("Step " + Step + ": Pour solvent by " + length + " distance");
@@ -375,7 +363,6 @@ function logAddPourSolvent(length) {
  * @param {number} y The y coordinate to set
  */
 function logAddSetPosition(x, y) {
-  if (ret) return;
   if (Display) {
     console.log("Step " + Step + ": teleporting to (" + x + ", " + y + ")");
     Step += 1;
@@ -413,7 +400,6 @@ const isVortex = isEntityType(Entity.Vortex);
  * @param {number} [buffer=1e-5] - The buffer to adjust the final stir length.
  */
 function stirIntoVortex(preStirLength = 0.0, buffer = 1e-5) {
-  if (ret) return;
   let pendingPoints = currentPlot.pendingPoints;
   if (preStirLength > 0.0) {
     pendingPoints = computePlot(
@@ -427,8 +413,7 @@ function stirIntoVortex(preStirLength = 0.0, buffer = 1e-5) {
   while (true) {
     index += 1;
     if (index == pendingPoints.length) {
-      ret = 1;
-      err = "Error while stirring into vortex: no vortex found.";
+      logError("stirring into vortex", "no vortex found.");
       return;
     }
     const nextVortex = fixUndef(pendingPoints[index].bottleCollisions.find(isVortex));
@@ -462,13 +447,11 @@ function stirIntoVortex(preStirLength = 0.0, buffer = 1e-5) {
  * @param {number} [buffer=1e-5] - The buffer to adjust the final stir length.
  */
 function stirToEdge(buffer = 1e-5) {
-  if (ret) return;
   const pendingPoints = currentPlot.pendingPoints;
   const vortex = fixUndef(pendingPoints[0].bottleCollisions.find(isVortex));
   let stirLength = 0.0;
   if (vortex === undefined) {
-    ret = 1;
-    err = "Error while stirring to edge of vortex: bottle not in a vortex.";
+    logError("stirring to edge", "bottle not in a vortex.");
     return;
   }
   let index = 0;
@@ -479,8 +462,7 @@ function stirToEdge(buffer = 1e-5) {
       break;
     } else {
       if (index == pendingPoints.length) {
-        ret = 1;
-        err = "Error while stirring to edge of vortex:Can not reach the edge of the vortex.";
+        logError("stirring to edge", "Can not reach the edge of the vortex.");
         return;
       }
       stirLength += pointDistance(pendingPoints[index - 1], pendingPoints[index]);
@@ -506,23 +488,28 @@ function stirToEdge(buffer = 1e-5) {
  * Stirs the potion until a change in direction is detected or the maximum
  * additional stir length is reached.
  *
- * @param {number} [minStirLength=0.0] - The minimum initial stir length.
- * @param {number} [maxExtraStirLength=Infinity] - The maximum additional stir length
- *     allowed beyond the initial length before stopping.
  * @param {object} [options] - Options for the stirring process.
+ * @param {number} [options.preStirLength=0.0] - The minimum initial stir length.
+ * @param {number} [options.maxStirLength=Infinity] - The maximum additional stir length
+ *     allowed beyond the initial length before stopping.
  * @param {number} [options.directionBuffer=20 * SaltAngle] - The buffer angle used to
  *     determine the change in direction.
  * @param {number} [options.leastSegmentLength=1e-9] - The minimal length of each
  *     segment of the potion path.
  */
-function stirToTurn(minStirLength = 0.0, maxExtraStirLength = Infinity, options = {}) {
-  const { directionBuffer = 20 * SaltAngle, leastSegmentLength = 1e-9 } = options;
-  if (ret) return;
+function stirToTurn(options = {}) {
+  const {
+    preStirLength = 0.0,
+    maxStirLength = Infinity,
+    directionBuffer = 20 * SaltAngle,
+    leastSegmentLength = 1e-9,
+  } = options;
+
   const minCosine = Math.cos(directionBuffer);
   let pendingPoints = currentPlot.pendingPoints;
-  if (minStirLength > 0.0) {
+  if (preStirLength > 0.0) {
     pendingPoints = computePlot(
-      currentRecipeItems.concat([createStirCauldron(minStirLength)])
+      currentRecipeItems.concat([createStirCauldron(preStirLength)])
     ).pendingPoints;
   }
   let currentUnit = undefined;
@@ -534,8 +521,7 @@ function stirToTurn(minStirLength = 0.0, maxExtraStirLength = Infinity, options 
     while (true) {
       nextIndex += 1;
       if (nextIndex >= pendingPoints.length) {
-        ret = 1;
-        err = "Error while stirring to turn: no turning point found.";
+        logError("stirring to turn", "no turning point found.");
         return;
       } // Did not find a node that is not the current point.
       nextStirSegmentLength += pointDistance(
@@ -555,25 +541,24 @@ function stirToTurn(minStirLength = 0.0, maxExtraStirLength = Infinity, options 
     ) {
       if (RoundStirring) {
         logAddStirCauldron(
-          Math.ceil((minStirLength + stirLength) * StirringUnitInverse) / StirringUnitInverse
+          Math.ceil((preStirLength + stirLength) * StirringUnitInverse) / StirringUnitInverse
         );
         return;
       }
-      logAddStirCauldron(minStirLength + stirLength);
+      logAddStirCauldron(preStirLength + stirLength);
       return;
     } else {
       stirLength += nextStirSegmentLength;
       nextStirSegmentLength = 0.0;
       currentIndex = nextIndex;
       currentUnit = nextUnit;
-      if (stirLength >= maxExtraStirLength) {
+      if (stirLength >= maxStirLength) {
         if (RoundStirring) {
           logAddStirCauldron(
-            Math.ceil((minStirLength + maxExtraStirLength) * StirringUnitInverse) *
-              StirringUnitInverse
+            Math.ceil((preStirLength + maxStirLength) * StirringUnitInverse) * StirringUnitInverse
           );
         }
-        logAddStirCauldron(minStirLength + maxExtraStirLength);
+        logAddStirCauldron(preStirLength + maxStirLength);
         return;
       }
     }
@@ -587,7 +572,6 @@ function stirToTurn(minStirLength = 0.0, maxExtraStirLength = Infinity, options 
  * @returns {number} The least health value encountered while stirring.
  */
 function stirToDangerZoneExit(minStirLength = 0.0) {
-  if (ret) return 1.0;
   let pendingPoints = currentPlot.pendingPoints;
   if (minStirLength > 0.0) {
     pendingPoints = computePlot(
@@ -604,8 +588,7 @@ function stirToDangerZoneExit(minStirLength = 0.0) {
   while (true) {
     nextIndex += 1;
     if (nextIndex == pendingPoints.length) {
-      ret = 1;
-      err = "Error while stirring to safe zone: no safe zone found.";
+      logError("stirring to safe zone", "no safe zone found.");
       return 1.0;
     }
     stirDistance += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
@@ -645,8 +628,6 @@ function stirToDangerZoneExit(minStirLength = 0.0) {
  * @returns {number} The optimal distance to the target after stirring.
  */
 function stirToNearestTarget(target, options = {}) {
-  if (ret) return 0.0;
-  // const { x: target.x, y: target.y } = target;
   const { preStirLength = 0.0, maxStirLength = Infinity, leastSegmentLength = 1e-9 } = options;
   let pendingPoints = currentPlot.pendingPoints;
   if (preStirLength > 0.0) {
@@ -732,7 +713,6 @@ function stirToNearestTarget(target, options = {}) {
  *     stirring to ensure precision.
  */
 function stirToTier(target, options = {}) {
-  if (ret) return;
   const {
     preStirLength = 0.0,
     maxDeviation = DeviationT2,
@@ -756,8 +736,7 @@ function stirToTier(target, options = {}) {
     angleDeviation = 0.0;
   }
   if (angleDeviation >= maxDeviation) {
-    ret = 1;
-    err = "Error while stir to tier: too much angle deviation.";
+    logError("stir to tier", "too much angle deviation.");
     return;
   }
   const requiredDistance = (maxDeviation - angleDeviation) / 1800.0;
@@ -822,8 +801,8 @@ function stirToTier(target, options = {}) {
     currentStirLength += currentSegmentLength;
     currentSegmentLength = 0.0;
   }
-  ret = 1;
-  err = "Error while stirring to tier: cannot reach target tier.";
+
+  logError("stirring to tier", "cannot reach target tier.");
   return;
 }
 
@@ -833,12 +812,10 @@ function stirToTier(target, options = {}) {
  * @param {number} consumeLength - The length of stirring to consume.
  */
 function stirToConsume(consumeLength) {
-  if (ret) return;
   const currentPoint = currentPlot.pendingPoints[0];
   const result = currentPoint.bottleCollisions.find(isVortex);
   if (result == undefined) {
-    ret = 1;
-    err = "Error while stirring to consume: bottle not in a vortex.";
+    logError("stirring to consume", "bottle not in a vortex.");
     return;
   }
   logAddStirCauldron(consumeLength);
@@ -852,12 +829,10 @@ function stirToConsume(consumeLength) {
  * Pours solvent to the edge of the current vortex.
  */
 function pourToEdge() {
-  if (ret) return;
   const currentPoint = currentPlot.pendingPoints[0];
   const vortex = fixUndef(currentPoint.bottleCollisions.find(isVortex));
   if (vortex === undefined) {
-    ret = 1;
-    err = "Error while pouring to edge: bottle not in a vortex.";
+    logError("pouring to edge", "bottle not in a vortex.");
     return;
   } // In case this is called outside a vortex.
   const vortexRadius = getCurrentVortexRadius();
@@ -888,25 +863,22 @@ function pourToEdge() {
  * @param {number} targetVortexY - The y-coordinate of the target vortex.
  */
 function pourIntoVortex(targetVortexX, targetVortexY) {
-  if (ret) return;
   const vortex = getTargetVortexInfo(targetVortexX, targetVortexY);
   const current = extractCoordinate();
   const pourUnit = getUnit(-current.x, -current.y);
   const l1 = pourUnit.x * (vortex.x - current.x) + pourUnit.y * (vortex.y - current.y);
   const l2 = -pourUnit.y * (vortex.x - current.x) + pourUnit.x * (vortex.y - current.y);
   if (Math.abs(l2) >= vortex.r) {
-    ret = 1;
-    err = "Error while pouring into target vortex: bottle polar angle deviates too much.";
+    logError("pouring into target vortex", "bottle polar angle deviates too much.");
     return;
   }
   const approximatedPourLength = l1 - Math.sqrt(vortex.r ** 2 - l2 ** 2);
   if (approximatedPourLength <= 0) {
-    ret = 1;
-    err = "Error while pouring into target vortex: bottle not behind the target vortex.";
+    logError("pouring into target vortex", "bottle not behind the target vortex.");
     return;
   }
   const actualPourLength =
-    (Math.ceil(approximatedPourLength * MinimalPourInverse) + 0.5) / MinimalPourInverse;
+    (Math.ceil(approximatedPourLength * MinimalPourInverse) - 0.5) / MinimalPourInverse;
   logAddPourSolvent(actualPourLength);
   return;
 }
@@ -917,11 +889,9 @@ function pourIntoVortex(targetVortexX, targetVortexY) {
  * @param {number} repeats - The number of times to repeat the heating and pouring process.
  */
 function heatAndPourToEdge(length, repeats) {
-  if (ret) return;
   const vortex = fixUndef(currentPlot.pendingPoints[0].bottleCollisions.find(isVortex));
   if (vortex === undefined) {
-    ret = 1;
-    err = "Error while pouring to edge: bottle not in a vortex.";
+    logError("pouring to edge", "bottle not in a vortex.");
     return;
   }
   const vortexRadius = getCurrentVortexRadius();
@@ -944,7 +914,7 @@ function heatAndPourToEdge(length, repeats) {
         break;
       }
       maxLength = maxLength * 0.75;
-      maxLength = (Math.floor(maxLength * MinimalPourInverse) + 0.5) / MinimalPourInverse;
+      maxLength = (Math.floor(maxLength * MinimalPourInverse) - 0.5) / MinimalPourInverse;
     }
     logAddHeatVortex(Math.min(length, maxLength));
     pourToEdge();
@@ -961,12 +931,10 @@ function heatAndPourToEdge(length, repeats) {
  * @param {string[]} [zone=Entity.DangerZone] - The zone to pour towards. A string[] of entity type.
  */
 function pourToZone(maxPourLength, zone = Entity.DangerZone) {
-  if (ret) return;
   const detector = isEntityType(zone);
   const initialResult = currentPlot.pendingPoints[0].bottleCollisions.find(detector);
   if (initialResult != undefined) {
-    ret = 1;
-    err = "Error while pouring to zone: already in.";
+    logError("pouring to zone", "already in zone");
     return;
   }
   const { x, y } = extractCoordinate();
@@ -976,8 +944,7 @@ function pourToZone(maxPourLength, zone = Entity.DangerZone) {
   while (true) {
     nextIndex += 1;
     if (nextIndex == plot.committedPoints.length) {
-      ret = 1;
-      err = "Error while pouring to zone: cannot reach.";
+      logError("pouring to zone", "cannot reach zone.");
       return;
     }
     if (plot.committedPoints[nextIndex].bottleCollisions.find(detector) != undefined) {
@@ -994,71 +961,102 @@ function pourToZone(maxPourLength, zone = Entity.DangerZone) {
 }
 
 /**
- * Derotates the bottle to a specified target angle.
- * @param {number} targetAngle - The angle in degrees to derotate to or derotate by.
- * @param {Object} [options] - Optional parameters for derotation.
- * @param {number} [options.epsilon=PourEpsilon] - The precision for binary search of pouring length.
- * @param {number} [options.buffer=0.012] - The buffer around estimated pouring.
- * @param {boolean} [options.toAngle=true] - Determines if derotation is to the target angle or by the target angle.
+ * Derotates the bottle to the target angle.
+ * @param {number} targetAngle - The target angle in degrees.
+ * @param {Object} [options] - Optional parameters for derotating.
+ * @param {boolean} [options.toAngle=true] - Whether to derotate to the target angle or by the target angle.
+ * @throws Error if derotating outside vortex or to larger or reversed angle.
  */
 function derotateToAngle(targetAngle, options = {}) {
-  if (ret) return;
   const initialPoint = currentPlot.pendingPoints[0];
-  const { epsilon = PourEpsilon, buffer = 0.012, toAngle = true } = options;
+  const { toAngle = true } = options;
   const { x, y } = extractCoordinate();
-  let derotateType = "none";
-  if (x == 0.0 || y == 0.0) {
-    derotateType = "origin";
-  } else {
-    const result = initialPoint.bottleCollisions.find(isVortex);
-    if (result != undefined) {
-      derotateType = "vortex";
-    }
-  }
-  if (derotateType == "none") {
-    ret = 1;
-    err = "Error while derotating: Cannot derotate outside origin or vortex.";
-    return;
-  }
+  var _targetAngle = targetAngle;
   const currentAngle = -initialPoint.angle;
-  let _targetAngle = targetAngle;
-  if (!toAngle) {
-    if (currentAngle >= 0) {
-      _targetAngle = Math.max(currentAngle - targetAngle, 0.0);
-    } else {
-      _targetAngle = Math.min(currentAngle + targetAngle, 0.0);
+  if (toAngle) {
+    if (targetAngle * (targetAngle - currentAngle) > 0) {
+      logError("derotating", "Cannot derotate to larger or reversed angle.");
     }
-  }
-  if (!toAngle || _targetAngle * (_targetAngle - currentAngle) <= 0) {
-    // target is reachable.
-    logAddSetPosition(0, 0);
-    if (_targetAngle == 0.0) {
-      // Do not need precision for full derotation.
-      logAddPourSolvent(Infinity);
-    } else {
-      const approximatedPour = Math.abs(currentAngle - _targetAngle) / 9.0;
-      let left = Math.max(approximatedPour - buffer, 0.0);
-      let right = approximatedPour + buffer;
-      while (right - left > epsilon) {
-        const mid = left + (right - left) / 2;
-        const plot = computePlot(currentRecipeItems.concat(createPourSolvent(mid)));
-        const angle = -plot.pendingPoints[0].angle;
-        if (Math.abs(angle) > Math.abs(_targetAngle)) {
-          left = mid;
-        } else {
-          right = mid;
-        }
-      }
-      logAddPourSolvent(left + (right - left) / 2);
-    }
-    logAddSetPosition(x, y);
   } else {
-    ret = 1;
-    err = "Error while derotating: Cannot derotate to larger or reversed angle.";
+    _targetAngle = currentAngle - (currentAngle > 0) * targetAngle;
+  }
+  if (x != 0.0 || y != 0.0) {
+    const result = initialPoint.bottleCollisions.find(isVortex);
+    if (result == undefined) {
+      logError("derotating", "Cannot derotate outside vortex.");
+      return;
+    }
+    logAddSetPosition(0, 0);
+  }
+  pourUntilAngle(_targetAngle);
+  logAddSetPosition(x, y);
+}
+
+/**
+ * Pours solvent until the bottle reaches the target angle.
+ * @param {number} targetAngle - The target angle in degrees to rotate the bottle to.
+ * @param {Object} [options] - Optional parameters for the pouring process.
+ * @param {number} [options.minPour=0.0] - The optional minimum pour length.
+ * @param {number} [options.maxPour=Infinity] - The optional maximum pour length.
+ * @param {number} [options.epsHigh=EpsHigh] - The precision for high range binary search.
+ * @param {number} [options.epsLow=EpsLow] - The precision for low range binary search.
+ * @param {number} [options.buffer=0.012] - Buffer value for adjusting the binary search range.
+ * @param {boolean} [options.overPour=true] - Decides whether to slightly over pour.
+ */
+function pourUntilAngle(targetAngle, options = {}) {
+  if (targetAngle == 0.0) {
+    logAddPourSolvent(Infinity);
     return;
   }
-
-  return;
+  const { x, y } = extractCoordinate();
+  const currentAngle = -currentPlot.pendingPoints[0].angle;
+  if (targetAngle * (targetAngle - currentAngle) <= 0) {
+    const {
+      minPour = 0.0,
+      maxPour = Infinity,
+      epsHigh = EpsHigh,
+      epsLow = EpsLow,
+      buffer = 0.012,
+      overPour = true,
+    } = options;
+    const dist = Math.sqrt(x ** 2 + y ** 2);
+    var _angleAtOrigin = 0.0;
+    var toOrigin = false;
+    _angleAtOrigin = -computePlot(currentRecipeItems.concat(createPourSolvent(dist)))
+      .pendingPoints[0].angle; // the angle when the bottle pours exactly back to origin. The angle is not necessarily zero here.
+    var l, r, e;
+    if (targetAngle * (targetAngle - _angleAtOrigin) <= 0) {
+      logAddPourSolvent(dist);
+      l = Math.abs(targetAngle - _angleAtOrigin) / 9.0 - buffer;
+      r = Math.abs(targetAngle - _angleAtOrigin) / 9.0 + buffer;
+      e = epsHigh;
+      toOrigin = true;
+    } else {
+      l = minPour;
+      r = maxPour;
+      e = epsLow;
+      // assert range.
+      if (r > dist) r = dist;
+      if (l > r) l = r;
+      if (l < 0) l = 0;
+    }
+    while (r - l > e) {
+      const m = l + (r - l) / 2;
+      const plot = computePlot(currentRecipeItems.concat(createPourSolvent(m)));
+      const testAngle = -plot.pendingPoints[0].angle;
+      if (targetAngle * (targetAngle - testAngle) <= 0) {
+        l = m;
+      } else {
+        r = m;
+      }
+    }
+    if (!toOrigin) {
+      logAddPourSolvent((Math.floor(r * MinimalPourInverse) - 0.5 + overPour) / MinimalPourInverse); // type conversion.
+    } else {
+      logAddPourSolvent(l + (r - l) / 2);
+    }
+    return;
+  }
 }
 
 /**
@@ -1071,7 +1069,6 @@ function derotateToAngle(targetAngle, options = {}) {
  * @returns {number} The radians equivalent of the given degrees
  */
 function degToRad(deg) {
-  if (ret) return 0.0;
   return (deg * Math.PI) / 180.0;
 }
 
@@ -1081,7 +1078,6 @@ function degToRad(deg) {
  * @returns {number} The degrees equivalent of the given radians
  */
 function radToDeg(rad) {
-  if (ret) return 0.0;
   return (rad * 180.0) / Math.PI;
 }
 
@@ -1091,7 +1087,6 @@ function radToDeg(rad) {
  * @returns {{salt: "moon"|"sun", grains: number}} The salt equivalent of the given degrees
  */
 function degToSalt(deg) {
-  if (ret) return { salt: "moon", grains: 0 };
   const grains = (Math.abs(deg) * 500.0) / 180.0;
   if (deg > 0) {
     return { salt: "sun", grains: grains };
@@ -1105,7 +1100,6 @@ function degToSalt(deg) {
  * @returns {{salt: "moon"|"sun", grains: number}} The salt equivalent of the given radians
  */
 function radToSalt(rad) {
-  if (ret) return { salt: "moon", grains: 0 };
   const grains = (Math.abs(rad) * 500.0) / Math.PI;
   if (rad > 0) {
     return { salt: "sun", grains: grains };
@@ -1120,14 +1114,12 @@ function radToSalt(rad) {
  * @returns {number} The degree equivalent of the given salt and grains
  */
 function saltToDeg(salt, grains) {
-  if (ret) return 0.0;
   if (salt == "moon") {
     return (-grains * 180.0) / 500.0;
   } else if (salt == "sun") {
     return (grains * 180.0) / 500.0;
   } else {
-    ret = 1;
-    err = "Error while converting salt to degree: salt must be moon or sun.";
+    logError("converting salt to degree", "salt must be moon or sun.");
     return 0.0;
   }
 }
@@ -1139,14 +1131,12 @@ function saltToDeg(salt, grains) {
  * @returns {number} The radian equivalent of the given salt and grains
  */
 function saltToRad(salt, grains) {
-  if (ret) return 0.0;
   if (salt == "moon") {
     return (-grains * Math.PI) / 500.0;
   } else if (salt == "sun") {
     return (grains * Math.PI) / 500.0;
   } else {
-    ret = 1;
-    err = "Error while converting salt to radian: salt must be moon or sun.";
+    logError("converting salt to radian", "salt must be moon or sun.");
     return 0.0;
   }
 }
@@ -1158,10 +1148,8 @@ function saltToRad(salt, grains) {
  * @returns {{x: number, y: number}} The unit vector with components x and y.
  */
 function getUnit(x, y) {
-  if (ret) return { x: 0.0, y: 1.0 };
   if (Math.abs(x) < 1e-12 && Math.abs(y) < 1e-12) {
-    ret = 1;
-    err = "Error while getting unit: zero vector.";
+    logError("getting unit", "zero vector.");
     return { x: 0.0, y: 1.0 };
   } else {
     return { x: x / Math.sqrt(x ** 2 + y ** 2), y: y / Math.sqrt(x ** 2 + y ** 2) };
@@ -1175,7 +1163,6 @@ function getUnit(x, y) {
  * @returns {{x: number, y: number}} The 2D vector with components x and y
  */
 function getVectorByDirection(direction, baseDirection = 0.0) {
-  if (ret) return { x: 0.0, y: 1.0 };
   return { x: Math.sin(baseDirection + direction), y: Math.cos(baseDirection + direction) };
 }
 
@@ -1188,7 +1175,6 @@ function getVectorByDirection(direction, baseDirection = 0.0) {
  * @returns {number} The relative direction between the two angles in radians
  */
 function getRelativeDirection(direction, baseDirection) {
-  if (ret) return 0.0;
   let relativeDirection = direction - baseDirection;
   relativeDirection -= 2 * Math.PI * Math.round(relativeDirection / (2 * Math.PI));
   return relativeDirection;
@@ -1204,7 +1190,6 @@ function getRelativeDirection(direction, baseDirection) {
  * @returns {number} The angle of the vector in radians, relative to the base direction
  */
 function getDirectionByVector(x, y, baseDirection = 0.0) {
-  if (ret) return 0.0;
   const unit = getUnit(x, y);
   const relX = unit.x * Math.cos(baseDirection) - unit.y * Math.sin(baseDirection);
   const relY = unit.y * Math.cos(baseDirection) + unit.x * Math.sin(baseDirection);
@@ -1225,11 +1210,9 @@ function getDirectionByVector(x, y, baseDirection = 0.0) {
  * @returns {number} The direction angle in radians.
  */
 function getBottlePolarAngle(toBottle = true) {
-  if (ret) return 0.0;
   let { x, y } = extractCoordinate();
   if (x == 0.0 && y == 0.0) {
-    ret = 1;
-    err = "Error while getting bottle polar angle: bottle at origin.";
+    logError("getting bottle polar angle", "bottle at origin.");
     return 0.0;
   }
   if (!toBottle) {
@@ -1246,7 +1229,6 @@ function getBottlePolarAngle(toBottle = true) {
  * @returns {number} The direction angle in radians.
  */
 function getBottlePolarAngleByEntity(expectedEntityTypes = Entity.Vortex, toBottle = true) {
-  if (ret) return 0.0;
   const currentPoint = currentPlot.pendingPoints[0];
   let entity = undefined;
   // online plotter do not support for-of statement.
@@ -1257,14 +1239,12 @@ function getBottlePolarAngleByEntity(expectedEntityTypes = Entity.Vortex, toBott
     if (entity !== undefined) break;
   }
   if (entity === undefined) {
-    ret = 1;
-    err = "Error while getting bottle polar angle by entity: given entity not found.";
+    logError("getting bottle polar angle by entity", "given entity not found.");
     return 0.0;
   }
   let delta = { x: (currentPoint.x || 0.0) - entity.x, y: (currentPoint.y || 0.0) - entity.y };
   if (Math.abs(delta.x) < 1e-9 && Math.abs(delta.y) < 1e-9) {
-    ret = 1;
-    err = "Error while getting bottle polar angle by entity: bottle coincides the entity.";
+    logError("getting bottle polar angle by entity", "bottle coincides the entity.");
     return 0.0;
   }
   if (!toBottle) {
@@ -1280,7 +1260,6 @@ function getBottlePolarAngleByEntity(expectedEntityTypes = Entity.Vortex, toBott
  * @returns {number} The direction angle in radians.
  */
 function getCurrentStirDirection(leastSegmentLength = 1e-9) {
-  if (ret) return 0.0;
   const pendingPoints = currentPlot.pendingPoints;
   /** the points have no coordinate at origin */
   const from = extractCoordinate();
@@ -1292,8 +1271,7 @@ function getCurrentStirDirection(leastSegmentLength = 1e-9) {
     }
   }
   if (nextIndex >= currentPlot.pendingPoints.length) {
-    ret = 1;
-    err = "Error while getting current stir direction: no next node.";
+    logError("getting current stir direction", "no next node.");
     return 0.0;
   } // Did not find a pendingPoints that is not the current point.
   const to = extractCoordinate(pendingPoints[nextIndex]);
@@ -1309,7 +1287,6 @@ function getCurrentStirDirection(leastSegmentLength = 1e-9) {
  * @returns {number} The radius of the current vortex.
  */
 function getCurrentVortexRadius() {
-  if (ret) return VortexRadiusLarge;
   const currentPoint = currentPlot.pendingPoints[0];
   return getTargetVortexInfo(currentPoint.x || 0.0, currentPoint.y || 0.0).r;
 }
@@ -1323,13 +1300,12 @@ function getCurrentVortexRadius() {
  */
 function getTargetVortexInfo(targetX, targetY) {
   let defaultOuput = { x: 0.0, y: 0.0, r: 0.0 };
-  if (ret) return defaultOuput;
+
   const result = computePlot([
     createSetPosition(targetX, targetY),
   ]).pendingPoints[0].bottleCollisions.find(isVortex);
   if (result == undefined) {
-    ret = 1;
-    err = "Error while getting target vortex radius: there is no vortex at target position.";
+    logError("getting target vortex radius", "no vortex at target position.");
     return defaultOuput;
   }
   let testSmall = computePlot([
@@ -1380,10 +1356,8 @@ function getTotalMoon() {
  * @returns {number} The total amount of salt added.
  */
 function straighten(direction, salt, options = {}) {
-  if (ret) return 0;
   if (salt != "moon" && salt != "sun") {
-    ret = 1;
-    err = "Error while straightening: salt must be moon or sun.";
+    logError("straightening", "salt must be moon or sun.");
     return 0;
   }
   const {
@@ -1393,6 +1367,7 @@ function straighten(direction, salt, options = {}) {
     preStirLength = 0.0,
     leastSegmentLength = 1e-9,
   } = options;
+  const _maxStirLength = maxStirLength + preStirLength;
   let stirredLength = 0.0;
   let nextStirLength = 0.0;
   let nextSegmentLength = 0.0;
@@ -1476,9 +1451,9 @@ function straighten(direction, salt, options = {}) {
     } else {
       nextStirLength += nextSegmentLength;
       nextSegmentLength = 0.0;
-      if (nextStirLength + stirredLength >= maxStirLength) {
+      if (nextStirLength + stirredLength >= _maxStirLength) {
         // capped stir length.
-        nextStirLength = maxStirLength - stirredLength + _preStirLength;
+        nextStirLength = _maxStirLength - stirredLength + _preStirLength;
         _preStirLength = 0.0;
         if (RoundStirring) {
           nextStirLength = Math.ceil(nextStirLength * StirringUnitInverse) / StirringUnitInverse;
@@ -1504,7 +1479,6 @@ function straighten(direction, salt, options = {}) {
 
 /** main function. */
 function main() {
-  logError();
   logSalt();
 }
 
@@ -1566,7 +1540,6 @@ export {
   getTotalSun,
   setDisplay,
   setStirRounding,
-  logError,
   logSalt,
 };
 

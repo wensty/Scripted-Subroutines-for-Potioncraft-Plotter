@@ -25,7 +25,7 @@ function beta() {
   stirIntoVortex();
   logAddHeatVortex(Infinity);
   stirIntoVortex();
-  stirToTurn(3);
+  stirToTurn({ preStirLength: 3 });
   heatAndPourToEdge(3, 7);
   derotateToAngle(0);
   logAddHeatVortex(1.09);

@@ -43,7 +43,7 @@ function beta() {
   const x1 = currentPlot.pendingPoints[0].x;
   const y1 = currentPlot.pendingPoints[0].y;
   logAddSunSalt(264);
-  stirToTurn(8.3);
+  stirToTurn({ preStirLength: 8.3 });
   const x2 = currentPlot.pendingPoints[0].x;
   const y2 = currentPlot.pendingPoints[0].y;
   straighten(getDirectionByVector(x2 - x1, y2 - y1), Salt.Sun, { maxGrains: 501 - getTotalSun() });

@@ -48,13 +48,13 @@ function beta() {
   console.log(getBottlePolarAngleByEntity(Entity.PotionEffect) + Math.PI);
   logAddPourSolvent(Infinity);
   // section 2
-  stirToTurn(3.25, Infinity, { directionBuffer: 0.0 }); // Empirical
+  stirToTurn({ preStirLength: 3.25, directionBuffer: 0.0 }); // Empirical
   straighten(degToRad(-45), Salt.Sun, { maxStirLength: 0.85, maxGrains: 250 });
   stirIntoVortex();
   logAddStirCauldron(0.13); // to not die.
   console.log(radToDeg(getBottlePolarAngleByEntity()) - 180);
   logAddHeatVortex(5.8);
-  stirToTurn(7);
+  stirToTurn({ preStirLength: 7.0 });
   straighten(degToRad(-73), Salt.Sun, { maxGrains: 190 });
   stirIntoVortex();
   console.log(radToDeg(getBottlePolarAngleByEntity()) - 180);

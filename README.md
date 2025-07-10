@@ -139,10 +139,11 @@ Used to detection of certain entities.
 
 - `stirIntoVortex()`: stir to a different vortex.
 - `StirToEdge()`: stir to edge of the current vortex.
-- `stirToTurn(maxStirLength?, directionBuffer?, leastSegmentLength?)`: stir to the point where the direction changes vastly.
-  - `maxStirLength`: the maximal length it will stir.
-  - `directionBuffer`: the angular threshold in radians to be considered as "vast" change.
-  - `leastSegmentLength`: the minimum length between points to consider in the calculation.
+- `stirToTurn(option={})`: stir to the point where the direction changes vastly.
+  - `option.preStirLength`: the stir length before stirring to turn.
+  - `option.maxStirLength`: the maximal length it will stir.
+  - `option.directionBuffer`: the angular threshold in radians to be considered as "vast" change.
+  - `option.leastSegmentLength`: the minimum length between points to consider in the calculation.
 - `StirIntoDangerZoneExit()`: stir to the nearest exit point of danger zone. The bottle will find a danger zone if it is not currently in.
 - `stirToNearestTarget(target, options?)`: stir to the nearest point to the target position within the given maximum stir length.
   - `target`: the target effect. An object with `x` and `y` properties.
@@ -175,12 +176,17 @@ Used to detection of certain entities.
   - `zone`: the zone to pour towards. Default to be `Entity.DangerZone`.
 - `pourIntoVortex(targetVortexX, targetVortexY)`: pour into the target vortex.
   - `targetVortexX`, `targetVortexY`: the rough coordinates of the target vortex.
-- `derotateToAngle(targetAngle, buffer?, epsilon?)`: derotate the bottle to a target angle, can be used if the bottle is at the origin or in a vortex.
-  - `targetAngle`: the target angle in degrees.
-  - `{epsilon, buffer, toAgle}`:
-    - `epsilon, buffer`: the parameters for the binary search to decide exact de-rotation.
-    - `toAngle`: derotate to the target angle or by the target angle.
+- `derotateToAngle(targetAngle, {toAngle?})`: derotate the bottle to a target angle **at origin or in a vortex without moving the bottle.**
+  - `targetAngle`: the target angle **in degrees**.
+  - `toAgle`: derotate to the target angle or by the target angle.
   - **Note that this de-rotation process is not real de-rotation process. Check that it can be translated back to real de-rotation before using it**.
+- `pourUntilAngle(targetAngle,{minPour = 0.0,maxPour?,epsHigh?,epsLow?,buffer?,overPour?})`: pour until the bottle is at the target angle. This will **move the bottle toward origin**.
+  - `targetAngle`: the target angle **in degrees**.
+  - `minPour`: the optional minimal length of pouring provide to accelerate search. Default to be `0.0`.
+  - `maxPour`: the optional maximal length of pouring provide to accelerate search. Default to be `Infinity`.
+  - `epsHigh`: the precision for high range binary search. Default to be `EpsHigh` with value `2e-3`.
+  - `epsLow`: the precision for low range binary search. Default to be `EpsLow` with value `1e-4`.
+  - `buffer`: the buffer value for adjusting the binary search range. Default to be `0.012`.
 
 ### Angle conversion functions
 
@@ -242,7 +248,6 @@ Used to detection of certain entities.
 - `setStirRounding(stirRounding)`: set the stir rounding mode of the plotter. This mode rounds most numbers to 3 digits after the decimal point, same as manual instructions on the online plotter.
   - `stirRounding`: `true` or `false`.
   - some operations that potentially require high precision is not rounded. For example stirring to certain target effect.
-- `logError()`: log the current error.
 - `logSalt()`: log the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
   - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.
 

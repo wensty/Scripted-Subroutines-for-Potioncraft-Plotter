@@ -83,7 +83,7 @@ function beta() {
   logAddSunSalt(80);
   logSkirt();
   logAddSunSalt(10);
-  stirToTurn(4.0, 0.1, 0.01 * SaltAngle);
+  stirToTurn({ preStirLength: 4.0, maxStirLength: 0.1, directionBuffer: 0.01 * SaltAngle });
   const x2 = currentPlot.pendingPoints[0].x;
   const y2 = currentPlot.pendingPoints[0].y;
   console.log(getCurrentStirDirection());

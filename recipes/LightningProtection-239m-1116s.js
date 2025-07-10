@@ -1,5 +1,5 @@
 import {
-  logAddIngredient,
+  logSkirt,
   logAddMoonSalt,
   logAddSunSalt,
   logAddStirCauldron,
@@ -16,11 +16,10 @@ import {
   straighten,
   getTotalMoon,
   getTotalSun,
-  logSkirt,
+  setDisplay,
 } from "../main";
 import { Salt, Effects } from "../main";
 
-import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
 
 /**
@@ -42,11 +41,11 @@ function main() {
   logAddSunSalt(42);
   logAddStirCauldron(1.25);
   logAddSunSalt(52);
-  let x1 = currentPlot.pendingPoints[0].x;
-  let y1 = currentPlot.pendingPoints[0].y;
+  const x1 = currentPlot.pendingPoints[0].x;
+  const y1 = currentPlot.pendingPoints[0].y;
   stirToTurn();
-  let x2 = currentPlot.pendingPoints[0].x;
-  let y2 = currentPlot.pendingPoints[0].y;
+  const x2 = currentPlot.pendingPoints[0].x;
+  const y2 = currentPlot.pendingPoints[0].y;
   straighten(getDirectionByVector(x2 - x1, y2 - y1), Salt.Sun, {
     maxStirLength: 4,
     maxGrains: Math.ceil((currentPlot.pendingPoints[0].angle + 180.01) / 0.36),
@@ -65,4 +64,52 @@ function main() {
   logAddStirCauldron(1.41);
   logAddSunSalt(1);
   console.log("Minimal distance: " + stirToNearestTarget(Effects.Oil.LightningProtection));
+}
+/**
+ * Moon: 156 + 88 = 244
+ * Sun: 1000 + 88 + 33 = 1121
+ */
+function beta() {
+  checkBase("oil");
+  setDisplay(false);
+  const m1 = 156;
+  logAddMoonSalt(m1);
+  logSkirt();
+  derotateToAngle(0);
+  logAddStirCauldron(4.6);
+  straighten(getBottlePolarAngle() - degToRad(3), Salt.Sun, { maxStirLength: 1.35 });
+  logAddStirCauldron(4.8);
+  logAddSunSalt(42);
+  logAddStirCauldron(1.25);
+  logAddSunSalt(52);
+  const x1 = currentPlot.pendingPoints[0].x;
+  const y1 = currentPlot.pendingPoints[0].y;
+  stirToTurn();
+  const x2 = currentPlot.pendingPoints[0].x;
+  const y2 = currentPlot.pendingPoints[0].y;
+  const d = getDirectionByVector(x2 - x1, y2 - y1);
+  straighten(d, Salt.Sun, {
+    maxStirLength: 4,
+    maxGrains: Math.ceil((currentPlot.pendingPoints[0].angle + 180.01) / 0.36),
+  });
+  straighten(d, Salt.Sun, {
+    maxStirLength: 4.0,
+    maxGrains: 315,
+  });
+  stirToTurn({ preStirLength: 0.6 });
+  console.log(radToDeg(getCurrentStirDirection()));
+  straighten(degToRad(-169.5), Salt.Moon, { preStirLength: 3.9, maxStirLength: 6.74 });
+  const m2 = 88;
+  logAddMoonSalt(m1 + m2 - getTotalMoon());
+  straighten(degToRad(157.3), Salt.Sun, {
+    preStirLength: 2.2,
+    maxGrains: 1000 + m2 + 33 - 1 - getTotalSun(),
+  });
+  console.log("Minimal health: " + stirToDangerZoneExit());
+  logAddStirCauldron(0.205);
+  logAddSunSalt(1);
+  console.log(
+    "Minimal distance: " +
+      stirToNearestTarget(Effects.Oil.LightningProtection, { preStirLength: 3.0 })
+  );
 }
