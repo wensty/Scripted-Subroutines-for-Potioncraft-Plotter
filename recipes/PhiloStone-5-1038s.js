@@ -20,6 +20,9 @@ import { DeviationT1, Entity, Salt, Effects } from "../main";
 
 import { currentPlot } from "@potionous/plot";
 
+/**
+ * Can be lowered to 1036 salt by saving 1.1 salt of angle when pouring back to origin for the second time.
+ */
 function beta() {
   checkBase("water");
   logAddSunSalt(166);
@@ -46,7 +49,7 @@ function beta() {
     ignoreAngle: true,
   });
   console.log(getBottlePolarAngleByEntity(Entity.PotionEffect) + Math.PI);
-  logAddPourSolvent(Infinity);
+
   // section 2
   stirToTurn({ preStirLength: 3.25, directionBuffer: 0.0 }); // Empirical
   straighten(degToRad(-45), Salt.Sun, { maxStirLength: 0.85, maxGrains: 250 });
