@@ -46,8 +46,6 @@ let StirringUnitInverse = 1000.0;
 let Step = 1;
 let TotalSun = 0;
 let TotalMoon = 0;
-let ret = 0; // The return code of last function.
-let err = ""; // Last error string.
 
 const Effects = {
   Water: {
@@ -168,11 +166,9 @@ function fixUndef(entity) {
 
 /**
  * Extracts the x and y coordinates from a given plot point, defaulting to the current point.
- * Sets undefined coordinates to 0.0.
  * @param {import("@potionous/plot").PlotPoint} [point=currentPlot.pendingPoints[0]] - The plot point to extract coordinates from.
  * @returns {{x: number, y: number}} The extracted coordinates with defaults applied.
  */
-
 function extractCoordinate(point = currentPlot.pendingPoints[0]) {
   const { x, y } = point;
   return { x: x || 0.0, y: y || 0.0 };
@@ -262,18 +258,16 @@ function logSkirt(grindPercent = 1.0, display = Display) {
 /**
  * Logs the addition of sun salt and adds it to the current plot.
  * @param {number} grains The amount of sun salt to add in grains.
- * @returns {number} The amount of sun salt added in grains.
  */
 
 function logAddSunSalt(grains) {
-  if (grains <= 0) return 0;
+  if (grains <= 0) return;
   if (Display) {
     console.log("Step " + Step + ": Adding " + grains + " grains of sun salt");
     Step += 1;
   }
   TotalSun += grains;
   addSunSalt(grains);
-  return grains;
 }
 
 /**
@@ -281,14 +275,13 @@ function logAddSunSalt(grains) {
  * @param {number} grains The amount of moon salt to add in grains.
  */
 function logAddMoonSalt(grains) {
-  if (grains <= 0) return 0;
+  if (grains <= 0) return;
   if (Display) {
     console.log("Step " + Step + ": Adding " + grains + " grains of moon salt");
     Step += 1;
   }
   TotalMoon += grains;
   addMoonSalt(grains);
-  return grains;
 }
 
 /**
@@ -297,22 +290,15 @@ function logAddMoonSalt(grains) {
  * @param {number} grains The amount of salt to add in grains.
  */
 function logAddRotationSalt(salt, grains) {
-  if (salt != "moon" && salt != "sun") {
-    logError("adding rotation salt", "salt must be moon or sun.");
+  if (salt == "moon") {
+    logAddMoonSalt(grains);
     return;
   }
-  if (grains <= 0) return 0;
-  if (Display) {
-    console.log("Step " + Step + ": Adding " + grains + " grains of " + salt + " salt");
-    Step += 1;
+  if (salt == "sun") {
+    logAddSunSalt(grains);
+    return;
   }
-  if (salt == "moon") {
-    TotalMoon += grains;
-  } else {
-    TotalSun += grains;
-  }
-  addRotationSalt(salt, grains);
-  return grains;
+  logError("adding rotation salt", "salt must be moon or sun.");
 }
 
 /**
@@ -978,7 +964,7 @@ function derotateToAngle(targetAngle, options = {}) {
       logError("derotating", "Cannot derotate to larger or reversed angle.");
     }
   } else {
-    _targetAngle = currentAngle - (currentAngle > 0) * targetAngle;
+    _targetAngle = currentAngle - (2 * (currentAngle > 0) - 1) * targetAngle;
   }
   if (x != 0.0 || y != 0.0) {
     const result = initialPoint.bottleCollisions.find(isVortex);
@@ -1023,7 +1009,7 @@ function pourUntilAngle(targetAngle, options = {}) {
     var _angleAtOrigin = 0.0;
     var toOrigin = false;
     _angleAtOrigin = -computePlot(currentRecipeItems.concat(createPourSolvent(dist)))
-      .pendingPoints[0].angle; // the angle when the bottle pours exactly back to origin. The angle is not necessarily zero here.
+      .pendingPoints[0].angle; // the angle when the bottle pours exactly back to origin. Not necessarily zero.
     var l, r, e;
     if (targetAngle * (targetAngle - _angleAtOrigin) <= 0) {
       logAddPourSolvent(dist);
@@ -1299,14 +1285,11 @@ function getCurrentVortexRadius() {
  * coordinates and the radius of the target vortex.
  */
 function getTargetVortexInfo(targetX, targetY) {
-  let defaultOuput = { x: 0.0, y: 0.0, r: 0.0 };
-
   const result = computePlot([
     createSetPosition(targetX, targetY),
   ]).pendingPoints[0].bottleCollisions.find(isVortex);
   if (result == undefined) {
     logError("getting target vortex radius", "no vortex at target position.");
-    return defaultOuput;
   }
   let testSmall = computePlot([
     createSetPosition(result.x + 1.8, result.y),
@@ -1514,6 +1497,7 @@ export {
   pourToZone,
   pourIntoVortex,
   derotateToAngle,
+  pourUntilAngle,
   // Angle conversions.
   degToRad,
   radToDeg,

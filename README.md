@@ -187,6 +187,8 @@ Used to detection of certain entities.
   - `epsHigh`: the precision for high range binary search. Default to be `EpsHigh` with value `2e-3`.
   - `epsLow`: the precision for low range binary search. Default to be `EpsLow` with value `1e-4`.
   - `buffer`: the buffer value for adjusting the binary search range. Default to be `0.012`.
+  - `overPour`: whether to slightly over pour. Default to be `true`.
+    - The pour not enough to bring the bottle back to origin have a smallest step size, and in these cases there are some error in the resulted angle, this parameter controls **the direction of this error** (to pour more or pour less).
 
 ### Angle conversion functions
 
