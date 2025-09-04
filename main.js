@@ -1290,6 +1290,7 @@ function getTargetVortexInfo(targetX, targetY) {
   ]).pendingPoints[0].bottleCollisions.find(isVortex);
   if (result == undefined) {
     logError("getting target vortex radius", "no vortex at target position.");
+    throw Error();
   }
   let testSmall = computePlot([
     createSetPosition(result.x + 1.8, result.y),
