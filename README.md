@@ -144,7 +144,12 @@ Used to detection of certain entities.
   - `option.maxStirLength`: the maximal length it will stir.
   - `option.directionBuffer`: the angular threshold in radians to be considered as "vast" change.
   - `option.leastSegmentLength`: the minimum length between points to consider in the calculation.
-- `StirIntoDangerZoneExit()`: stir to the nearest exit point of danger zone. The bottle will find a danger zone if it is not currently in.
+- `StirToZone(options={})`: stir to the nearest point in the given zone.
+  - `options.zone`: the zone to stir to. Not recommended to use with vortex and effects.
+  - `options.preStirLength`: the stir length before stirring to zone. To accelerate the script.
+  - `options.exitZone`: Set to exit the given zone.
+  - `options.overStir`: Set to stir a bit more to ensure entrance or exit.
+- `StirIntoDangerZoneExit()`: special case of last function to stir to the nearest point outside of the nearest danger zone.
 - `stirToNearestTarget(target, options?)`: stir to the nearest point to the target position within the given maximum stir length.
   - `target`: the target effect. An object with `x` and `y` properties.
     - Can be one of the pre-defined `Effects` constant.

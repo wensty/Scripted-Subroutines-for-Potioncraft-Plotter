@@ -553,50 +553,70 @@ function stirToTurn(options = {}) {
 }
 
 /**
- * Stirs the potion to the edge of the current or next danger zone.
- * @param {number} [minStirLength=0.0] - The minimum initial stir length.
- * @returns {number} The least health value encountered while stirring.
+ * Stirs the potion until it enters or exits a specified zone.
+ * @param {object} [options] - Options for the stirring process.
+ * @param {object} [options.zone=Entity.DangerZone] - The zone to be entered or exited.
+ * @param {number} [options.preStirLength=0.0] - The minimum initial stir length.
+ * @param {boolean} [options.overStir=false] - Whether to over stir by a small amount.
+ * @param {boolean} [options.exitZone=false] - Whether to exit the zone instead of entering it.
+ * @param {number} [options.overStirBuffer=1e-5] - The buffer to add when over stirring.
  */
-function stirToDangerZoneExit(minStirLength = 0.0) {
-  let pendingPoints = currentPlot.pendingPoints;
-  if (minStirLength > 0.0) {
-    pendingPoints = computePlot(
-      currentRecipeItems.concat(createStirCauldron(minStirLength))
-    ).pendingPoints;
+function stirToZone(options = {}) {
+  const {
+    zone = Entity.DangerZone,
+    preStirLength = 0.0,
+    overStir = false,
+    exitZone = false,
+    overStirBuffer = 1e-5,
+  } = options;
+
+  let plot = currentPlot;
+  if (preStirLength > 0.0) {
+    plot = computePlot(currentRecipeItems.concat([createStirCauldron(preStirLength)]));
   }
-  let inDangerZone = false;
-  if (pendingPoints[0].bottleCollisions.find(isDangerZone) != undefined) {
-    inDangerZone = true;
-  }
+  const pendingPoints = plot.pendingPoints;
   let nextIndex = 0;
-  let stirDistance = 0.0;
-  let leastHealth = 1.0;
+  let inZone = false;
+  let stirDistance = preStirLength;
   while (true) {
     nextIndex += 1;
     if (nextIndex == pendingPoints.length) {
-      logError("stirring to safe zone", "no safe zone found.");
-      return 1.0;
+      logError("stir to zone", "no zone found.");
+      return;
     }
     stirDistance += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
-    const result = pendingPoints[nextIndex].bottleCollisions.find(isDangerZone);
-    if (inDangerZone) {
-      if (result === undefined) {
+    const result = pendingPoints[nextIndex].bottleCollisions.find(isEntityType(zone));
+    if (result != undefined) {
+      if (!exitZone) {
         break;
       }
-      leastHealth = pendingPoints[nextIndex].health;
+      inZone = true;
     } else {
-      if (result != undefined) {
-        inDangerZone = true;
+      if (inZone) {
+        break;
       }
     }
   }
   if (RoundStirring) {
-    stirDistance = Math.ceil(stirDistance * StirringUnitInverse) / StirringUnitInverse;
+    if (overStir) {
+      stirDistance = Math.ceil(stirDistance * StirringUnitInverse) / StirringUnitInverse;
+    } else {
+      stirDistance = Math.floor(stirDistance * StirringUnitInverse) / StirringUnitInverse;
+    }
+    logAddStirCauldron(stirDistance);
+    return;
+  } else {
+    logAddStirCauldron(stirDistance + overStirBuffer * (1 - 2 * overStir));
   }
-  // calculation by plotter is accurate enough.
-  logAddStirCauldron(minStirLength + stirDistance);
-  return leastHealth;
 }
+
+/**
+ * Stirs the potion to the nearest point outside of the nearest danger zone.
+ * @param {number} [preStirLength=0.0] - The minimum initial stir length.
+ */
+const stirToDangerZoneExit = (preStirLength) => {
+  stirToZone({ zone: Entity.DangerZone, preStirLength, exitZone: true, overStir: true });
+};
 
 /**
  * Stirs the potion towards the nearest point to the given target coordinates.
