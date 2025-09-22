@@ -17,6 +17,7 @@ import {
   stirIntoVortex,
   stirToEdge,
   stirToTurn,
+  stirToZone,
   stirToDangerZoneExit,
   stirToNearestTarget,
   stirToTier,

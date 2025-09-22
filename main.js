@@ -198,10 +198,10 @@ function setDisplay(display) {
 
 /**
  * Sets the stir rounding flag to control whether rounding the stir length.
- * @param {boolean} stirRounding - A boolean value to enable or disable rounding the stir length.
+ * @param {boolean} roundStirring - A boolean value to enable or disable rounding the stir length.
  */
-function setStirRounding(stirRounding) {
-  RoundStirring = stirRounding;
+function setStirRounding(roundStirring) {
+  RoundStirring = roundStirring;
 }
 
 /**
@@ -598,15 +598,13 @@ function stirToZone(options = {}) {
     }
   }
   if (RoundStirring) {
-    if (overStir) {
-      stirDistance = Math.ceil(stirDistance * StirringUnitInverse) / StirringUnitInverse;
-    } else {
-      stirDistance = Math.floor(stirDistance * StirringUnitInverse) / StirringUnitInverse;
-    }
-    logAddStirCauldron(stirDistance);
+    logAddStirCauldron(
+      (Math.floor(stirDistance * StirringUnitInverse) + overStirBuffer) / StirringUnitInverse
+    );
     return;
   } else {
     logAddStirCauldron(stirDistance + overStirBuffer * (1 - 2 * overStir));
+    return;
   }
 }
 
@@ -930,9 +928,6 @@ function heatAndPourToEdge(length, repeats) {
 
 /**
  * Pours solvent to move the bottle towards assigned zone.
- *
- * This relies on the accurate calculation on swamp path reduction and health.
- * Use other accurate functions for other zones instead.
  * @param {number} maxPourLength - The maximum length of solvent to pour.
  * @param {string[]} [zone=Entity.DangerZone] - The zone to pour towards. A string[] of entity type.
  */
@@ -1508,6 +1503,7 @@ export {
   stirIntoVortex,
   stirToEdge,
   stirToTurn,
+  stirToZone,
   stirToDangerZoneExit,
   stirToNearestTarget,
   stirToTier,
