@@ -176,14 +176,19 @@ Used to detection of certain entities.
 - `heatAndPourToEdge(length, repeats)`: repeatedly heating the vortex and pouring to edge of it, to move the bottle with the vortex and keep it at the boundary of the vortex.
   - `length`: the maximal length of pour. Overridden at the last stage where we can not heat too much.
   - `repeats`: the number of times to repeat the heating and pouring process.
-- `pourToZone(maxPourLength, zone?)`: pour until about to enter assigned zone.
-  - `maxPourLength`: the maximal length it will pour.
-  - `zone`: the zone to pour towards. Default to be `Entity.DangerZone`.
+- `pourtoZoneV2(options)`: pour to the assigned zone with more control.
+  - `options`: an object with the following options:
+    - `zone`: the zone to pour towards. Default to be `Entity.DangerZone`.
+    - `maxPourLength`: the maximal length it will pour.
+    - `prePourLength`: the initial length of pouring.
+    - `overPour`: whether to pour **slightly** more than the minimum required to ensure into or exit the zone.
+    - `exitZone`: whether to exit the zone instead of entering it.
+- `pourToZone(maxPourLength, zone?)`: special case. Left here for old recipe compatibility.
 - `pourIntoVortex(targetVortexX, targetVortexY)`: pour into the target vortex.
   - `targetVortexX`, `targetVortexY`: the rough coordinates of the target vortex.
-- `derotateToAngle(targetAngle, {toAngle?})`: derotate the bottle to a target angle **at origin or in a vortex without moving the bottle.**
+- `derotateToAngle(targetAngle, {toAngle?})`: de-rotate the bottle to a target angle **at origin or in a vortex without moving the bottle.**
   - `targetAngle`: the target angle **in degrees**.
-  - `toAgle`: derotate to the target angle or by the target angle.
+  - `toAgle`: de-rotate to the target angle or by the target angle.
   - **Note that this de-rotation process is not real de-rotation process. Check that it can be translated back to real de-rotation before using it**.
 - `pourUntilAngle(targetAngle,{minPour = 0.0,maxPour?,epsHigh?,epsLow?,buffer?,overPour?})`: pour until the bottle is at the target angle. This will **move the bottle toward origin**.
   - `targetAngle`: the target angle **in degrees**.

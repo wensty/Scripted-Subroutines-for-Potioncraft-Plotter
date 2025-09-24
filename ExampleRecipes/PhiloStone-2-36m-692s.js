@@ -10,7 +10,7 @@ import {
   stirToTurn,
   stirToDangerZoneExit,
   stirToTier,
-  pourToEdge,
+  pourToVortexEdge,
   heatAndPourToEdge,
   pourIntoVortex,
   derotateToAngle,
@@ -46,7 +46,7 @@ function main() {
   });
   pourIntoVortex(16, 6);
   logAddHeatVortex(8);
-  pourToEdge();
+  pourToVortexEdge();
   heatAndPourToEdge(3, 4);
   logAddHeatVortex(5.9);
   derotateToAngle(-79);

@@ -832,7 +832,7 @@ function stirToConsume(consumeLength) {
 /**
  * Pours solvent to the edge of the current vortex.
  */
-function pourToEdge() {
+function pourToVortexEdge() {
   const currentPoint = currentPlot.pendingPoints[0];
   const vortex = fixUndef(currentPoint.bottleCollisions.find(isVortex));
   if (vortex === undefined) {
@@ -921,45 +921,67 @@ function heatAndPourToEdge(length, repeats) {
       maxLength = (Math.floor(maxLength * MinimalPourInverse) - 0.5) / MinimalPourInverse;
     }
     logAddHeatVortex(Math.min(length, maxLength));
-    pourToEdge();
+    pourToVortexEdge();
   }
   return;
 }
 
 /**
- * Pours solvent to move the bottle towards assigned zone.
- * @param {number} maxPourLength - The maximum length of solvent to pour.
- * @param {string[]} [zone=Entity.DangerZone] - The zone to pour towards. A string[] of entity type.
+ * Pours solvent to move the bottle towards or out of an assigned zone.
+ * @param {object} [options] - Options for the pouring process.
+ * @param {string[]} [options.zone=Entity.DangerZone] - The zone to pour towards or out of.
+ * @param {number} [options.prePourLength=0.0] - The initial length of pouring.
+ * @param {number} [options.maxPourLength=Infinity] - The maximum length of pouring.
+ * @param {boolean} [options.overPour=false] - Whether to pour slightly more than the minimum required.
+ * @param {boolean} [options.exitZone=false] - Whether to exit the zone instead of entering it.
  */
-function pourToZone(maxPourLength, zone = Entity.DangerZone) {
+function pourToZoneV2(options = {}) {
+  const {
+    zone = Entity.DangerZone,
+    prePourLength = 0.0,
+    maxPourLength = Infinity,
+    overPour = false,
+    exitZone = false,
+  } = options;
+  logAddPourSolvent(prePourLength);
   const detector = isEntityType(zone);
-  const initialResult = currentPlot.pendingPoints[0].bottleCollisions.find(detector);
-  if (initialResult != undefined) {
-    logError("pouring to zone", "already in zone");
-    return;
-  }
   const { x, y } = extractCoordinate();
   const plot = computePlot([createSetPosition(x, y), createPourSolvent(maxPourLength)]);
+  let inZone = false;
   let nextIndex = 0;
   let pourLength = 0.0;
+  function addPour() {
+    pourLength = Math.max(
+      (Math.floor(pourLength * MinimalPourInverse) - 0.5 + overPour) / MinimalPourInverse,
+      0.0
+    );
+    logAddPourSolvent(pourLength);
+  }
   while (true) {
-    nextIndex += 1;
-    if (nextIndex == plot.committedPoints.length) {
-      logError("pouring to zone", "cannot reach zone.");
+    let entity = plot.committedPoints[nextIndex].bottleCollisions.find(detector);
+    if (entity != undefined) {
+      if (!exitZone) {
+        addPour();
+        return;
+      }
+      inZone = true;
+    }
+    if (entity == undefined && inZone) {
+      addPour();
       return;
     }
-    if (plot.committedPoints[nextIndex].bottleCollisions.find(detector) != undefined) {
-      break;
-    }
     pourLength = pointDistance(plot.committedPoints[0], plot.committedPoints[nextIndex]);
+    nextIndex += 1;
+    if (nextIndex == plot.committedPoints.length) {
+      logError("pouring to zone", "cannot reach (or out of) zone.");
+      return;
+    }
   }
-  pourLength = Math.max(
-    (Math.floor(pourLength * MinimalPourInverse) - 0.5) / MinimalPourInverse,
-    0.0
-  );
-  logAddPourSolvent(pourLength);
-  return;
 }
+
+// for old recipe compatibility.
+const pourToZone = (maxPourLength, zone = Entity.DangerZone) =>
+  pourToZoneV2({ maxPourLength: maxPourLength, zone: zone });
 
 /**
  * Derotates the bottle to the target angle.
@@ -1509,8 +1531,9 @@ export {
   stirToTier,
   stirToConsume,
   // Pouring subroutines.
-  pourToEdge,
+  pourToVortexEdge,
   heatAndPourToEdge,
+  pourToZoneV2,
   pourToZone,
   pourIntoVortex,
   derotateToAngle,

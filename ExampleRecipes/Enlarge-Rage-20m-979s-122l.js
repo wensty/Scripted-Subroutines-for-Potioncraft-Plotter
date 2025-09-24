@@ -9,7 +9,7 @@ import {
   stirToTurn,
   stirToNearestTarget,
   stirToTier,
-  pourToEdge,
+  pourToVortexEdge,
   heatAndPourToEdge,
   derotateToAngle,
   degToRad,
@@ -53,7 +53,7 @@ function main() {
   stirIntoVortex();
   logAddSunSalt(41);
   logAddHeatVortex(3);
-  pourToEdge();
+  pourToVortexEdge();
   heatAndPourToEdge(0.4, 10);
   logAddHeatVortex(3.62);
   derotateToAngle(-61.2);
@@ -97,7 +97,7 @@ function beta_20m_978s_125hT() {
   stirIntoVortex();
   logAddSunSalt(41);
   logAddHeatVortex(3);
-  pourToEdge();
+  pourToVortexEdge();
   heatAndPourToEdge(0.4, 10);
   logAddHeatVortex(3.68);
   derotateToAngle(-61.24);

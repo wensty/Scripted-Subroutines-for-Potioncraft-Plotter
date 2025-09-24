@@ -13,7 +13,7 @@ import {
   stirToDangerZoneExit,
   stirToTier,
   stirToConsume,
-  pourToEdge,
+  pourToVortexEdge,
   heatAndPourToEdge,
   derotateToAngle,
   degToRad,
@@ -69,7 +69,7 @@ function beta() {
   stirIntoVortex();
   console.log(getBottlePolarAngleByEntity() + Math.PI / 2);
   logAddHeatVortex(0.4);
-  pourToEdge();
+  pourToVortexEdge();
   heatAndPourToEdge(3, 5);
   derotateToAngle(0);
   logAddHeatVortex(6.95);
@@ -139,7 +139,7 @@ function beta() {
   stirIntoVortex();
   console.log(getBottlePolarAngleByEntity() + Math.PI / 2);
   logAddHeatVortex(0.8);
-  pourToEdge();
+  pourToVortexEdge();
   heatAndPourToEdge(3, 4);
   logAddHeatVortex(6.7);
   derotateToAngle(56.3);
@@ -181,7 +181,7 @@ function beta() {
   straighten(getDirectionByVector(-20.8 - x3, 5.34 - y3), "sun", { maxStirLength: 1.6 });
   stirIntoVortex();
   logAddHeatVortex(4);
-  pourToEdge();
+  pourToVortexEdge();
   heatAndPourToEdge(0.3, 8);
   logAddHeatVortex(2.84);
   logAddSunSalt(112);

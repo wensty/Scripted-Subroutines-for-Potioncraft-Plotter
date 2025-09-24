@@ -8,7 +8,7 @@ import {
   stirToTurn,
   stirToDangerZoneExit,
   stirToNearestTarget,
-  pourToEdge,
+  pourToVortexEdge,
   heatAndPourToEdge,
   derotateToAngle,
   degToRad,
@@ -44,7 +44,7 @@ function beta_1149s() {
   logAddSunSalt(49);
   straighten(degToRad(120), Salt.Sun, { preStirLength: 9, maxGrains: 72 });
   stirToDangerZoneExit(3.3);
-  pourToEdge();
+  pourToVortexEdge();
   heatAndPourToEdge(0.2, 7);
   logAddHeatVortex(0);
   logAddStirCauldron(3.15);

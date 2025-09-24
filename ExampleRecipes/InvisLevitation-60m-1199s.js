@@ -10,7 +10,7 @@ import {
   stirToDangerZoneExit,
   stirToNearestTarget,
   stirToTier,
-  pourToEdge,
+  pourToVortexEdge,
   heatAndPourToEdge,
   pourIntoVortex,
   derotateToAngle,
@@ -59,7 +59,7 @@ function main() {
   pourIntoVortex(13, 26);
   derotateToAngle(0.0);
   logAddHeatVortex(5.7);
-  pourToEdge();
+  pourToVortexEdge();
   heatAndPourToEdge(1, 9);
   logAddHeatVortex(1.75); // Empirical
   stirToTier(Effects.Water.Invisibility, { preStirLength: 7.1 }); // roughly
@@ -84,7 +84,7 @@ function main() {
   stirIntoVortex();
   console.log(radToDeg(getBottlePolarAngleByEntity(EntityVortex, false)));
   logAddHeatVortex(4.6);
-  pourToEdge();
+  pourToVortexEdge();
   heatAndPourToEdge(1, 9);
   logAddHeatVortex(5.12);
   derotateToAngle(saltToDeg("moon", 100 + 33.3));
@@ -128,7 +128,7 @@ function beta() {
   pourIntoVortex(13, 26);
   derotateToAngle(0.0);
   logAddHeatVortex(5.7);
-  pourToEdge();
+  pourToVortexEdge();
   heatAndPourToEdge(1, 9);
   logAddHeatVortex(1.75); // Empirical
   stirToTier(Effects.Water.Invisibility, { preStirLength: 7.1 }); // roughly
@@ -153,7 +153,7 @@ function beta() {
   stirIntoVortex();
   console.log(radToDeg(getBottlePolarAngleByEntity(EntityVortex, false)));
   logAddHeatVortex(4.6);
-  pourToEdge();
+  pourToVortexEdge();
   heatAndPourToEdge(1, 9);
   logAddHeatVortex(5.15);
   derotateToAngle(saltToDeg("moon", 101 + 33.3));

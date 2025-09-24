@@ -8,7 +8,7 @@ import {
   stirToTurn,
   stirToDangerZoneExit,
   stirToTier,
-  pourToEdge,
+  pourToVortexEdge,
   heatAndPourToEdge,
   derotateToAngle,
   degToRad,
@@ -51,7 +51,7 @@ function bete() {
   stirIntoVortex();
   derotateToAngle(0);
   logAddHeatVortex(5);
-  pourToEdge();
+  pourToVortexEdge();
   heatAndPourToEdge(3, 5);
   logAddPourSolvent(2.6);
   stirIntoVortex();
