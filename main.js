@@ -21,7 +21,7 @@ const SaltAngle = (2 * Math.PI) / 1000.0; // angle per salt in radian.
 // Minimal pouring unit of current version of plotter. All pours are multiply of this.
 // The inverse is used for float accuracy.
 // const MinimalPour = 8e-3;
-const MinimalPourInverse = 125.0;
+const MinimalPourInv = 125.0;
 const VortexRadiusLarge = 2.39;
 const VortexRadiusMedium = 1.99;
 const VortexRadiusSmall = 1.74;
@@ -140,18 +140,11 @@ const Effects = {
 };
 
 /**
- * functions named by "into" some entities move the bottle cross the boundary into it.
- * Functions named by "to" some entities stop the bottle just about to move into it.
- */
-
-/**
  * Simulation of plotter API `createSetPosition(x, y)`.
  * @param {number} x
  * @param {number} y
  */
-function createSetPosition(x, y) {
-  return { type: "set-position", x: x, y: y };
-}
+const createSetPosition = (x, y) => ({ type: "set-position", x: x, y: y });
 
 /**
  * Fixes undefined coordinates in a PotionBaseEntity object by setting them to 0.0.
@@ -197,6 +190,17 @@ function setDisplay(display) {
 }
 
 /**
+ * Logs a step message with the current step number and additional information.
+ * The logging is controlled by the `Display` flag.
+ * @param {string} stepInfo - Additional information about the step.
+ */
+function displayStep(stepInfo) {
+  if (Display) {
+    console.log("Step " + Step + ": " + stepInfo);
+  }
+}
+
+/**
  * Sets the stir rounding flag to control whether rounding the stir length.
  * @param {boolean} roundStirring - A boolean value to enable or disable rounding the stir length.
  */
@@ -232,40 +236,24 @@ function logSalt() {
  * Logs the addition of an ingredient and adds it to the current plot.
  * @param {import("@potionous/dataset").IngredientId} ingredientId The ID of the ingredient to add.
  * @param {number} [grindPercent=1.0] The percentage of the ingredient to grind, default to be 1.0.
- * If `display` is not given, the value of `Display` is used.
+ * @param {boolean} [display=Display] Whether to display the step message, default to the value of Display.
  */
 function logAddIngredient(ingredientId, grindPercent = 1.0, display = Display) {
-  if (display) {
-    console.log("Step " + Step + ": Adding " + grindPercent * 100 + "% of " + ingredientId);
-    Step += 1;
-  }
+  displayStep("Adding " + grindPercent * 100 + "% of " + ingredientId);
+  Step += 1;
   addIngredient(ingredientId, grindPercent);
 }
-
-/**
- * Logs the addition of a Phantom Skirt ingredient and adds it to the current plot.
- * @param {number} [grindPercent=1.0] - The percentage of the Phantom Skirt to grind, default to 100%.
- * @param {boolean} [display=Display] - Whether to display the log message; defaults to the global Display setting.
- */
-function logSkirt(grindPercent = 1.0, display = Display) {
-  if (display) {
-    console.log("Step " + Step + ": Adding " + grindPercent * 100 + "% of skirt");
-    Step += 1;
-  }
-  addIngredient(Ingredients.PhantomSkirt, grindPercent);
-}
+const logSkirt = (grindPercent = 1.0, display = Display) =>
+  logAddIngredient(Ingredients.PhantomSkirt, grindPercent, display);
 
 /**
  * Logs the addition of sun salt and adds it to the current plot.
  * @param {number} grains The amount of sun salt to add in grains.
  */
-
 function logAddSunSalt(grains) {
   if (grains <= 0) return;
-  if (Display) {
-    console.log("Step " + Step + ": Adding " + grains + " grains of sun salt");
-    Step += 1;
-  }
+  displayStep("Adding " + grains + " grains of sun salt");
+  Step += 1;
   TotalSun += grains;
   addSunSalt(grains);
 }
@@ -276,10 +264,8 @@ function logAddSunSalt(grains) {
  */
 function logAddMoonSalt(grains) {
   if (grains <= 0) return;
-  if (Display) {
-    console.log("Step " + Step + ": Adding " + grains + " grains of moon salt");
-    Step += 1;
-  }
+  displayStep("Adding " + grains + " grains of moon salt");
+  Step += 1;
   TotalMoon += grains;
   addMoonSalt(grains);
 }
@@ -308,10 +294,8 @@ function logAddRotationSalt(salt, grains) {
  */
 function logAddHeatVortex(length) {
   if (length <= 0) return;
-  if (Display) {
-    console.log("Step " + Step + ": Heat the vortex by " + length + " distance.");
-    Step += 1;
-  }
+  displayStep("Heat the vortex by " + length + " distance.");
+  Step += 1;
   addHeatVortex(Math.min(length, LuckyInfinity));
 }
 
@@ -322,10 +306,8 @@ function logAddHeatVortex(length) {
  */
 function logAddStirCauldron(length) {
   if (length <= 0) return;
-  if (Display) {
-    console.log("Step " + Step + ": Stir the cauldron by " + length + " distance.");
-    Step += 1;
-  }
+  displayStep("Stir the cauldron by " + length + " distance.");
+  Step += 1;
   addStirCauldron(Math.min(length, LuckyInfinity));
   return;
 }
@@ -336,10 +318,8 @@ function logAddStirCauldron(length) {
  */
 function logAddPourSolvent(length) {
   if (length <= 0) return;
-  if (Display) {
-    console.log("Step " + Step + ": Pour solvent by " + length + " distance");
-    Step += 1;
-  }
+  displayStep("Pour solvent by " + length + " distance.");
+  Step += 1;
   addPourSolvent(Math.min(length, LuckyInfinity));
 }
 
@@ -349,10 +329,8 @@ function logAddPourSolvent(length) {
  * @param {number} y The y coordinate to set
  */
 function logAddSetPosition(x, y) {
-  if (Display) {
-    console.log("Step " + Step + ": teleporting to (" + x + ", " + y + ")");
-    Step += 1;
-  }
+  displayStep("Teleporting to (" + x + ", " + y + ")");
+  Step += 1;
   addSetPosition(x, y);
 }
 
@@ -365,14 +343,7 @@ function logAddSetPosition(x, y) {
  * @param {string[]} expectedEntityTypes The expected entity types.
  * @returns {(x: import("@potionous/dataset").PotionBaseEntity) => boolean} A function that takes an entity and returns if it is one of the given type.
  */
-function isEntityType(expectedEntityTypes) {
-  /**
-   * @param {import("@potionous/dataset").PotionBaseEntity} x Checked entity.
-   * @returns {boolean} True if the entity type is one of the expected types, false otherwise.
-   */
-  return (x) => expectedEntityTypes.includes(x.entityType);
-}
-
+const isEntityType = (expectedEntityTypes) => (x) => expectedEntityTypes.includes(x.entityType);
 const isDangerZone = isEntityType(Entity.DangerZone);
 const isVortex = isEntityType(Entity.Vortex);
 
@@ -609,7 +580,7 @@ function stirToZone(options = {}) {
 }
 
 /**
- * Stirs the potion to the nearest point outside of the nearest danger zone.
+ * Stirs the potion to the nearest point outside of the nearest danger zone. For compatibility.
  * @param {number} [preStirLength=0.0] - The minimum initial stir length.
  */
 const stirToDangerZoneExit = (preStirLength) => {
@@ -844,8 +815,8 @@ function pourToVortexEdge() {
   const l1 = pourUnit.x * (vortex.x - currentPoint.x) + pourUnit.y * (vortex.y - currentPoint.y);
   const l2 = -pourUnit.y * (vortex.x - currentPoint.x) + pourUnit.x * (vortex.y - currentPoint.y);
   const approximatedPourLength = Math.max(
-    Math.floor((l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2)) * MinimalPourInverse - 0.5) /
-      MinimalPourInverse,
+    Math.floor((l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2)) * MinimalPourInv - 0.5) /
+      MinimalPourInv,
     0.0
   );
   const result = computePlot([
@@ -853,7 +824,7 @@ function pourToVortexEdge() {
     createPourSolvent(approximatedPourLength),
   ]).pendingPoints[0].bottleCollisions.find(isVortex);
   if (result === undefined) {
-    logAddPourSolvent(approximatedPourLength - 1.0 / MinimalPourInverse);
+    logAddPourSolvent(approximatedPourLength - 1.0 / MinimalPourInv);
     return;
   }
   logAddPourSolvent(approximatedPourLength);
@@ -882,7 +853,7 @@ function pourIntoVortex(targetVortexX, targetVortexY) {
     return;
   }
   const actualPourLength =
-    (Math.ceil(approximatedPourLength * MinimalPourInverse) - 0.5) / MinimalPourInverse;
+    (Math.ceil(approximatedPourLength * MinimalPourInv) - 0.5) / MinimalPourInv;
   logAddPourSolvent(actualPourLength);
   return;
 }
@@ -918,7 +889,7 @@ function heatAndPourToEdge(length, repeats) {
         break;
       }
       maxLength = maxLength * 0.75;
-      maxLength = (Math.floor(maxLength * MinimalPourInverse) - 0.5) / MinimalPourInverse;
+      maxLength = (Math.floor(maxLength * MinimalPourInv) - 0.5) / MinimalPourInv;
     }
     logAddHeatVortex(Math.min(length, maxLength));
     pourToVortexEdge();
@@ -952,7 +923,7 @@ function pourToZoneV2(options = {}) {
   let pourLength = 0.0;
   function addPour() {
     pourLength = Math.max(
-      (Math.floor(pourLength * MinimalPourInverse) - 0.5 + overPour) / MinimalPourInverse,
+      (Math.floor(pourLength * MinimalPourInv) - 0.5 + overPour) / MinimalPourInv,
       0.0
     );
     logAddPourSolvent(pourLength);
@@ -988,7 +959,6 @@ const pourToZone = (maxPourLength, zone = Entity.DangerZone) =>
  * @param {number} targetAngle - The target angle in degrees.
  * @param {Object} [options] - Optional parameters for derotating.
  * @param {boolean} [options.toAngle=true] - Whether to derotate to the target angle or by the target angle.
- * @throws Error if derotating outside vortex or to larger or reversed angle.
  */
 function derotateToAngle(targetAngle, options = {}) {
   const initialPoint = currentPlot.pendingPoints[0];
@@ -1074,7 +1044,7 @@ function pourUntilAngle(targetAngle, options = {}) {
       }
     }
     if (!toOrigin) {
-      logAddPourSolvent((Math.floor(r * MinimalPourInverse) - 0.5 + overPour) / MinimalPourInverse); // type conversion.
+      logAddPourSolvent((Math.floor(r * MinimalPourInv) - 0.5 + overPour) / MinimalPourInv); // type conversion.
     } else {
       logAddPourSolvent(l + (r - l) / 2);
     }
@@ -1091,18 +1061,14 @@ function pourUntilAngle(targetAngle, options = {}) {
  * @param {number} deg The degrees to convert
  * @returns {number} The radians equivalent of the given degrees
  */
-function degToRad(deg) {
-  return (deg * Math.PI) / 180.0;
-}
+const degToRad = (deg) => (deg * Math.PI) / 180.0;
 
 /**
  * Converts radians to degrees.
  * @param {number} rad The radians to convert
  * @returns {number} The degrees equivalent of the given radians
  */
-function radToDeg(rad) {
-  return (rad * 180.0) / Math.PI;
-}
+const radToDeg = (rad) => (rad * 180.0) / Math.PI;
 
 /**
  * Converts degrees to salt.
@@ -1173,7 +1139,7 @@ function saltToRad(salt, grains) {
 function getUnit(x, y) {
   if (Math.abs(x) < 1e-12 && Math.abs(y) < 1e-12) {
     logError("getting unit", "zero vector.");
-    return { x: 0.0, y: 1.0 };
+    return;
   } else {
     return { x: x / Math.sqrt(x ** 2 + y ** 2), y: y / Math.sqrt(x ** 2 + y ** 2) };
   }
