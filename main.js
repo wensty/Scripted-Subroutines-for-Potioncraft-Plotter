@@ -401,10 +401,15 @@ function stirIntoVortex(preStirLength = 0.0, buffer = 1e-5) {
 
 /**
  * Stirs the potion to the edge of the current vortex.
+ * @param {number} [preStirLength=0.0] The stir length before stirring.
  * @param {number} [buffer=1e-5] - The buffer to adjust the final stir length.
  */
-function stirToEdge(buffer = 1e-5) {
-  const pendingPoints = currentPlot.pendingPoints;
+function stirToVortexEdge(preStirLength = 0.0, buffer = 1e-5) {
+  let plot = currentPlot;
+  if (preStirLength > 0.0) {
+    plot = computePlot(currentRecipeItems.concat([createStirCauldron(preStirLength)]));
+  }
+  const pendingPoints = plot.pendingPoints;
   const vortex = fixUndef(pendingPoints[0].bottleCollisions.find(isVortex));
   let stirLength = 0.0;
   if (vortex === undefined) {
@@ -432,7 +437,7 @@ function stirToEdge(buffer = 1e-5) {
   const l2 = -unit.y * (vortex.x - current.x) + unit.x * (vortex.y - current.y);
   const vortexRadius = getTargetVortexInfo(vortex.x, vortex.y).r;
   const approximatedLastStirLength = l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2);
-  const finalStirLength = stirLength + approximatedLastStirLength;
+  const finalStirLength = preStirLength + stirLength + approximatedLastStirLength;
   if (RoundStirring) {
     logAddStirCauldron(Math.floor(finalStirLength * StirringUnitInverse) / StirringUnitInverse);
     return;
@@ -538,7 +543,7 @@ function stirToZone(options = {}) {
     preStirLength = 0.0,
     overStir = false,
     exitZone = false,
-    overStirBuffer = 1e-5,
+    overStirBuffer = 1e-3,
   } = options;
 
   let plot = currentPlot;
@@ -569,14 +574,10 @@ function stirToZone(options = {}) {
     }
   }
   if (RoundStirring) {
-    logAddStirCauldron(
-      (Math.floor(stirDistance * StirringUnitInverse) + overStirBuffer) / StirringUnitInverse
-    );
-    return;
-  } else {
-    logAddStirCauldron(stirDistance + overStirBuffer * (1 - 2 * overStir));
-    return;
+    stirDistance = Math.floor(stirDistance * StirringUnitInverse) / StirringUnitInverse;
   }
+  logAddStirCauldron(stirDistance + overStirBuffer * (2 * overStir - 1));
+  return;
 }
 
 /**
@@ -1489,7 +1490,7 @@ export {
   isVortex,
   // Stirring subroutines.
   stirIntoVortex,
-  stirToEdge,
+  stirToVortexEdge,
   stirToTurn,
   stirToZone,
   stirToDangerZoneExit,
