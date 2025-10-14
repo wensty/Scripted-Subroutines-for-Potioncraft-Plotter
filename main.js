@@ -574,9 +574,11 @@ function stirToZone(options = {}) {
     }
   }
   if (RoundStirring) {
-    stirDistance = Math.floor(stirDistance * StirringUnitInverse) / StirringUnitInverse;
+    stirDistance =
+      Math.floor((stirDistance + overStirBuffer * (2 * overStir - 1)) * StirringUnitInverse) /
+      StirringUnitInverse;
   }
-  logAddStirCauldron(stirDistance + overStirBuffer * (2 * overStir - 1));
+  logAddStirCauldron(stirDistance);
   return;
 }
 
