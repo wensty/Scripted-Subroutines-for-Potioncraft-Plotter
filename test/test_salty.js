@@ -4,70 +4,19 @@
 
 import {
   logAddIngredient,
-  logSkirt,
-  logAddMoonSalt,
   logAddSunSalt,
-  logAddRotationSalt,
-  logAddHeatVortex,
-  logAddStirCauldron,
-  logAddPourSolvent,
   logAddSetPosition,
-  isDangerZone,
-  isVortex,
-  stirIntoVortex,
-  stirToVortexEdge,
-  stirToTurn,
-  stirToZone,
-  stirToDangerZoneExit,
-  stirToNearestTarget,
-  stirToTier,
-  stirToConsume,
   pourToVortexEdge,
   heatAndPourToEdge,
-  pourToZoneV2,
-  pourToZone,
-  pourIntoVortex,
   derotateToAngle,
   pourUntilAngle,
   degToRad,
-  radToDeg,
-  degToSalt,
-  radToSalt,
-  saltToDeg,
-  saltToRad,
-  getDirectionByVector,
-  getVectorByDirection,
-  getRelativeDirection,
-  getBottlePolarAngle,
-  getBottlePolarAngleByEntity,
-  getCurrentStirDirection,
   checkBase,
-  getCurrentVortexRadius,
-  getTargetVortexInfo,
   straighten,
-  getUnit,
-  getTotalMoon,
-  getTotalSun,
-  setDisplay,
-  setStirRounding,
-  logError,
-  logSalt,
 } from "../main";
-import {
-  SaltAngle,
-  VortexRadiusLarge,
-  VortexRadiusMedium,
-  VortexRadiusSmall,
-  DeviationT2,
-  DeviationT3,
-  DeviationT1,
-  Entity,
-  Salt,
-  Effects,
-} from "../main";
+import { Salt } from "../main";
 
-import { Ingredients, PotionBases } from "@potionous/dataset";
-import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
+import { Ingredients } from "@potionous/dataset";
 
 /**
  * Virtual derotation, so be careful if it is possible.

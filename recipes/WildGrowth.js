@@ -24,9 +24,13 @@ const recipes = {
     version: 3,
     base: "water",
     tier: 3,
-    GraveTruffle: 1,
-    MoonSalt: 47,
-    SunSalt: 93,
+    Ingredients: {
+      GraveTruffle: 1,
+    },
+    Salts: {
+      MoonSalt: 47,
+      SunSalt: 93,
+    },
     script: () => {
       checkBase("water");
       logAddIngredient(Ingredients.GraveTruffle);

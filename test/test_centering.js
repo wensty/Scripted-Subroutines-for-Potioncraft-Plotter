@@ -1,7 +1,3 @@
-/**
- * Full import script.
- */
-
 import {
   logAddIngredient,
   logAddSunSalt,

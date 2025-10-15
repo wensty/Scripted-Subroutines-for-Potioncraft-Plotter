@@ -16,6 +16,7 @@ import {
   getCurrentStirDirection,
   checkBase,
   straighten,
+  Salt,
 } from "../main";
 import { Effects } from "../main";
 
@@ -28,9 +29,13 @@ const recipes = {
     desc: "",
     base: "water",
     tier: 3,
-    RainbowCap: 1,
-    MoonSalt: 103,
-    SunSalt: 27,
+    Ingredients: {
+      RainbowCap: 1,
+    },
+    Salts: {
+      MoonSalt: 103,
+      SunSalt: 27,
+    },
     script: () => {
       checkBase("water");
       // setStirRounding(false)

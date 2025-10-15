@@ -12,7 +12,6 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
   logAddSetPosition,
-  isDangerZone,
   isVortex,
   stirIntoVortex,
   stirToVortexEdge,

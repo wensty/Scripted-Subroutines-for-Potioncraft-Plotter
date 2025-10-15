@@ -132,8 +132,8 @@ A `PlotPoint` item is a point on the map with the following information:
 
 Used to detection of certain entities.
 
-- `isDangerZone`: test danger zone entities.
-- `isVortex`: test vortex entities.
+- `isEntityType(expectedEntityTypes)`: test given entity types. Some entity types are pre-defined by `Entity` object.
+  - `isVortex`: test vortex entities.
 
 ### Stirring subroutines.
 

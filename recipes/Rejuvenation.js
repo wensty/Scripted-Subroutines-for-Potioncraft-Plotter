@@ -1,3 +1,4 @@
+import { Ingredients } from "@potionous/dataset";
 import {
   logSkirt,
   logAddSunSalt,
@@ -27,7 +28,12 @@ const recipes = {
     version: 3,
     base: "water",
     tier: 3,
-    SunSalt: 1149,
+    Ingredients: {
+      PhantomSkirt: 2,
+    },
+    Salts: {
+      SunSalt: 1149,
+    },
     script: () => {
       checkBase("water");
       logSkirt();

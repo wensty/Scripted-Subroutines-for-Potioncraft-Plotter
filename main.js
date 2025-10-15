@@ -344,7 +344,6 @@ function logAddSetPosition(x, y) {
  * @returns {(x: import("@potionous/dataset").PotionBaseEntity) => boolean} A function that takes an entity and returns if it is one of the given type.
  */
 const isEntityType = (expectedEntityTypes) => (x) => expectedEntityTypes.includes(x.entityType);
-const isDangerZone = isEntityType(Entity.DangerZone);
 const isVortex = isEntityType(Entity.Vortex);
 
 /**
@@ -1488,7 +1487,6 @@ export {
   logAddPourSolvent,
   logAddSetPosition,
   // Zone detections.
-  isDangerZone,
   isVortex,
   // Stirring subroutines.
   stirIntoVortex,

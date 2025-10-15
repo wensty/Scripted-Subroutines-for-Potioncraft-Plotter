@@ -9,6 +9,7 @@ import {
   stirToNearestTarget,
   Effects,
   checkBase,
+  saltToDeg,
 } from "../main";
 
 import { Ingredients } from "@potionous/dataset";
@@ -20,8 +21,11 @@ const recipes = {
     version: 3,
     base: "water",
     tier: 3,
-    Goldthorn: 1,
-    DruidsRosemary: 1,
+    Ingredients: {
+      Goldthorn: 1,
+      DruidsRosemary: 1,
+    },
+    Salts: {},
     script: () => {
       checkBase("water");
       logAddIngredient(Ingredients.Goldthorn, 0.774);
