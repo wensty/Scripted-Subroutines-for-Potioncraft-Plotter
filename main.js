@@ -817,18 +817,10 @@ function pourToVortexEdge() {
   const l1 = pourUnit.x * (vortex.x - currentPoint.x) + pourUnit.y * (vortex.y - currentPoint.y);
   const l2 = -pourUnit.y * (vortex.x - currentPoint.x) + pourUnit.x * (vortex.y - currentPoint.y);
   const approximatedPourLength = Math.max(
-    Math.floor((l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2)) * MinimalPourInv - 0.5) /
+    (Math.floor((l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2)) * MinimalPourInv) - 0.5) /
       MinimalPourInv,
     0.0
   );
-  const result = computePlot([
-    createSetPosition(currentPoint.x, currentPoint.y),
-    createPourSolvent(approximatedPourLength),
-  ]).pendingPoints[0].bottleCollisions.find(isVortex);
-  if (result === undefined) {
-    logAddPourSolvent(approximatedPourLength - 1.0 / MinimalPourInv);
-    return;
-  }
   logAddPourSolvent(approximatedPourLength);
   return;
 }
