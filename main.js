@@ -383,7 +383,7 @@ function stirIntoVortex(preStirLength = 0.0, buffer = 1e-5) {
       const unit = getUnit(next.x - current.x, next.y - current.y);
       const l1 = unit.x * (nextVortex.x - current.x) + unit.y * (nextVortex.y - current.y);
       const l2 = -unit.y * (nextVortex.x - current.x) + unit.x * (nextVortex.y - current.y);
-      const vortexRadius = getTargetVortexInfo(nextVortex.x, nextVortex.y).r;
+      const vortexRadius = getTargetVortex(nextVortex.x, nextVortex.y).r;
       const approximatedLastStirLength = l1 - Math.sqrt(vortexRadius ** 2 - l2 ** 2);
       let finalStirLength = preStirLength + currentStirLength + approximatedLastStirLength;
       if (RoundStirring) {
@@ -434,7 +434,7 @@ function stirToVortexEdge(preStirLength = 0.0, buffer = 1e-5) {
   const unit = getUnit(next.x - current.x, next.y - current.y);
   const l1 = unit.x * (vortex.x - current.x) + unit.y * (vortex.y - current.y);
   const l2 = -unit.y * (vortex.x - current.x) + unit.x * (vortex.y - current.y);
-  const vortexRadius = getTargetVortexInfo(vortex.x, vortex.y).r;
+  const vortexRadius = getTargetVortex(vortex.x, vortex.y).r;
   const approximatedLastStirLength = l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2);
   const finalStirLength = preStirLength + stirLength + approximatedLastStirLength;
   if (RoundStirring) {
@@ -542,7 +542,7 @@ function stirToZone(options = {}) {
     preStirLength = 0.0,
     overStir = false,
     exitZone = false,
-    overStirBuffer = 1e-3,
+    overStirBuffer = 1e-5,
   } = options;
 
   let plot = currentPlot;
@@ -573,11 +573,11 @@ function stirToZone(options = {}) {
     }
   }
   if (RoundStirring) {
-    stirDistance =
-      Math.floor((stirDistance + overStirBuffer * (2 * overStir - 1)) * StirringUnitInverse) /
-      StirringUnitInverse;
+    logAddStirCauldron(
+      (Math.floor(stirDistance * StirringUnitInverse) + overStir) / StirringUnitInverse
+    );
   }
-  logAddStirCauldron(stirDistance);
+  logAddStirCauldron(stirDistance + overStirBuffer * (2 * overStir - 1));
   return;
 }
 
@@ -832,7 +832,7 @@ function pourToVortexEdge() {
  * @param {number} targetVortexY - The y-coordinate of the target vortex.
  */
 function pourIntoVortex(targetVortexX, targetVortexY) {
-  const vortex = getTargetVortexInfo(targetVortexX, targetVortexY);
+  const vortex = getTargetVortex(targetVortexX, targetVortexY);
   const current = extractCoordinate();
   const pourUnit = getUnit(-current.x, -current.y);
   const l1 = pourUnit.x * (vortex.x - current.x) + pourUnit.y * (vortex.y - current.y);
@@ -1271,7 +1271,7 @@ function getCurrentStirDirection(leastSegmentLength = 1e-9) {
  */
 function getCurrentVortexRadius() {
   const currentPoint = currentPlot.pendingPoints[0];
-  return getTargetVortexInfo(currentPoint.x || 0.0, currentPoint.y || 0.0).r;
+  return getTargetVortex(currentPoint.x || 0.0, currentPoint.y || 0.0).r;
 }
 
 /**
@@ -1281,7 +1281,7 @@ function getCurrentVortexRadius() {
  * @returns {{x:number, y:number, r:number}} An object containing the x and y
  * coordinates and the radius of the target vortex.
  */
-function getTargetVortexInfo(targetX, targetY) {
+function getTargetVortex(targetX, targetY) {
   const result = computePlot([
     createSetPosition(targetX, targetY),
   ]).pendingPoints[0].bottleCollisions.find(isVortex);
@@ -1514,7 +1514,7 @@ export {
   // Extraction of other informations.
   checkBase,
   getCurrentVortexRadius,
-  getTargetVortexInfo,
+  getTargetVortex,
   // Complex subroutines.
   straighten,
   // Utilities.
