@@ -9,7 +9,7 @@ import {
   degToRad,
   radToDeg,
   saltToDeg,
-  getDirectionByVector,
+  vecToDirCoord,
   checkBase,
   straighten,
   getTotalSun,
@@ -33,7 +33,7 @@ function beta() {
   stirToTurn();
   const x2 = currentPlot.pendingPoints[0].x;
   const y2 = currentPlot.pendingPoints[0].y;
-  console.log("Direction of concave part: " + radToDeg(getDirectionByVector(x2 - x1, y2 - y1)));
+  console.log("Direction of concave part: " + radToDeg(vecToDirCoord(x2 - x1, y2 - y1)));
   const s1 = Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36);
   straighten(direction, "sun", { maxGrains: s1 });
   logAddStirCauldron(0.7);

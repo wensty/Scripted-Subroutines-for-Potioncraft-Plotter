@@ -8,7 +8,7 @@ import {
   stirToTurn,
   pourToZone,
   degToRad,
-  getDirectionByVector,
+  vecToDirCoord,
   getBottlePolarAngle,
   getBottlePolarAngleByEntity,
   getCurrentStirDirection,
@@ -30,10 +30,7 @@ function beta() {
   logAddPourSolvent(1.85);
   straighten(a1 - Math.PI / 2, Salt.Sun, { maxGrains: 129 });
   const d1 =
-    getDirectionByVector(
-      3.88 - currentPlot.pendingPoints[0].x,
-      4.15 - currentPlot.pendingPoints[0].y
-    ) +
+    vecToDirCoord(3.88 - currentPlot.pendingPoints[0].x, 4.15 - currentPlot.pendingPoints[0].y) +
     Math.PI / 2;
   console.log(d1);
   stirIntoVortex();
@@ -46,7 +43,7 @@ function beta() {
   stirToTurn({ preStirLength: 8.3 });
   const x2 = currentPlot.pendingPoints[0].x;
   const y2 = currentPlot.pendingPoints[0].y;
-  straighten(getDirectionByVector(x2 - x1, y2 - y1), Salt.Sun, { maxGrains: 501 - getTotalSun() });
+  straighten(vecToDirCoord(x2 - x1, y2 - y1), Salt.Sun, { maxGrains: 501 - getTotalSun() });
   stirToTurn();
   const a2 = getBottlePolarAngle();
   console.log("a2: " + a2);
@@ -68,7 +65,7 @@ function beta() {
   logAddStirCauldron(8.4);
   const x4 = currentPlot.pendingPoints[0].x;
   const y4 = currentPlot.pendingPoints[0].y;
-  straighten(getDirectionByVector(x4 - x3, y4 - y3) + degToRad(0), Salt.Sun, {
+  straighten(vecToDirCoord(x4 - x3, y4 - y3) + degToRad(0), Salt.Sun, {
     maxGrains: 835 - getTotalSun(),
   });
   logAddStirCauldron(Infinity);

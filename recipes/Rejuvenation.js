@@ -17,7 +17,7 @@ import {
   degToRad,
   radToDeg,
   saltToDeg,
-  getDirectionByVector,
+  vecToDirCoord,
   getBottlePolarAngle,
   getBottlePolarAngleByEntity,
   getCurrentStirDirection,
@@ -155,7 +155,7 @@ const recipes = {
       });
       const { x: x2, y: y2 } = currentPlot.pendingPoints[0];
       setDisplay(false);
-      console.log(radToDeg(getDirectionByVector(x2 - x1, y2 - y1)));
+      console.log(radToDeg(vecToDirCoord(x2 - x1, y2 - y1)));
       stirIntoVortex(5.9);
       console.log(radToDeg(getBottlePolarAngleByEntity()) - 180);
       logAddHeatVortex(3);

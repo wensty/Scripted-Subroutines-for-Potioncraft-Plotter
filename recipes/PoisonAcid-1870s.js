@@ -9,7 +9,7 @@ import {
   heatAndPourToEdge,
   derotateToAngle,
   degToRad,
-  getDirectionByVector,
+  vecToDirCoord,
   getBottlePolarAngleByEntity,
   checkBase,
   straighten,
@@ -25,18 +25,18 @@ function beta() {
   logAddSunSalt(408);
   logSkirt();
   logAddSunSalt(360);
-  const av = getDirectionByVector(-18.93, -16.34);
+  const av = vecToDirCoord(-18.93, -16.34);
   console.log("av:" + av);
   logAddStirCauldron(4.8);
   const x1 = currentPlot.pendingPoints[0].x;
   const y1 = currentPlot.pendingPoints[0].y;
-  const av2 = getDirectionByVector(-18.93 - x1, -16.34 - y1);
+  const av2 = vecToDirCoord(-18.93 - x1, -16.34 - y1);
   console.log("av2:" + av2);
   straighten(av2, Salt.Sun, { maxStir: 1, maxGrains: 349 });
   stirToTurn({ preStirLength: 8 });
   const x2 = currentPlot.pendingPoints[0].x;
   const y2 = currentPlot.pendingPoints[0].y;
-  const av3 = getDirectionByVector(-18.93 - x2, -16.34 - y2);
+  const av3 = vecToDirCoord(-18.93 - x2, -16.34 - y2);
   console.log("av3:" + av3);
   straighten(av2, Salt.Sun, { maxGrains: 384, ignoreReverse: false });
   stirIntoVortex(3);

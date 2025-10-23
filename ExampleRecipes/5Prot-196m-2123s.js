@@ -17,7 +17,7 @@ import {
   heatAndPourToEdge,
   derotateToAngle,
   degToRad,
-  getDirectionByVector,
+  vecToDirCoord,
   getBottlePolarAngle,
   getBottlePolarAngleByEntity,
   getCurrentStirDirection,
@@ -79,7 +79,7 @@ function beta() {
   const x = currentPlot.pendingPoints[0].x;
   const y = currentPlot.pendingPoints[0].y;
   console.log(getBottlePolarAngle() + Math.PI / 2);
-  console.log(getDirectionByVector(28.91 - x, 1.7 - y));
+  console.log(vecToDirCoord(28.91 - x, 1.7 - y));
   logAddSunSalt(80);
   logSkirt();
   logAddSunSalt(10);
@@ -87,8 +87,8 @@ function beta() {
   const x2 = currentPlot.pendingPoints[0].x;
   const y2 = currentPlot.pendingPoints[0].y;
   console.log(getCurrentStirDirection());
-  console.log(getDirectionByVector(x2 - x, y2 - y));
-  straighten(getDirectionByVector(28.91 - x2, 1.7 - y2), "sun", { maxGrains: 345 });
+  console.log(vecToDirCoord(x2 - x, y2 - y));
+  straighten(vecToDirCoord(28.91 - x2, 1.7 - y2), "sun", { maxGrains: 345 });
   // Fire protection.
   stirToTier(Effects.Oil.FireProtection, {
     preStir: 7.6,
@@ -178,7 +178,7 @@ function beta() {
   logAddStirCauldron(1);
   const x3 = currentPlot.pendingPoints[0].x;
   const y3 = currentPlot.pendingPoints[0].y;
-  straighten(getDirectionByVector(-20.8 - x3, 5.34 - y3), "sun", { maxStir: 1.6 });
+  straighten(vecToDirCoord(-20.8 - x3, 5.34 - y3), "sun", { maxStir: 1.6 });
   stirIntoVortex();
   logAddHeatVortex(4);
   pourToVortexEdge();

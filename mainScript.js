@@ -228,11 +228,11 @@ const vRot = (v, angle) => ({
   y: v.x * Math.sin(angle) + v.y * Math.cos(angle),
 });
 /** @type {(v: {x: number, y: number}) => {x: number, y: number}} */
-const vRot90 = (v) => ({ x: v.y, y: -v.x });
+const vRot90 = (v) => ({ x: -v.y, y: v.x });
 /** @type {(v: {x: number, y: number}) => {x: number, y: number}} */
 const vNeg = (v) => ({ x: -v.x, y: -v.y });
 /** @type {(v: {x: number, y: number}) => {x: number, y: number}} */
-const vRot270 = (v) => ({ x: -v.y, y: v.x });
+const vRot270 = (v) => ({ x: v.y, y: -v.x });
 
 /**
  * Calculates the intersection points of a line defined by a point and direction, and a circle.
@@ -425,7 +425,7 @@ function stirIntoVortex(preStir = 0.0, buffer = 1e-5) {
       let stir =
         preStir +
         currentStirLength +
-        intersectCircle(getTargetVortexPoint(vortex), current, getUnitV(vSub(next, current))).d1;
+        intersectCircle(getTargetVortexPoint(vortex), current, unitV(vSub(next, current))).d1;
       if (RoundStirring) {
         logAddStirCauldron(Math.ceil(stir * StirUnitInv) / StirUnitInv);
         return;
@@ -472,7 +472,7 @@ function stirToVortexEdge(preStir = 0.0, buffer = 1e-5) {
   }
   const current = extractCoordinate(pendingPoints[index - 1]);
   const next = extractCoordinate(pendingPoints[index]);
-  const iC = intersectCircle(vortex, current, getUnit(next.x - current.x, next.y - current.y));
+  const iC = intersectCircle(vortex, current, unit(next.x - current.x, next.y - current.y));
   const stir = preStir + stirLength + iC.d2;
   if (RoundStirring) {
     logAddStirCauldron(Math.floor(stir * StirUnitInv) / StirUnitInv);
@@ -528,7 +528,7 @@ function stirToTurn(options = {}) {
         break;
       }
     }
-    const nextUnit = getUnitV(vSub(pendingPoints[j], pendingPoints[i]));
+    const nextUnit = unitV(vSub(pendingPoints[j], pendingPoints[i]));
     if (currentUnit != undefined && vIProd(currentUnit, nextUnit) < minCosine) {
       if (RoundStirring) {
         logAddStirCauldron(Math.ceil((preStirLength + stirLength) * StirUnitInv) / StirUnitInv);
@@ -667,7 +667,7 @@ function stirToNearestTarget(target, options = {}) {
       isLastSegment = true;
     }
     const next = extractCoordinate(pendingPoints[j]);
-    const nextUnit = getUnitV(vSub(next, current));
+    const nextUnit = unitV(vSub(next, current));
     const lastStir = vIProd(nextUnit, vSub(target, current));
     if (lastStir > nextSegmentLength) {
       const nextDistance = vMag(vSub(target, next));
@@ -730,9 +730,7 @@ function stirToTier(target, options = {}) {
   let angleDeviation = 0.0;
   if (!ignoreAngle) {
     const currentAngle = -currentPoint.angle || 0.0;
-    const angleDelta = radToDeg(
-      Math.abs(getRelativeDirection(degToRad(currentAngle), degToRad(target.angle)))
-    );
+    const angleDelta = radToDeg(Math.abs(relDir(degToRad(currentAngle), degToRad(target.angle))));
     angleDeviation = angleDelta * (100.0 / 12.0);
     if (angleDeviation >= deviation) {
       logError("stir to tier", "too much angle deviation.");
@@ -757,7 +755,7 @@ function stirToTier(target, options = {}) {
     const iC = intersectCircle(
       { x: target.x, y: target.y, r: tierRadius },
       currentPoint,
-      getUnitV(vSub(nextPoint, currentPoint))
+      unitV(vSub(nextPoint, currentPoint))
     );
     if (iC != undefined && iC.d1 >= 0.0 && iC.d1 < pointDistance(currentPoint, nextPoint)) {
       stir += iC.d1 + preStir;
@@ -803,7 +801,7 @@ function pourToVortexEdge() {
     return;
   }
   const current = extractCoordinate(currentPoint);
-  const pour = intersectCircle(vortex, current, getUnitV(vNeg(current))).d2;
+  const pour = intersectCircle(vortex, current, unitV(vNeg(current))).d2;
   logAddPourSolvent((Math.floor(pour * MinimalPourInv) - 0.5) / MinimalPourInv);
   return;
 }
@@ -817,7 +815,7 @@ function pourToVortexEdge() {
 function pourIntoVortex(x, y) {
   const current = extractCoordinate();
   const vortex = getTargetVortex(x, y);
-  const iC = intersectCircle(vortex, current, getUnitV(vSub(vortex, current)));
+  const iC = intersectCircle(vortex, current, unitV(vSub(vortex, current)));
   if (iC === undefined || iC.d2 < 0.0) {
     logError(
       "pouring into target vortex",
@@ -841,27 +839,24 @@ function heatAndPourToEdge(maxHeat, repeats) {
     logError("pouring to edge", "bottle not in a vortex.");
     return;
   }
-  // const vortexRadius = getCurrentVortexRadius
   const vortexRadius = getTargetVortexPoint(vortexCenter).r;
   const c = 0.17; // the coefficient of the archimedean spiral formed by the vortex.
-  const vortexDistance = Math.sqrt(vortexCenter.x ** 2 + vortexCenter.y ** 2);
-  const cosTheta = vortexRadius / vortexDistance;
-  const sinTheta = Math.sqrt(vortexDistance ** 2 - vortexRadius ** 2) / vortexDistance;
-  const vortexUnit = getUnit(-vortexCenter.x, -vortexCenter.y);
-  const edgeLimit = {
-    x: cosTheta * vortexUnit.x + sinTheta * vortexUnit.y,
-    y: -sinTheta * vortexUnit.x + cosTheta * vortexUnit.y,
-  };
+  const vortexDistance = vMag(vortexCenter);
+  const alpha = Math.acos(vortexRadius / vortexDistance);
+  const edgeLimit = unitV(vRot(vNeg(vortexCenter), -alpha));
   for (let i = 0; i < repeats; i++) {
-    const { x, y } = extractCoordinate();
+    const point = extractCoordinate();
     let maxLength = Infinity;
-    if (edgeLimit.x * (x - vortexCenter.x) + edgeLimit.y * (y - vortexCenter.y) > 0) {
-      maxLength = -edgeLimit.y * (x - vortexCenter.x) + edgeLimit.x * (y - vortexCenter.y);
-      maxLength = maxLength - c;
+    if (vIProd(edgeLimit, vSub(point, vortexCenter)) > 0) {
+      maxLength = vIProd(vRot90(edgeLimit), vSub(point, vortexCenter)) - c;
       if (maxLength < 0) {
         break;
       }
-      maxLength = maxLength * 0.75; // plotter do not support *= operand.
+      /**
+       * buffer.
+       * online plotter do not support *= operand.
+       */
+      maxLength = maxLength * 0.75;
       maxLength = (Math.floor(maxLength * MinimalPourInv) - 0.5) / MinimalPourInv;
     }
     logAddHeatVortex(Math.min(maxHeat, maxLength));
@@ -1026,7 +1021,7 @@ function pourUntilAngle(targetAngle, options = {}) {
 }
 
 /**
- * Utilities for angle conversion and direction calculation.
+ * Utility for angle conversions and vector-direction conversions.
  */
 
 /**
@@ -1105,20 +1100,19 @@ function saltToRad(salt, grains) {
 
 /**
  * Calculates the unit vector for the given 2D vector (x, y).
- * @param {number} x The x-component of the vector.
- * @param {number} y The y-component of the vector.
+ * @param {{x: number, y: number}} v The 2D vector.
  * @returns {{x: number, y: number}} The unit vector with components x and y.
  */
-function getUnit(x, y) {
-  if (Math.abs(x) < 1e-12 && Math.abs(y) < 1e-12) {
-    logError("getting unit", "zero vector.");
+function unitV(v) {
+  const mag = vMag(v);
+  if (mag < 1e-9) {
+    logError("getting unit", "zero vector given.");
     return;
-  } else {
-    return { x: x / Math.sqrt(x ** 2 + y ** 2), y: y / Math.sqrt(x ** 2 + y ** 2) };
   }
+  return { x: v.x / mag, y: v.y / mag };
 }
-/** @type {(v: {x: number, y: number}) => {x: number, y: number}} */
-const getUnitV = (v) => getUnit(v.x, v.y);
+/** @type {(x: number, y: number) => {x: number, y: number}} */
+const unit = (x, y) => unitV({ x, y });
 
 /**
  * Computes a 2D vector from a direction angle and an optional base direction angle.
@@ -1126,7 +1120,7 @@ const getUnitV = (v) => getUnit(v.x, v.y);
  * @param {number} [baseDirection=0.0] The base direction angle in radians
  * @returns {{x: number, y: number}} The 2D vector with components x and y
  */
-function getVectorByDirection(direction, baseDirection = 0.0) {
+function dirToVec(direction, baseDirection = 0.0) {
   return { x: Math.sin(baseDirection + direction), y: Math.cos(baseDirection + direction) };
 }
 
@@ -1138,7 +1132,7 @@ function getVectorByDirection(direction, baseDirection = 0.0) {
  * @param {number} baseDirection The base direction angle in radians
  * @returns {number} The relative direction between the two angles in radians
  */
-function getRelativeDirection(direction, baseDirection) {
+function relDir(direction, baseDirection) {
   let relativeDirection = direction - baseDirection;
   relativeDirection -= 2 * Math.PI * Math.round(relativeDirection / (2 * Math.PI));
   return relativeDirection;
@@ -1147,37 +1141,28 @@ function getRelativeDirection(direction, baseDirection) {
 /**
  * Computes the direction angle of a 2D vector relative to a base direction.
  *
- * @param {number} x The x component of the vector
- * @param {number} y The y component of the vector
+ * @param {{x: number, y: number}} v The 2D vector
  * @param {number} [baseDirection=0.0] The base direction angle in radians from which
  *   the vector's direction is calculated
  * @returns {number} The angle of the vector in radians, relative to the base direction
  */
-function getDirectionByVector(x, y, baseDirection = 0.0) {
-  const unit = getUnit(x, y);
-  const relX = unit.x * Math.cos(baseDirection) - unit.y * Math.sin(baseDirection);
-  const relY = unit.y * Math.cos(baseDirection) + unit.x * Math.sin(baseDirection);
-  let angle = Math.asin(relX);
-  if (relY < 0) {
-    if (angle >= 0) {
-      angle = Math.PI - angle;
-    } else {
-      angle = -Math.PI - angle;
-    }
+function vecToDir(v, baseDirection = 0.0) {
+  const unit = unitV(v);
+  const rel = vRot(unit, baseDirection);
+  let angle = Math.acos(rel.y);
+  if (rel.x < 0) {
+    angle = -angle;
   }
   return angle;
 }
+/** @type {(x: number, y: number, baseDirection?: number) => number} */
+function vecToDirCoord(x, y, baseDirection = 0.0) {
+  return vecToDir({ x, y }, baseDirection);
+}
+
 /**
- * Computes the direction angle of a line segment from its start to end points, relative to a base direction.
- *
- * @param {{x: number, y: number}} start The start point of the line segment
- * @param {{x: number, y: number}} end The end point of the line segment
- * @param {number} [baseDirection=0.0] The base direction angle in radians from which
- *   the line segment's direction is calculated
- * @returns {number} The angle of the line segment in radians, relative to the base direction
+ * Utilities to retrieve useful information.
  */
-const getDirectionByVectorStartEnd = (start, end, baseDirection) =>
-  getDirectionByVector(end.x - start.x, end.y - start.y, baseDirection);
 
 /**
  * Computes the direction angle of the current bottle position.
@@ -1194,7 +1179,7 @@ function getBottlePolarAngle(toBottle = true) {
     x = -x;
     y = -y;
   }
-  return getDirectionByVector(x, y);
+  return vecToDirCoord(x, y);
 }
 
 /**
@@ -1225,7 +1210,7 @@ function getBottlePolarAngleByEntity(expectedEntityTypes = Entity.Vortex, toBott
     delta.x = -delta.x;
     delta.y = -delta.y;
   }
-  return getDirectionByVector(delta.x, delta.y);
+  return vecToDirCoord(delta.x, delta.y);
 }
 
 /**
@@ -1249,12 +1234,9 @@ function getCurrentStirDirection(segmentLength = 1e-9) {
     return 0.0;
   } // Did not find a pendingPoints that is not the current point.
   const to = extractCoordinate(pendingPoints[i]);
-  return getDirectionByVectorStartEnd(from, to);
+  // return getDirectionByVectorStartEnd(from, to);
+  return vecToDir(vSub(to, from));
 }
-
-/**
- * Other utilities
- */
 
 /**
  * Retrieves the radius of the current vortex.
@@ -1302,6 +1284,10 @@ function getTargetVortex(x, y) {
  * coordinates and the radius of the target vortex.
  */
 const getTargetVortexPoint = (point) => getTargetVortex(point.x || 0.0, point.y || 0.0);
+
+/**
+ * Utilities to get the variable salt counter outside this file.
+ */
 
 /**
  * Returns the total amount of Sun Salt added so far.
@@ -1352,22 +1338,22 @@ function straighten(direction, salt, options = {}) {
   let nextStirLength = 0.0;
   let nextSegmentLength = 0.0;
   let totalGrains = 0;
-  let currentIndex = 0;
   let pendingPoints = computePlot(
     currentRecipeItems.concat([createStirCauldron(preStir)])
   ).pendingPoints;
   let lastSegment = false;
   let _preStirLength = preStir;
+  let i = 0;
   while (!lastSegment) {
-    const current = extractCoordinate(pendingPoints[currentIndex]);
-    let nextIndex = currentIndex;
+    const current = extractCoordinate(pendingPoints[i]);
+    let j = i;
     while (true) {
-      nextIndex += 1;
-      if (nextIndex >= pendingPoints.length) {
+      j += 1;
+      if (j >= pendingPoints.length) {
         lastSegment = true;
         break;
       }
-      nextSegmentLength += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
+      nextSegmentLength += pointDistance(pendingPoints[j - 1], pendingPoints[j]);
       if (nextSegmentLength > segmentLength) {
         break;
       }
@@ -1375,8 +1361,8 @@ function straighten(direction, salt, options = {}) {
     if (nextSegmentLength <= segmentLength) {
       continue;
     }
-    const next = extractCoordinate(pendingPoints[nextIndex]);
-    const nextDirection = getDirectionByVector(next.x - current.x, next.y - current.y, direction);
+    const nextDirection = vecToDir(vSub(pendingPoints[j], current), direction);
+
     let grains;
 
     if (salt == "moon") {
@@ -1410,7 +1396,7 @@ function straighten(direction, salt, options = {}) {
         logAddStirCauldron(nextStirLength);
         stirredLength += nextStirLength;
       }
-      currentIndex = 0;
+      i = 0;
       nextSegmentLength = 0.0;
       nextStirLength = 0.0;
       if (totalGrains + grains >= maxGrains) {
@@ -1441,9 +1427,8 @@ function straighten(direction, salt, options = {}) {
         logAddStirCauldron(nextStirLength);
         console.log("Straignten terminated by maximal length stirred.");
         break;
-      } else {
-        currentIndex = nextIndex;
       }
+      i = j;
     }
   }
   if (lastSegment) {
@@ -1496,18 +1481,18 @@ export {
   pourIntoVortex,
   derotateToAngle,
   pourUntilAngle,
-  // Angle conversions.
+  // Conversions between angles, 2D vectors and directions.
   degToRad,
   radToDeg,
   degToSalt,
   radToSalt,
   saltToDeg,
   saltToRad,
+  vecToDir,
+  vecToDirCoord,
+  dirToVec,
+  relDir,
   // Angle and direction extractions.
-  getDirectionByVector,
-  getVectorByDirection,
-  getDirectionByVectorStartEnd,
-  getRelativeDirection,
   getBottlePolarAngle,
   getBottlePolarAngleByEntity,
   getCurrentStirDirection,
@@ -1518,7 +1503,17 @@ export {
   // Complex subroutines.
   straighten,
   // Utilities.
-  getUnit,
+  vMag,
+  vAdd,
+  vSub,
+  vIProd,
+  vCProd,
+  vRot,
+  vRot90,
+  vNeg,
+  vRot270,
+  unitV,
+  unit,
   getTotalMoon,
   getTotalSun,
   setDisplay,

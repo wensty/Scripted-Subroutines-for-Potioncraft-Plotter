@@ -12,7 +12,7 @@ import {
   heatAndPourToEdge,
   derotateToAngle,
   degToRad,
-  getDirectionByVector,
+  vecToDirCoord,
   checkBase,
   straighten,
   getTotalSun,
@@ -72,7 +72,7 @@ function bete() {
   stirToTurn();
   const x2 = currentPlot.pendingPoints[0].x;
   const y2 = currentPlot.pendingPoints[0].y;
-  straighten(getDirectionByVector(x2 - x1, y2 - y1), "sun", { maxGrains: 94 });
+  straighten(vecToDirCoord(x2 - x1, y2 - y1), "sun", { maxGrains: 94 });
   stirIntoVortex();
   derotateToAngle(96.5);
   logAddHeatVortex(Infinity);

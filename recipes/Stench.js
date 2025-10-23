@@ -16,7 +16,7 @@ import {
   derotateToAngle,
   degToRad,
   saltToDeg,
-  getDirectionByVector,
+  vecToDirCoord,
   getBottlePolarAngle,
   getBottlePolarAngleByEntity,
   getCurrentStirDirection,
@@ -65,7 +65,7 @@ const recipes = {
       logAddStirCauldron(9.8);
       const { x: x2, y: y2 } = currentPlot.pendingPoints[0];
       console.log(getCurrentStirDirection());
-      console.log(getDirectionByVector(x2 - x1, y2 - y1));
+      console.log(vecToDirCoord(x2 - x1, y2 - y1));
       console.log(degToRad(a));
       straighten(degToRad(a), Salt.Sun, { maxGrains: 300, maxStir: 0.73 });
       logAddSunSalt(Math.ceil((currentPlot.pendingPoints[0].angle + 180.01) / 0.36));

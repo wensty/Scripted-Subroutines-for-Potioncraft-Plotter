@@ -10,7 +10,7 @@ import {
   derotateToAngle,
   degToRad,
   saltToDeg,
-  getDirectionByVector,
+  vecToDirCoord,
   getBottlePolarAngleByEntity,
   checkBase,
   straighten,
@@ -30,7 +30,7 @@ function main() {
   logAddHeatVortex(Infinity);
   straighten(degToRad(17.4), "sun", { maxStir: 3 }); // Distance specified straightening.
   logAddStirCauldron(6);
-  let direction = getDirectionByVector(
+  let direction = vecToDirCoord(
     29.63 - currentPlot.pendingPoints[0].x,
     21.91 - currentPlot.pendingPoints[0].y
   );
@@ -64,12 +64,12 @@ function beta() {
   const x = currentPlot.pendingPoints[0].x;
   const y = currentPlot.pendingPoints[0].y;
   // logAddStirCauldron(3.3);
-  let direction = getDirectionByVector(29.63 - x, 21.91 - y) + degToRad(4.8);
+  let direction = vecToDirCoord(29.63 - x, 21.91 - y) + degToRad(4.8);
   stirToTurn();
   const x2 = currentPlot.pendingPoints[0].x;
   const y2 = currentPlot.pendingPoints[0].y;
   console.log(direction);
-  console.log(getDirectionByVector(x2 - x, y2 - y));
+  console.log(vecToDirCoord(x2 - x, y2 - y));
 
   // Salt specified straightening. Defalt option is not ignoring the reverse direction.
   straighten(direction, "sun", { maxGrains: 369, ignoreReverse: false });

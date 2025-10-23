@@ -8,7 +8,7 @@ import {
   pourToZoneV2,
   degToRad,
   radToDeg,
-  getDirectionByVector,
+  vecToDirCoord,
   checkBase,
   straighten,
   getTotalSun,
@@ -37,7 +37,7 @@ const recipes = {
       const { x: x1, y: y1 } = currentPlot.pendingPoints[0];
       stirToTurn({ preStirLength: 9 });
       const { x: x2, y: y2 } = currentPlot.pendingPoints[0];
-      console.log(radToDeg(getDirectionByVector(x2 - x1, y2 - y1)));
+      console.log(radToDeg(vecToDirCoord(x2 - x1, y2 - y1)));
       straighten(degToRad(-19.7), Salt.Sun, { maxGrains: 349 - getTotalSun() });
       logAddStirCauldron(8.6);
       // along the skull near origin.

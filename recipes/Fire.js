@@ -6,7 +6,7 @@ import {
   stirToNearestTarget,
   degToRad,
   radToDeg,
-  getDirectionByVector,
+  vecToDirCoord,
   getCurrentStirDirection,
   straighten,
   getTotalSun,
@@ -34,7 +34,7 @@ const recipes = {
       logAddStirCauldron(4.9);
       const a1 = getCurrentStirDirection();
       const { x, y } = currentPlot.pendingPoints[0];
-      const a2 = getDirectionByVector(-11.65 - x, -0.98 - y);
+      const a2 = vecToDirCoord(-11.65 - x, -0.98 - y);
       console.log(a1);
       console.log(a2);
       console.log(radToDeg(a2));

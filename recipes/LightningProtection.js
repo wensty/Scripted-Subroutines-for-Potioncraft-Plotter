@@ -18,7 +18,7 @@ import {
   derotateToAngle,
   degToRad,
   radToDeg,
-  getDirectionByVector,
+  vecToDirCoord,
   getBottlePolarAngle,
   getBottlePolarAngleByEntity,
   getCurrentStirDirection,
@@ -57,7 +57,7 @@ const recipes = {
       stirToTurn();
       const x2 = currentPlot.pendingPoints[0].x;
       const y2 = currentPlot.pendingPoints[0].y;
-      const d = getDirectionByVector(x2 - x1, y2 - y1);
+      const d = vecToDirCoord(x2 - x1, y2 - y1);
       straighten(d, Salt.Sun, {
         maxStir: 4,
         maxGrains: Math.ceil((currentPlot.pendingPoints[0].angle + 180.01) / 0.36),

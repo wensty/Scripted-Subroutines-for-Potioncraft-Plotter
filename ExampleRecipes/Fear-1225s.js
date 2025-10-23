@@ -8,7 +8,7 @@ import {
   pourToZone,
   derotateToAngle,
   degToRad,
-  getRelativeDirection,
+  relDir,
   getBottlePolarAngle,
   getCurrentStirDirection,
   checkBase,
@@ -42,7 +42,7 @@ function main() {
   for (let i = 0; i < 39; i++) {
     const bottlePolarAngle = getBottlePolarAngle();
     const currentDirection = getCurrentStirDirection();
-    const relativeDirection = getRelativeDirection(currentDirection, bottlePolarAngle);
+    const relativeDirection = relDir(currentDirection, bottlePolarAngle);
     if (relativeDirection < -SaltAngle / 2) {
       logAddSunSalt(Math.round(-relativeDirection / SaltAngle));
     }
@@ -83,7 +83,7 @@ function beta_1226s() {
   for (let i = 0; i < 43; i++) {
     const bottlePolarAngle = getBottlePolarAngle();
     const currentDirection = getCurrentStirDirection();
-    const relativeDirection = getRelativeDirection(currentDirection, bottlePolarAngle);
+    const relativeDirection = relDir(currentDirection, bottlePolarAngle);
     if (relativeDirection < -SaltAngle / 2) {
       logAddSunSalt(Math.round(-relativeDirection / SaltAngle));
     }
