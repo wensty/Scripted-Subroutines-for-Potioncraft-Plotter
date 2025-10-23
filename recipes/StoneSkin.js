@@ -20,10 +20,7 @@ const recipes = {
     version: 3,
     base: "water",
     tier: 3,
-    Ingredients: {
-      Goldthorn: 1,
-      DruidsRosemary: 1,
-    },
+    Ingredients: { Goldthorn: 1, DruidsRosemary: 1 },
     Salts: {},
     script: () => {
       checkBase("water");

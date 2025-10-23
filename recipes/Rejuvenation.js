@@ -39,12 +39,8 @@ const recipes = {
     version: 3,
     base: "water",
     tier: 3,
-    Ingredients: {
-      PhantomSkirt: 3,
-    },
-    Salts: {
-      SunSalt: 1149,
-    },
+    Ingredients: { PhantomSkirt: 3 },
+    Salts: { SunSalt: 1149 },
     script: () => {
       checkBase("water");
       logSkirt();
@@ -70,10 +66,10 @@ const recipes = {
       pourToVortexEdge();
       heatAndPourToEdge(0.2, 7);
       logAddHeatVortex(0);
-      logAddStirCauldron(3.15);
-      logAddSunSalt(42);
+      stirToZone();
+      logAddSunSalt(43);
       stirToDangerZoneExit(2);
-      logAddSunSalt(18);
+      logAddSunSalt(17);
       stirIntoVortex(1);
       logAddStirCauldron(0.345);
       logAddHeatVortex(4);
@@ -143,15 +139,15 @@ const recipes = {
       heatAndPourToEdge(1, 5);
       derotateToAngle(0);
       logAddHeatVortex(3.38);
-      stirToZone({ preStirLength: 2.0, exitZone: true, overStir: true });
+      stirToZone({ preStir: 2.0, exitZone: true, overStir: true });
       logAddSunSalt(128);
-      stirToZone({ preStirLength: 2.3, exitZone: true, overStir: true });
+      stirToZone({ preStir: 2.3, exitZone: true, overStir: true });
       // stirToZone()
       const { x: x1, y: y1 } = currentPlot.pendingPoints[0];
       logAddSunSalt(116);
       stirToTurn();
       logAddSunSalt(pre);
-      stirToZone({ preStirLength: 1.4, exitZone: true, overStir: true });
+      stirToZone({ preStir: 1.4, exitZone: true, overStir: true });
       // logAddSunSalt(47)
       straighten(degToRad(-177.2), Salt.Sun, {
         preStir: 2.8,

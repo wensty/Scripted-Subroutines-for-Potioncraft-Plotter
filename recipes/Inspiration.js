@@ -25,14 +25,8 @@ const recipes = {
     version: 3,
     base: "wine",
     tier: 3,
-    Ingredients: {
-      PhantomSkirt: 1,
-      FrostSapphire: 1,
-    },
-    Salts: {
-      MoonSalt: 304,
-      SunSalt: 349,
-    },
+    Ingredients: { PhantomSkirt: 1, FrostSapphire: 1 },
+    Salts: { MoonSalt: 304, SunSalt: 349 },
     script: () => {
       checkBase("wine");
       logSkirt(0.782);

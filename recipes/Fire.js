@@ -24,12 +24,8 @@ const recipes = {
     version: 3,
     base: "oil",
     tier: 3,
-    Ingredients: {
-      MagmaMorel: 1,
-    },
-    Salts: {
-      SunSalt: 156,
-    },
+    Ingredients: { MagmaMorel: 1 },
+    Salts: { SunSalt: 156 },
     script: () => {
       checkBase("oil");
       logAddSunSalt(22);

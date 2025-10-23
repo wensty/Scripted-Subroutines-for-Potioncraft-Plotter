@@ -29,13 +29,8 @@ const recipes = {
     desc: "",
     base: "water",
     tier: 3,
-    Ingredients: {
-      RainbowCap: 1,
-    },
-    Salts: {
-      MoonSalt: 103,
-      SunSalt: 27,
-    },
+    Ingredients: { RainbowCap: 1 },
+    Salts: { MoonSalt: 103, SunSalt: 27 },
     script: () => {
       checkBase("water");
       // setStirRounding(false)

@@ -45,7 +45,7 @@ function test_stir_to_zone_full_parameter() {
   logAddIngredient(Ingredients.Firebell);
   stirToZone({
     zone: Entity.StrongDangerZone,
-    preStirLength: 0.5,
+    preStir: 0.5,
     overStir: true,
     exitZone: false,
   });

@@ -20,19 +20,14 @@ const recipes = {
     version: 3,
     base: "wine",
     tier: 3,
-    Ingredients: {
-      PhantomSkirt: 1,
-    },
-    Salts: {
-      MoonSalt: 193,
-      SunSalt: 493,
-    },
+    Ingredients: { PhantomSkirt: 1 },
+    Salts: { MoonSalt: 193, SunSalt: 493 },
     script: () => {
       checkBase("wine");
       logSkirt(0.84);
       logAddStirCauldron(4.7);
       straighten(degToRad(85), Salt.Sun, { maxGrains: 328 });
-      stirToZone({ zone: Entity.DangerZone, preStirLength: 3, overStir: false });
+      stirToZone({ zone: Entity.DangerZone, preStir: 3, overStir: false });
       logAddSunSalt(20);
       straighten(degToRad(40), Salt.Sun, { preStir: 5, maxGrains: 145 });
       logAddStirCauldron(6.833);

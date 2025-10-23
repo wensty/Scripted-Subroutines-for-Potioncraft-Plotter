@@ -36,14 +36,8 @@ const recipes = {
     version: 3,
     base: "water",
     tier: 3,
-    Ingredients: {
-      PhantomSkirt: 2,
-    },
-    Salts: {
-      MoonSalt: 13,
-      SunSalt: 1819,
-      LifeSalt: 213,
-    },
+    Ingredients: { PhantomSkirt: 2 },
+    Salts: { MoonSalt: 13, SunSalt: 1819, LifeSalt: 213 },
     script: () => {
       checkBase("water");
       setDisplay(false);
@@ -104,7 +98,7 @@ const recipes = {
       stirToDangerZoneExit();
       console.log(currentPlot.committedPoints[currentPlot.committedPoints.length - 3].health);
       logAddMoonSalt(13);
-      stirToZone({ preStirLength: 4, overStir: false });
+      stirToZone({ preStir: 4, overStir: false });
       logAddSunSalt(28);
       // stirToDangerZoneExit(2)
       // console.log(currentPlot.ommittedPoints[currentPlot.committedPoints.length-3].health)

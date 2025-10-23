@@ -3,70 +3,33 @@
  */
 
 import {
-  logAddIngredient,
   logSkirt,
   logAddMoonSalt,
   logAddSunSalt,
-  logAddRotationSalt,
   logAddHeatVortex,
   logAddStirCauldron,
   logAddPourSolvent,
   logAddSetPosition,
-  isVortex,
   stirIntoVortex,
-  stirToVortexEdge,
   stirToTurn,
   stirToZone,
   stirToDangerZoneExit,
   stirToNearestTarget,
-  stirToTier,
-  stirToConsume,
-  pourToVortexEdge,
-  heatAndPourToEdge,
-  pourToZoneV2,
-  pourToZone,
-  pourIntoVortex,
   derotateToAngle,
-  pourUntilAngle,
   degToRad,
   radToDeg,
-  degToSalt,
-  radToSalt,
-  saltToDeg,
-  saltToRad,
   getDirectionByVector,
-  getVectorByDirection,
-  getRelativeDirection,
   getBottlePolarAngle,
   getBottlePolarAngleByEntity,
   getCurrentStirDirection,
   checkBase,
-  getCurrentVortexRadius,
-  getTargetVortex,
   straighten,
-  getUnit,
   getTotalMoon,
   getTotalSun,
-  setDisplay,
-  setStirRounding,
-  logError,
-  logSalt,
 } from "../mainScript";
-import {
-  SaltAngle,
-  VortexRadiusLarge,
-  VortexRadiusMedium,
-  VortexRadiusSmall,
-  DeviationT2,
-  DeviationT3,
-  DeviationT1,
-  Entity,
-  Salt,
-  Effects,
-} from "../mainScript";
+import { Salt, Effects } from "../mainScript";
 
-import { Ingredients, PotionBases } from "@potionous/dataset";
-import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
+import { currentPlot } from "@potionous/plot";
 
 const recipes = {
   r1: {
@@ -75,9 +38,8 @@ const recipes = {
     version: 3,
     base: "oil",
     tier: 3,
-    PhantomSkirt: 1,
-    MoonSalt: 242,
-    SunSalt: 1119,
+    Ingredients: { PhantomSkirt: 1 },
+    Salts: { MoonSalt: 242, SunSalt: 1119 },
     script: () => {
       checkBase("oil");
       const m1 = 156; // pre-rotation

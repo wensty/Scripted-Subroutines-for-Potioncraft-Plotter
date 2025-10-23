@@ -23,12 +23,8 @@ const recipes = {
     version: 3,
     base: "water",
     tier: 3,
-    Ingredients: {
-      PhantomSkirt: 1,
-    },
-    Salts: {
-      SunSalt: 548,
-    },
+    Ingredients: { PhantomSkirt: 1 },
+    Salts: { SunSalt: 548 },
     script: () => {
       checkBase("oil");
       logSkirt();
