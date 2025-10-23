@@ -24,8 +24,8 @@ import {
   straighten,
   getTotalSun,
   setDisplay,
-} from "../main";
-import { Salt, Effects } from "../main";
+} from "../mainScript";
+import { Salt, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -73,7 +73,7 @@ const recipes = {
       console.log(getCurrentStirDirection());
       console.log(getDirectionByVector(x2 - x1, y2 - y1));
       console.log(degToRad(a));
-      straighten(degToRad(a), Salt.Sun, { maxGrains: 300, maxStirLength: 0.73 });
+      straighten(degToRad(a), Salt.Sun, { maxGrains: 300, maxStir: 0.73 });
       logAddSunSalt(Math.ceil((currentPlot.pendingPoints[0].angle + 180.01) / 0.36));
       logAddSunSalt(0);
       logAddPourSolvent(0.9);
@@ -100,7 +100,7 @@ const recipes = {
       logAddPourSolvent(0.776);
       logAddSunSalt(5);
       stirToTurn();
-      straighten(degToRad(-112), Salt.Sun, { maxStirLength: 2.5, maxGrains: 353 });
+      straighten(degToRad(-112), Salt.Sun, { maxStir: 2.5, maxGrains: 353 });
       stirToDangerZoneExit();
       console.log(currentPlot.committedPoints[currentPlot.committedPoints.length - 3].health);
       logAddMoonSalt(13);
@@ -111,9 +111,7 @@ const recipes = {
       stirIntoVortex(5);
       derotateToAngle(-135);
       logAddHeatVortex(4.435);
-      console.log(
-        stirToNearestTarget(Effects.Water.Stench, { preStirLength: 3.3, maxStirLength: 0.5 })
-      );
+      console.log(stirToNearestTarget(Effects.Water.Stench, { preStir: 3.3, maxStir: 0.5 }));
     },
   },
 };

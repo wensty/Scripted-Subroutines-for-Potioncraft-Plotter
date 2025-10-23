@@ -17,8 +17,8 @@ import {
   straighten,
   getTotalSun,
   setStirRounding,
-} from "../main";
-import { DeviationT1, Effects } from "../main";
+} from "../mainScript";
+import { DeviationT1, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -36,7 +36,7 @@ function bete() {
   heatAndPourToEdge(3, 5); // 3 empirical instruction.
   logAddHeatVortex(5.76);
   derotateToAngle(-95.5);
-  stirToTier(Effects.Water.Dexterity, { maxDeviation: DeviationT1, ignoreAngle: true });
+  stirToTier(Effects.Water.Dexterity, { deviation: DeviationT1, ignoreAngle: true });
 
   logAddPourSolvent(5.7);
   stirToDangerZoneExit();
@@ -47,7 +47,7 @@ function bete() {
   stirIntoVortex();
   derotateToAngle(0);
   logAddHeatVortex(Infinity);
-  straighten(degToRad(-135), "sun", { preStirLength: 0.2, maxGrains: 120 });
+  straighten(degToRad(-135), "sun", { preStir: 0.2, maxGrains: 120 });
   stirIntoVortex();
   derotateToAngle(0);
   logAddHeatVortex(5);
@@ -78,8 +78,8 @@ function bete() {
   logAddHeatVortex(Infinity);
   straighten(degToRad(-120), "sun", { maxGrains: 49 });
   stirToTier(Effects.Water.Rage, {
-    preStirLength: 5.0,
-    maxDeviation: DeviationT1,
+    preStir: 5.0,
+    deviation: DeviationT1,
     ignoreAngle: true,
   });
 }

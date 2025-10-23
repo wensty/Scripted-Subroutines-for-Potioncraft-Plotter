@@ -5,8 +5,8 @@ import {
   stirToNearestTarget,
   stirToTier,
   checkBase,
-} from "../main";
-import { DeviationT1, Effects } from "../main";
+} from "../mainScript";
+import { DeviationT1, Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -21,7 +21,7 @@ function test_stir_to_nearest_target() {
   logAddSunSalt(6);
   logAddStirCauldron(2.636);
   logAddSunSalt(3);
-  stirToNearestTarget(Effects.Oil.Healing, { preStirLength: 6.8, maxStirLength: 0.5 });
+  stirToNearestTarget(Effects.Oil.Healing, { preStir: 6.8, maxStir: 0.5 });
 }
 
 /**
@@ -33,8 +33,8 @@ function test_stir_to_nearest_target() {
 function test_stir_to_tier() {
   logAddIngredient(Ingredients.HealersHeather);
   stirToTier(Effects.Water.Healing, {
-    preStirLength: 7.0,
-    maxDeviation: DeviationT1,
+    preStir: 7.0,
+    deviation: DeviationT1,
     ignoreAngle: true,
   });
 }

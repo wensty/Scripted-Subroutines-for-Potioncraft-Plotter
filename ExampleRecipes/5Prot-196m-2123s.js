@@ -26,8 +26,8 @@ import {
   getTotalSun,
   setDisplay,
   setStirRounding,
-} from "../main";
-import { SaltAngle, DeviationT1, EntityPotionEffect, Effects } from "../main";
+} from "../mainScript";
+import { SaltAngle, DeviationT1, EntityPotionEffect, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -40,17 +40,17 @@ function beta() {
   logAddPourSolvent(Infinity);
   stirIntoVortex();
   logAddHeatVortex(Infinity);
-  straighten(degToRad(15.2), "sun", { maxStirLength: 2.8 });
+  straighten(degToRad(15.2), "sun", { maxStir: 2.8 });
   // winding the swamp
   logAddStirCauldron(6.1);
   logAddSunSalt(39);
   logAddStirCauldron(1.55);
   logAddSunSalt(81);
   stirToTurn();
-  straighten(degToRad(90), "sun", { maxStirLength: 0.8 });
+  straighten(degToRad(90), "sun", { maxStir: 0.8 });
   logAddSunSalt(73);
   straighten(getCurrentStirDirection(), "sun", {
-    maxStirLength: 1,
+    maxStir: 1,
     maxGrains: 780 - getTotalSun(),
   });
   // 780 sun into vortex.
@@ -91,8 +91,8 @@ function beta() {
   straighten(getDirectionByVector(28.91 - x2, 1.7 - y2), "sun", { maxGrains: 345 });
   // Fire protection.
   stirToTier(Effects.Oil.FireProtection, {
-    preStirLength: 7.6,
-    maxDeviation: DeviationT1,
+    preStir: 7.6,
+    deviation: DeviationT1,
     ignoreAngle: true,
   });
   console.log(getBottlePolarAngleByEntity(EntityPotionEffect) + Math.PI);
@@ -100,7 +100,7 @@ function beta() {
   logAddPourSolvent(7.8);
   logAddStirCauldron(4);
   stirToTurn();
-  straighten(getCurrentStirDirection(), "sun", { maxStirLength: 1.1, maxGrains: 64 });
+  straighten(getCurrentStirDirection(), "sun", { maxStir: 1.1, maxGrains: 64 });
   stirToDangerZoneExit();
   logAddPourSolvent(0.9);
   stirToDangerZoneExit();
@@ -118,7 +118,7 @@ function beta() {
   logAddPourSolvent(0.5);
   derotateToAngle(0);
   logAddHeatVortex(Infinity);
-  straighten(degToRad(-178), "sun", { maxStirLength: 3.8, maxGrains: 210 });
+  straighten(degToRad(-178), "sun", { maxStir: 3.8, maxGrains: 210 });
   stirToTurn();
   logAddSunSalt(139);
   stirIntoVortex();
@@ -126,8 +126,8 @@ function beta() {
   logAddSunSalt(150);
   // Acid protection.
   stirToTier(Effects.Oil.AcidProtection, {
-    preStirLength: 11.1,
-    maxDeviation: DeviationT1,
+    preStir: 11.1,
+    deviation: DeviationT1,
     ignoreAngle: true,
   });
   // part 3
@@ -145,8 +145,8 @@ function beta() {
   derotateToAngle(56.3);
   // Lightning Protection
   stirToTier(Effects.Oil.LightningProtection, {
-    preStirLength: 7.7,
-    maxDeviation: DeviationT1,
+    preStir: 7.7,
+    deviation: DeviationT1,
     ignoreAngle: true,
   });
   // return to origin.
@@ -178,7 +178,7 @@ function beta() {
   logAddStirCauldron(1);
   const x3 = currentPlot.pendingPoints[0].x;
   const y3 = currentPlot.pendingPoints[0].y;
-  straighten(getDirectionByVector(-20.8 - x3, 5.34 - y3), "sun", { maxStirLength: 1.6 });
+  straighten(getDirectionByVector(-20.8 - x3, 5.34 - y3), "sun", { maxStir: 1.6 });
   stirIntoVortex();
   logAddHeatVortex(4);
   pourToVortexEdge();
@@ -187,8 +187,8 @@ function beta() {
   logAddSunSalt(112);
   // Frost protection.
   stirToTier(Effects.Oil.FrostProtection, {
-    preStirLength: 8.7,
-    maxDeviation: DeviationT1,
+    preStir: 8.7,
+    deviation: DeviationT1,
     ignoreAngle: true,
   });
 }

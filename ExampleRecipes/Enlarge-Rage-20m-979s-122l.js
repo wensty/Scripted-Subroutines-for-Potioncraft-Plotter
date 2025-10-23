@@ -18,8 +18,8 @@ import {
   getBottlePolarAngleByEntity,
   checkBase,
   straighten,
-} from "../main";
-import { Effects } from "../main";
+} from "../mainScript";
+import { Effects } from "../mainScript";
 
 function main() {
   checkBase("water");

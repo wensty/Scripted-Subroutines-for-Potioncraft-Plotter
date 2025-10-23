@@ -17,8 +17,8 @@ import {
   checkBase,
   straighten,
   Salt,
-} from "../main";
-import { Effects } from "../main";
+} from "../mainScript";
+import { Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -46,13 +46,13 @@ const recipes = {
       logAddStirCauldron(3.75);
       let currentStirAngle = getCurrentStirDirection();
       console.log("Current stir angle: " + radToDeg(currentStirAngle));
-      straighten(currentStirAngle, "moon", { maxStirLength: 10, maxGrains: 43 });
+      straighten(currentStirAngle, "moon", { maxStir: 10, maxGrains: 43 });
       stirIntoVortex(3.5);
       stirToConsume(8.2);
       derotateToAngle(0);
       logAddHeatVortex(3.7);
       // logAddPourSolvent(1.2)
-      pourToZoneV2({ prePourLength: 1.0, maxPourLength: 0.5, overPour: true, exitZone: true });
+      pourToZoneV2({ prePour: 1.0, maxPour: 0.5, overPour: true, exitZone: true });
       logAddHeatVortex(1.2);
       logAddPourSolvent(1.62);
       logAddHeatVortex(2.97);
@@ -71,7 +71,7 @@ const recipes = {
       logAddMoonSalt(59);
       logAddStirCauldron(1.306);
       logAddMoonSalt(1);
-      stirToNearestTarget(Effects.Water.Explosion, { preStirLength: 4.1, maxStirLength: 0.5 });
+      stirToNearestTarget(Effects.Water.Explosion, { preStir: 4.1, maxStir: 0.5 });
       logAddSunSalt(27);
     },
   },

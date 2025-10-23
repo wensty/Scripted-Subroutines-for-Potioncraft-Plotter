@@ -14,8 +14,8 @@ import {
   straighten,
   getTotalSun,
   setDisplay,
-} from "../main";
-import { Effects } from "../main";
+} from "../mainScript";
+import { Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -45,7 +45,7 @@ function beta() {
     "Final salt after last pouring: " +
       (getTotalSun() + Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36))
   );
-  straighten(degToRad(48.5), "sun", { maxStirLength: 1.3, maxGrains: 825 - getTotalSun() });
+  straighten(degToRad(48.5), "sun", { maxStir: 1.3, maxGrains: 825 - getTotalSun() });
   logAddStirCauldron(1.13);
   logAddSunSalt(1);
   console.log("least distance: " + stirToNearestTarget(Effects.Wine.Hallucinations));

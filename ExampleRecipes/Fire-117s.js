@@ -15,8 +15,8 @@ import {
   getCurrentStirDirection,
   checkBase,
   straighten,
-} from "../main";
-import { Effects } from "../main";
+} from "../mainScript";
+import { Effects } from "../mainScript";
 
 function beta() {
   checkBase("water");
@@ -36,7 +36,7 @@ function beta() {
   for (let i = 0; i < 3; i++) {
     stirToTurn();
   }
-  straighten(getCurrentStirDirection(), "sun", { maxStirLength: 0.8 });
+  straighten(getCurrentStirDirection(), "sun", { maxStir: 0.8 });
   stirToDangerZoneExit();
   logAddSunSalt(117 - 60);
   stirIntoVortex();

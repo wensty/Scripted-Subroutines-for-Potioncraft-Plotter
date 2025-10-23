@@ -51,7 +51,7 @@ import {
   setStirRounding,
   logError,
   logSalt,
-} from "../main";
+} from "../mainScript";
 import {
   SaltAngle,
   VortexRadiusLarge,
@@ -63,7 +63,7 @@ import {
   Entity,
   Salt,
   Effects,
-} from "../main";
+} from "../mainScript";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";
 import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";

@@ -13,8 +13,8 @@ import {
   degToRad,
   checkBase,
   straighten,
-} from "../main";
-import { Salt } from "../main";
+} from "../mainScript";
+import { Salt } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -58,5 +58,5 @@ function test_pour_until_angle() {
 function test_straighten() {
   checkBase("water");
   logAddIngredient(Ingredients.Goldthorn);
-  straighten(degToRad(-80), Salt.Sun, { maxStirLength: 8.0, maxGrains: 500, ignoreReverse: false });
+  straighten(degToRad(-80), Salt.Sun, { maxStir: 8.0, maxGrains: 500, ignoreReverse: false });
 }

@@ -8,8 +8,8 @@ import {
   degToRad,
   checkBase,
   straighten,
-} from "../main";
-import { Salt, Effects } from "../main";
+} from "../mainScript";
+import { Salt, Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -28,6 +28,6 @@ function beta() {
   logAddHeatVortex(5.5);
   logAddStirCauldron(1.3);
   logAddHeatVortex(Infinity);
-  straighten(degToRad(70), Salt.Moon, { maxGrains: 16, preStirLength: 5 });
-  stirToNearestTarget(Effects.Oil.Invisibility, { preStirLength: 4.4 });
+  straighten(degToRad(70), Salt.Moon, { maxGrains: 16, preStir: 5 });
+  stirToNearestTarget(Effects.Oil.Invisibility, { preStir: 4.4 });
 }

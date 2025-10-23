@@ -15,8 +15,8 @@ import {
   checkBase,
   straighten,
   getTotalSun,
-} from "../main";
-import { Salt, Entity } from "../main";
+} from "../mainScript";
+import { Salt, Entity } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 

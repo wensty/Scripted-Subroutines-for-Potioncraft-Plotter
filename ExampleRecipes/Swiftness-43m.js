@@ -6,7 +6,7 @@ import {
   getCurrentStirDirection,
   checkBase,
   straighten,
-} from "../main";
+} from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -19,5 +19,5 @@ function main() {
   logAddStirCauldron(3.8);
   let currentStirAngle = getCurrentStirDirection();
   console.log("Current stir angle: " + radToDeg(currentStirAngle));
-  straighten(currentStirAngle, "moon", { maxStirLength: 10, maxGrains: 43 });
+  straighten(currentStirAngle, "moon", { maxStir: 10, maxGrains: 43 });
 }

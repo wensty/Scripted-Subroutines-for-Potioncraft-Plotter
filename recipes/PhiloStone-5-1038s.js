@@ -15,8 +15,8 @@ import {
   getBottlePolarAngleByEntity,
   checkBase,
   straighten,
-} from "../main";
-import { DeviationT1, Entity, Salt, Effects } from "../main";
+} from "../mainScript";
+import { DeviationT1, Entity, Salt, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -28,31 +28,31 @@ function beta() {
   logAddSunSalt(166);
   logSkirt();
   derotateToAngle(10.04, { toAngle: false });
-  straighten(degToRad(41.5), Salt.Sun, { preStirLength: 5.0, maxGrains: 187 });
+  straighten(degToRad(41.5), Salt.Sun, { preStir: 5.0, maxGrains: 187 });
   logSkirt();
   stirToTier(Effects.Water.Mana, {
-    preStirLength: 10.8,
-    maxDeviation: DeviationT1,
+    preStir: 10.8,
+    deviation: DeviationT1,
     ignoreAngle: true,
   });
   console.log(radToDeg(Math.PI + getBottlePolarAngleByEntity(Entity.PotionEffect)));
   logAddPourSolvent(Infinity);
-  straighten(degToRad(149), Salt.Sun, { preStirLength: 11.2, maxGrains: 184 });
+  straighten(degToRad(149), Salt.Sun, { preStir: 11.2, maxGrains: 184 });
   stirIntoVortex(3.5);
   console.log(radToDeg(getBottlePolarAngleByEntity()) + 180);
   heatAndPourToEdge(0.2, 14);
   logAddHeatVortex(3.35); // Empirical
   console.log(getBottlePolarAngleByEntity());
   stirToTier(Effects.Water.WildGrowth, {
-    preStirLength: 1.7,
-    maxDeviation: DeviationT1,
+    preStir: 1.7,
+    deviation: DeviationT1,
     ignoreAngle: true,
   });
   console.log(getBottlePolarAngleByEntity(Entity.PotionEffect) + Math.PI);
 
   // section 2
   stirToTurn({ preStirLength: 3.25, directionBuffer: 0.0 }); // Empirical
-  straighten(degToRad(-45), Salt.Sun, { maxStirLength: 0.85, maxGrains: 250 });
+  straighten(degToRad(-45), Salt.Sun, { maxStir: 0.85, maxGrains: 250 });
   stirIntoVortex();
   logAddStirCauldron(0.13); // to not die.
   console.log(radToDeg(getBottlePolarAngleByEntity()) - 180);
@@ -67,7 +67,7 @@ function beta() {
   heatAndPourToEdge(3, 6);
   logAddHeatVortex(5.3);
   derotateToAngle(50, { toAngle: false });
-  stirToNearestTarget(Effects.Water.Libido, { preStirLength: 5.7, maxStirLength: 0.3 });
+  stirToNearestTarget(Effects.Water.Libido, { preStir: 5.7, maxStir: 0.3 });
   logAddPourSolvent(1.5);
   logAddStirCauldron(4);
   logAddPourSolvent(5);

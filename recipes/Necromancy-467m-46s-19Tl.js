@@ -9,8 +9,8 @@ import {
   degToRad,
   straighten,
   getTotalMoon,
-} from "../main";
-import { Effects } from "../main";
+} from "../mainScript";
+import { Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -19,12 +19,12 @@ function beta() {
   logAddIngredient(Ingredients.GraveTruffle);
   logAddPourSolvent(Infinity);
   stirToTurn(4.2);
-  straighten(degToRad(-125), "moon", { maxStirLength: 8 });
+  straighten(degToRad(-125), "moon", { maxStir: 8 });
   stirToTurn(0);
   logAddMoonSalt(130);
   logAddStirCauldron(0.4);
   logAddMoonSalt(1);
   logAddStirCauldron(0.452);
   logAddMoonSalt(467 - getTotalMoon());
-  stirToNearestTarget(Effects.Wine.Necromancy, { preStirLength: 9 });
+  stirToNearestTarget(Effects.Wine.Necromancy, { preStir: 9 });
 }

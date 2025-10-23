@@ -51,7 +51,7 @@ import {
   setStirRounding,
   logError,
   logSalt,
-} from "../main";
+} from "../mainScript";
 import {
   SaltAngle,
   VortexRadiusLarge,
@@ -63,7 +63,7 @@ import {
   Entity,
   Salt,
   Effects,
-} from "../main";
+} from "../mainScript";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";
 import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
@@ -85,7 +85,7 @@ const recipes = {
       logSkirt();
       derotateToAngle(0);
       logAddStirCauldron(4.6);
-      straighten(getBottlePolarAngle() - degToRad(3), Salt.Sun, { maxStirLength: 1.35 });
+      straighten(getBottlePolarAngle() - degToRad(3), Salt.Sun, { maxStir: 1.35 });
       logAddStirCauldron(4.8);
       logAddSunSalt(42);
       logAddStirCauldron(1.25);
@@ -97,18 +97,18 @@ const recipes = {
       const y2 = currentPlot.pendingPoints[0].y;
       const d = getDirectionByVector(x2 - x1, y2 - y1);
       straighten(d, Salt.Sun, {
-        maxStirLength: 4,
+        maxStir: 4,
         maxGrains: Math.ceil((currentPlot.pendingPoints[0].angle + 180.01) / 0.36),
       });
       straighten(d, Salt.Sun, {
-        maxStirLength: 4.0,
+        maxStir: 4.0,
         maxGrains: 315,
       });
       stirToTurn({ preStirLength: 0.6 });
       console.log(radToDeg(getCurrentStirDirection()));
       straighten(degToRad(-167), Salt.Moon, {
-        preStirLength: 3.9,
-        maxStirLength: 2.637,
+        preStir: 3.9,
+        maxStir: 2.637,
         maxGrains: 88,
       });
       const m2 = 86; // unrolling.
@@ -124,7 +124,7 @@ const recipes = {
       logAddSunSalt(1);
       console.log(
         "Minimal distance: " +
-          stirToNearestTarget(Effects.Oil.LightningProtection, { preStirLength: 3.0 })
+          stirToNearestTarget(Effects.Oil.LightningProtection, { preStir: 3.0 })
       );
       logAddSetPosition(3.66, -30.72);
     },
@@ -148,26 +148,26 @@ const recipes = {
       logSkirt(0.258);
       logSkirt();
       logAddSunSalt(310);
-      straighten(degToRad(180), Salt.Sun, { preStirLength: 4.8, maxGrains: 125 });
+      straighten(degToRad(180), Salt.Sun, { preStir: 4.8, maxGrains: 125 });
       stirIntoVortex(2.6);
       console.log("~0:" + getBottlePolarAngleByEntity());
       logAddHeatVortex(Infinity);
       stirIntoVortex(3.2);
       logAddHeatVortex(Infinity);
-      straighten(degToRad(150), Salt.Sun, { preStirLength: 9.6, maxGrains: 39 });
+      straighten(degToRad(150), Salt.Sun, { preStir: 9.6, maxGrains: 39 });
       stirIntoVortex(4.6);
       logAddSunSalt(501 - getTotalSun());
       derotateToAngle(189 * 0.36, { toAngle: false });
       logAddHeatVortex(Infinity);
-      straighten(degToRad(-141.5), Salt.Sun, { preStirLength: 5.522, ignoreReverse: false });
+      straighten(degToRad(-141.5), Salt.Sun, { preStir: 5.522, ignoreReverse: false });
       stirToDangerZoneExit();
       logAddPourSolvent(0.82); // empirical
       logAddSunSalt(35);
       console.log(
         "centering:" +
           stirToNearestTarget(Effects.Water.LightningProtection, {
-            preStirLength: 9.2,
-            maxStirLength: 0.5,
+            preStir: 9.2,
+            maxStir: 0.5,
           })
       );
     },

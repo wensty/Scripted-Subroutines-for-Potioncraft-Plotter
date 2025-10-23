@@ -9,8 +9,8 @@ import {
   getBottlePolarAngle,
   checkBase,
   straighten,
-} from "../main";
-import { Effects } from "../main";
+} from "../mainScript";
+import { Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -26,7 +26,7 @@ function beta() {
   const s = Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36);
   console.log("Final Salt: " + (s + 501));
   logAddStirCauldron(11);
-  totalSun += straighten(degToRad(42.1), "sun", { maxStirLength: 1.3, maxGrains: s });
+  totalSun += straighten(degToRad(42.1), "sun", { maxStir: 1.3, maxGrains: s });
   logAddStirCauldron(0.207); // centering.
   totalSun += logAddSunSalt(1);
   console.log(stirToNearestTarget(Effects.Wine.Luck));

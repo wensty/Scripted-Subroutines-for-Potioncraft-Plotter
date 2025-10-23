@@ -14,8 +14,8 @@ import {
   checkBase,
   straighten,
   setDisplay,
-} from "../main";
-import { Salt, Effects } from "../main";
+} from "../mainScript";
+import { Salt, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -32,7 +32,7 @@ function beta() {
   const y1 = currentPlot.pendingPoints[0].y;
   const av2 = getDirectionByVector(-18.93 - x1, -16.34 - y1);
   console.log("av2:" + av2);
-  straighten(av2, Salt.Sun, { maxStirLength: 1, maxGrains: 349 });
+  straighten(av2, Salt.Sun, { maxStir: 1, maxGrains: 349 });
   stirToTurn({ preStirLength: 8 });
   const x2 = currentPlot.pendingPoints[0].x;
   const y2 = currentPlot.pendingPoints[0].y;
@@ -50,6 +50,6 @@ function beta() {
   straighten(degToRad(-110), Salt.Sun, { maxGrains: 257 });
   logAddStirCauldron(2.81);
   logAddSunSalt(1);
-  console.log("nearest:" + stirToNearestTarget(Effects.Water.Acid, { preStirLength: 2 }));
+  console.log("nearest:" + stirToNearestTarget(Effects.Water.Acid, { preStir: 2 }));
   logAddSunSalt(111);
 }

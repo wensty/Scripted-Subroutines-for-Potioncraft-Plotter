@@ -23,8 +23,8 @@ import {
   checkBase,
   straighten,
   setStirRounding,
-} from "../main";
-import { EntityVortex, Effects } from "../main";
+} from "../mainScript";
+import { EntityVortex, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -62,7 +62,7 @@ function main() {
   pourToVortexEdge();
   heatAndPourToEdge(1, 9);
   logAddHeatVortex(1.75); // Empirical
-  stirToTier(Effects.Water.Invisibility, { preStirLength: 7.1 }); // roughly
+  stirToTier(Effects.Water.Invisibility, { preStir: 7.1 }); // roughly
   logAddPourSolvent(5.35); // Empirical
   let returnSalt = 280; // Empirical. Add less is not necessarily better.
   logAddSunSalt(returnSalt);
@@ -88,13 +88,11 @@ function main() {
   heatAndPourToEdge(1, 9);
   logAddHeatVortex(5.12);
   derotateToAngle(saltToDeg("moon", 100 + 33.3));
-  straighten(degToRad(5), "sun", { maxGrains: 99, preStirLength: 9.5 });
+  straighten(degToRad(5), "sun", { maxGrains: 99, preStir: 9.5 });
   // last salt for precise centering
   logAddStirCauldron(1.286);
   logAddSunSalt(1);
-  console.log(
-    "path deviation: " + stirToNearestTarget(Effects.Water.Levitation, { preStirLength: 3.2 })
-  );
+  console.log("path deviation: " + stirToNearestTarget(Effects.Water.Levitation, { preStir: 3.2 }));
 }
 
 function beta() {
@@ -131,7 +129,7 @@ function beta() {
   pourToVortexEdge();
   heatAndPourToEdge(1, 9);
   logAddHeatVortex(1.75); // Empirical
-  stirToTier(Effects.Water.Invisibility, { preStirLength: 7.1 }); // roughly
+  stirToTier(Effects.Water.Invisibility, { preStir: 7.1 }); // roughly
   logAddPourSolvent(5.35); // Empirical
   let returnSalt = 280; // Empirical. Add less is not necessarily better.
   logAddSunSalt(returnSalt);
@@ -162,7 +160,5 @@ function beta() {
   // last salt for precise centering
   logAddStirCauldron(0.862);
   logAddSunSalt(1);
-  console.log(
-    "path deviation: " + stirToNearestTarget(Effects.Water.Levitation, { preStirLength: 0.0 })
-  );
+  console.log("path deviation: " + stirToNearestTarget(Effects.Water.Levitation, { preStir: 0.0 }));
 }

@@ -15,8 +15,8 @@ import {
   checkBase,
   straighten,
   setDisplay,
-} from "../main";
-import { Effects } from "../main";
+} from "../mainScript";
+import { Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -28,7 +28,7 @@ function main() {
   derotateToAngle(saltToDeg("sun", 28));
   stirIntoVortex();
   logAddHeatVortex(Infinity);
-  straighten(degToRad(17.4), "sun", { maxStirLength: 3 }); // Distance specified straightening.
+  straighten(degToRad(17.4), "sun", { maxStir: 3 }); // Distance specified straightening.
   logAddStirCauldron(6);
   let direction = getDirectionByVector(
     29.63 - currentPlot.pendingPoints[0].x,
@@ -43,12 +43,10 @@ function main() {
   heatAndPourToEdge(0.1, 33);
   logAddHeatVortex(2.28);
   derotateToAngle(saltToDeg("moon", 202 + 33));
-  straighten(degToRad(11), "sun", { maxStirLength: 4, maxGrains: 201 });
+  straighten(degToRad(11), "sun", { maxStir: 4, maxGrains: 201 });
   logAddStirCauldron(3.11);
   logAddSunSalt(1);
-  console.log(
-    "path deviation: " + stirToNearestTarget(Effects.Oil.AntiMagic, { preStirLength: 1.2 })
-  );
+  console.log("path deviation: " + stirToNearestTarget(Effects.Oil.AntiMagic, { preStir: 1.2 }));
 }
 
 function beta() {
@@ -60,7 +58,7 @@ function beta() {
   derotateToAngle(saltToDeg("sun", 26));
   stirIntoVortex();
   logAddHeatVortex(Infinity);
-  straighten(degToRad(17.23), "sun", { maxStirLength: 3 }); // Distance specified straightening.
+  straighten(degToRad(17.23), "sun", { maxStir: 3 }); // Distance specified straightening.
   logAddStirCauldron(6.2);
   logAddSunSalt(57);
   const x = currentPlot.pendingPoints[0].x;
@@ -84,10 +82,8 @@ function beta() {
   heatAndPourToEdge(0.1, 30);
   logAddHeatVortex(2.53);
   derotateToAngle(saltToDeg("moon", 208 + 33));
-  straighten(degToRad(11), "sun", { maxStirLength: 4, maxGrains: 207 });
+  straighten(degToRad(11), "sun", { maxStir: 4, maxGrains: 207 });
   logAddStirCauldron(1.21);
   logAddSunSalt(1);
-  console.log(
-    "path deviation: " + stirToNearestTarget(Effects.Oil.AntiMagic, { preStirLength: 1.2 })
-  );
+  console.log("path deviation: " + stirToNearestTarget(Effects.Oil.AntiMagic, { preStir: 1.2 }));
 }

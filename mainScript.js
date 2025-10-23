@@ -4,7 +4,6 @@ import {
   addIngredient,
   addSunSalt,
   addMoonSalt,
-  addRotationSalt,
   addHeatVortex,
   addStirCauldron,
   addPourSolvent,
@@ -42,7 +41,7 @@ const Salt = { Moon: "moon", Sun: "sun" };
 let Display = true; // Macro to switch instruction display.
 let RoundStirring = true; // macro to control whether round stirrings.
 // Minimal stir unit of hand-added stirring instructions. Stirring instructions add by scripts can be infinitely precise, and inverse is used for float accuracy.
-let StirringUnitInverse = 1000.0;
+let StirUnitInv = 1000.0;
 let Step = 1;
 let TotalSun = 0;
 let TotalMoon = 0;
@@ -140,6 +139,10 @@ const Effects = {
 };
 
 /**
+ * Utility functions.
+ */
+
+/**
  * Simulation of plotter API `createSetPosition(x, y)`.
  * @param {number} x
  * @param {number} y
@@ -209,6 +212,27 @@ function setStirRounding(roundStirring) {
 }
 
 /**
+ * Calculates the intersection points of a line defined by a point and direction, and a circle.
+ * @param {{x: number, y: number, r: number}} circle - The circle to intersect with.
+ * @param {{x: number, y: number}} point - The point on the line.
+ * @param {{x: number, y: number}} direction - The direction of the line.
+ * @returns {{d1: number, d2: number} | undefined} An object with the left and right intersection points, or undefined if no intersection is found.
+ */
+function intersectCircle(circle, point, direction) {
+  const { x: cx, y: cy, r: cr } = circle;
+  const { x: px, y: py } = point;
+  const { x: dx, y: dy } = direction;
+  const a = dx ** 2 + dy ** 2;
+  const b = 2 * (dx * (px - cx) + dy * (py - cy));
+  const c = (px - cx) ** 2 + (py - cy) ** 2 - cr ** 2;
+  const discriminant = b ** 2 - 4 * a * c;
+  if (discriminant < 0) return undefined;
+  const d1 = (-b - Math.sqrt(discriminant)) / (2 * a);
+  const d2 = (-b + Math.sqrt(discriminant)) / (2 * a);
+  return { d1, d2 };
+}
+
+/**
  * Checks if the currentpotion base is the given expected base.
  * @param {"water"|"oil"|"wine"} expectedBase The expected base name.
  */
@@ -238,13 +262,12 @@ function logSalt() {
  * @param {number} [grindPercent=1.0] The percentage of the ingredient to grind, default to be 1.0.
  * @param {boolean} [display=Display] Whether to display the step message, default to the value of Display.
  */
-function logAddIngredient(ingredientId, grindPercent = 1.0, display = Display) {
+function logAddIngredient(ingredientId, grindPercent = 1.0) {
   displayStep("Adding " + grindPercent * 100 + "% of " + ingredientId);
   Step += 1;
   addIngredient(ingredientId, grindPercent);
 }
-const logSkirt = (grindPercent = 1.0, display = Display) =>
-  logAddIngredient(Ingredients.PhantomSkirt, grindPercent, display);
+const logSkirt = (grindPercent = 1.0) => logAddIngredient(Ingredients.PhantomSkirt, grindPercent);
 
 /**
  * Logs the addition of sun salt and adds it to the current plot.
@@ -352,14 +375,14 @@ const isVortex = isEntityType(Entity.Vortex);
 
 /**
  * Stirs the solution into next vortex.
- * @param {number} [preStirLength=0.0] The stir length before stirring into vortex.
- * @param {number} [buffer=1e-5] - The buffer to adjust the final stir length.
+ * @param {number} [preStir=0.0] The stir length before stirring into vortex.
+ * @param {number} [buffer=1e-5] The buffer to adjust the final stir length.
  */
-function stirIntoVortex(preStirLength = 0.0, buffer = 1e-5) {
+function stirIntoVortex(preStir = 0.0, buffer = 1e-5) {
   let pendingPoints = currentPlot.pendingPoints;
-  if (preStirLength > 0.0) {
+  if (preStir > 0.0) {
     pendingPoints = computePlot(
-      currentRecipeItems.concat(createStirCauldron(preStirLength))
+      currentRecipeItems.concat(createStirCauldron(preStir))
     ).pendingPoints;
   }
   const currentVortex = fixUndef(pendingPoints[0].bottleCollisions.find(isVortex));
@@ -372,25 +395,25 @@ function stirIntoVortex(preStirLength = 0.0, buffer = 1e-5) {
       logError("stirring into vortex", "no vortex found.");
       return;
     }
-    const nextVortex = fixUndef(pendingPoints[index].bottleCollisions.find(isVortex));
+    const vortex = fixUndef(pendingPoints[index].bottleCollisions.find(isVortex));
     if (
-      nextVortex != undefined &&
-      (currentVortex == undefined ||
-        nextVortex.x != currentVortex.x ||
-        nextVortex.y != currentVortex.y)
+      vortex != undefined &&
+      (currentVortex == undefined || vortex.x != currentVortex.x || vortex.y != currentVortex.y)
     ) {
       const next = extractCoordinate(pendingPoints[index]);
-      const unit = getUnit(next.x - current.x, next.y - current.y);
-      const l1 = unit.x * (nextVortex.x - current.x) + unit.y * (nextVortex.y - current.y);
-      const l2 = -unit.y * (nextVortex.x - current.x) + unit.x * (nextVortex.y - current.y);
-      const vortexRadius = getTargetVortex(nextVortex.x, nextVortex.y).r;
-      const approximatedLastStirLength = l1 - Math.sqrt(vortexRadius ** 2 - l2 ** 2);
-      let finalStirLength = preStirLength + currentStirLength + approximatedLastStirLength;
+      let stir =
+        preStir +
+        currentStirLength +
+        intersectCircle(
+          getTargetVortexPoint(vortex),
+          current,
+          getUnit(next.x - current.x, next.y - current.y)
+        ).d1;
       if (RoundStirring) {
-        logAddStirCauldron(Math.ceil(finalStirLength * StirringUnitInverse) / StirringUnitInverse);
+        logAddStirCauldron(Math.ceil(stir * StirUnitInv) / StirUnitInv);
         return;
       }
-      logAddStirCauldron(currentStirLength + approximatedLastStirLength + buffer);
+      logAddStirCauldron(stir + buffer);
       return;
     }
     currentStirLength += pointDistance(pendingPoints[index - 1], pendingPoints[index]);
@@ -400,16 +423,17 @@ function stirIntoVortex(preStirLength = 0.0, buffer = 1e-5) {
 
 /**
  * Stirs the potion to the edge of the current vortex.
- * @param {number} [preStirLength=0.0] The stir length before stirring.
- * @param {number} [buffer=1e-5] - The buffer to adjust the final stir length.
+ * @param {number} [preStir=0.0] The stir length before stirring.
+ * @param {number} [buffer=1e-5] The buffer to adjust the final stir length.
  */
-function stirToVortexEdge(preStirLength = 0.0, buffer = 1e-5) {
+function stirToVortexEdge(preStir = 0.0, buffer = 1e-5) {
   let plot = currentPlot;
-  if (preStirLength > 0.0) {
-    plot = computePlot(currentRecipeItems.concat([createStirCauldron(preStirLength)]));
+  if (preStir > 0.0) {
+    plot = computePlot(currentRecipeItems.concat([createStirCauldron(preStir)]));
   }
   const pendingPoints = plot.pendingPoints;
-  const vortex = fixUndef(pendingPoints[0].bottleCollisions.find(isVortex));
+  // const vortex = fixUndef(pendingPoints[0].bottleCollisions.find(isVortex));
+  const vortex = getTargetVortexPoint(pendingPoints[0]);
   let stirLength = 0.0;
   if (vortex === undefined) {
     logError("stirring to edge", "bottle not in a vortex.");
@@ -423,7 +447,7 @@ function stirToVortexEdge(preStirLength = 0.0, buffer = 1e-5) {
       break;
     } else {
       if (index == pendingPoints.length) {
-        logError("stirring to edge", "Can not reach the edge of the vortex.");
+        logError("stirring to edge of vortex", "Can not reach the edge of the vortex.");
         return;
       }
       stirLength += pointDistance(pendingPoints[index - 1], pendingPoints[index]);
@@ -431,17 +455,13 @@ function stirToVortexEdge(preStirLength = 0.0, buffer = 1e-5) {
   }
   const current = extractCoordinate(pendingPoints[index - 1]);
   const next = extractCoordinate(pendingPoints[index]);
-  const unit = getUnit(next.x - current.x, next.y - current.y);
-  const l1 = unit.x * (vortex.x - current.x) + unit.y * (vortex.y - current.y);
-  const l2 = -unit.y * (vortex.x - current.x) + unit.x * (vortex.y - current.y);
-  const vortexRadius = getTargetVortex(vortex.x, vortex.y).r;
-  const approximatedLastStirLength = l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2);
-  const finalStirLength = preStirLength + stirLength + approximatedLastStirLength;
+  const iC = intersectCircle(vortex, current, getUnit(next.x - current.x, next.y - current.y));
+  const finalStir = preStir + stirLength + iC.d2;
   if (RoundStirring) {
-    logAddStirCauldron(Math.floor(finalStirLength * StirringUnitInverse) / StirringUnitInverse);
+    logAddStirCauldron(Math.floor(finalStir * StirUnitInv) / StirUnitInv);
     return;
   }
-  logAddStirCauldron(finalStirLength - buffer);
+  logAddStirCauldron(finalStir - buffer);
   return;
 }
 
@@ -501,9 +521,7 @@ function stirToTurn(options = {}) {
       currentUnit.x * nextUnit.x + currentUnit.y * nextUnit.y < minCosine
     ) {
       if (RoundStirring) {
-        logAddStirCauldron(
-          Math.ceil((preStirLength + stirLength) * StirringUnitInverse) / StirringUnitInverse
-        );
+        logAddStirCauldron(Math.ceil((preStirLength + stirLength) * StirUnitInv) / StirUnitInv);
         return;
       }
       logAddStirCauldron(preStirLength + stirLength);
@@ -516,7 +534,7 @@ function stirToTurn(options = {}) {
       if (stirLength >= maxStirLength) {
         if (RoundStirring) {
           logAddStirCauldron(
-            Math.ceil((preStirLength + maxStirLength) * StirringUnitInverse) * StirringUnitInverse
+            Math.ceil((preStirLength + maxStirLength) * StirUnitInv) * StirUnitInv
           );
         }
         logAddStirCauldron(preStirLength + maxStirLength);
@@ -573,9 +591,8 @@ function stirToZone(options = {}) {
     }
   }
   if (RoundStirring) {
-    logAddStirCauldron(
-      (Math.floor(stirDistance * StirringUnitInverse) + overStir) / StirringUnitInverse
-    );
+    logAddStirCauldron((Math.floor(stirDistance * StirUnitInv) + overStir) / StirUnitInv);
+    return;
   }
   logAddStirCauldron(stirDistance + overStirBuffer * (2 * overStir - 1));
   return;
@@ -596,20 +613,20 @@ const stirToDangerZoneExit = (preStirLength) => {
  * @param {number} target.x - The x-coordinate of the target effect.
  * @param {number} target.y - The y-coordinate of the target effect.
  * @param {object} options - Options for the stirToNearestTarget function.
- * @param {number} [options.preStirLength=0.0] - The initial stir length before
+ * @param {number} [options.preStir=0.0] - The initial stir length before
  *   the optimization.
- * @param {number} [options.maxStirLength=Infinity] - The maximal stir length
+ * @param {number} [options.maxStir=Infinity] - The maximal stir length
  *   allowed in the optimization.
- * @param {number} [options.leastSegmentLength=1e-9] - The minimal length of
+ * @param {number} [options.segmentLength=1e-9] - The minimal length of
  *   each segment in the optimization process.
  * @returns {number} The optimal distance to the target after stirring.
  */
 function stirToNearestTarget(target, options = {}) {
-  const { preStirLength = 0.0, maxStirLength = Infinity, leastSegmentLength = 1e-9 } = options;
+  const { preStir = 0.0, maxStir = Infinity, segmentLength = 1e-9 } = options;
   let pendingPoints = currentPlot.pendingPoints;
-  if (preStirLength > 0.0) {
+  if (preStir > 0.0) {
     pendingPoints = computePlot(
-      currentRecipeItems.concat([createStirCauldron(preStirLength)])
+      currentRecipeItems.concat([createStirCauldron(preStir)])
     ).pendingPoints;
   }
   const initial = extractCoordinate(pendingPoints[0]);
@@ -630,14 +647,14 @@ function stirToNearestTarget(target, options = {}) {
         break;
       }
       nextSegmentLength += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
-      if (nextSegmentLength > leastSegmentLength) {
+      if (nextSegmentLength > segmentLength) {
         break;
       }
     }
-    if (nextSegmentLength <= leastSegmentLength) {
+    if (nextSegmentLength <= segmentLength) {
       continue;
     }
-    if (currentStirLength + nextSegmentLength > maxStirLength) {
+    if (currentStirLength + nextSegmentLength > maxStir) {
       isLastSegment = true;
     }
     const next = extractCoordinate(pendingPoints[nextIndex]);
@@ -666,7 +683,7 @@ function stirToNearestTarget(target, options = {}) {
     currentStirLength += nextSegmentLength;
     nextSegmentLength = 0.0;
   }
-  logAddStirCauldron(preStirLength + optimalStirLength);
+  logAddStirCauldron(preStir + optimalStirLength);
   return optimalDistance;
 }
 
@@ -678,111 +695,78 @@ function stirToNearestTarget(target, options = {}) {
  * @param {number} target.y - The y-coordinate of the target effect.
  * @param {number} target.angle - The angle of the target effect in degrees.
  * @param {object} options - Options for the stirring process.
- * @param {number} [options.preStirLength=0.0] - The minimal stir length
+ * @param {number} [options.preStir=0.0] - The minimal stir length
  *     to ensure the stir is not too short.
- * @param {number} [options.maxDeviation=DeviationT2] - The maximal allowable
+ * @param {number} [options.deviation=DeviationT2] - The maximal allowable
  *     deviation from the target effect's angle.
  * @param {boolean} [options.ignoreAngle=false] - Whether to ignore the
  *     angle deviation in the stirring process.
- * @param {number} [options.leastSegmentLength=1e-9] - The minimal length
+ * @param {number} [options.segmentLength=1e-9] - The minimal length
  *     of each segment in the stirring path.
- * @param {number} [options.afterBuffer=1e-5] - The buffer added after
+ * @param {number} [options.buffer=1e-5] - The buffer added after
  *     stirring to ensure precision.
  */
 function stirToTier(target, options = {}) {
   const {
-    preStirLength = 0.0,
-    maxDeviation = DeviationT2,
+    preStir = 0.0,
+    deviation = DeviationT2,
     ignoreAngle = false,
-    leastSegmentLength = 1e-9,
-    afterBuffer = 1e-5,
+    segmentLength = 1e-9,
+    buffer = 1e-5,
   } = options;
   let pendingPoints = currentPlot.pendingPoints;
-  if (preStirLength > 0.0) {
+  if (preStir > 0.0) {
     pendingPoints = computePlot(
-      currentRecipeItems.concat(createStirCauldron(preStirLength))
+      currentRecipeItems.concat(createStirCauldron(preStir))
     ).pendingPoints;
   }
-  const currentPoint = pendingPoints[0];
-  const currentAngle = -currentPoint.angle || 0.0;
-  const angleDelta = radToDeg(
-    Math.abs(getRelativeDirection(degToRad(currentAngle), degToRad(target.angle)))
-  );
-  let angleDeviation = angleDelta * (100.0 / 12.0);
-  if (ignoreAngle) {
-    angleDeviation = 0.0;
+  let currentPoint = pendingPoints[0];
+  let angleDeviation = 0.0;
+  if (!ignoreAngle) {
+    const currentAngle = -currentPoint.angle || 0.0;
+    const angleDelta = radToDeg(
+      Math.abs(getRelativeDirection(degToRad(currentAngle), degToRad(target.angle)))
+    );
+    angleDeviation = angleDelta * (100.0 / 12.0);
+    if (angleDeviation >= deviation) {
+      logError("stir to tier", "too much angle deviation.");
+      return;
+    }
   }
-  if (angleDeviation >= maxDeviation) {
-    logError("stir to tier", "too much angle deviation.");
-    return;
-  }
-  const requiredDistance = (maxDeviation - angleDeviation) / 1800.0;
-  let lastSegment = false;
-  let currentStirLength = 0.0;
-  let currentSegmentLength = 0.0;
-  let currentIndex = 0;
-  let nextIndex = currentIndex;
-  let current = extractCoordinate(pendingPoints[0]);
-  // assume the initial position do not reach the tier.
-  let nextDistance = 0.0;
-  while (!lastSegment) {
-    while (true) {
-      nextIndex += 1;
-      if (nextIndex == pendingPoints.length) {
-        lastSegment = true;
-        break;
-      }
-      currentSegmentLength += pointDistance(pendingPoints[currentIndex], pendingPoints[nextIndex]);
-      if (currentSegmentLength > leastSegmentLength) {
+  const tierRadius = (deviation - angleDeviation) / 1800.0;
+  let i = 0;
+  let j;
+  let stir = 0.0;
+  while (true) {
+    for (j = i; j < pendingPoints.length; j++) {
+      if (pointDistance(pendingPoints[i], pendingPoints[j]) > segmentLength) {
         break;
       }
     }
-    if (currentSegmentLength <= leastSegmentLength) {
-      continue;
+    if (j == pendingPoints.length) {
+      logError("stirring to tier", "cannot reach target tier.");
+      return;
     }
-    const next = extractCoordinate(pendingPoints[nextIndex]);
-    const nextUnit = getUnit(next.x - current.x, next.y - current.y);
-    nextDistance = Math.sqrt((target.x - next.x) ** 2 + (target.y - next.y) ** 2);
-    let lastStirLength = nextUnit.x * (target.x - current.x) + nextUnit.y * (target.y - current.y);
-    if (lastStirLength > currentSegmentLength) {
-      if (nextDistance < requiredDistance) {
-        const lineDistance =
-          -nextUnit.y * (target.x - current.x) + nextUnit.x * (target.y - current.y);
-        const approximatedLastStirLength =
-          lastStirLength - Math.sqrt(requiredDistance ** 2 - lineDistance ** 2);
-        logAddStirCauldron(
-          preStirLength +
-            currentStirLength +
-            Math.min(approximatedLastStirLength + afterBuffer, currentSegmentLength)
-        );
+    const nextPoint = pendingPoints[j];
+    const iC = intersectCircle(
+      { x: target.x, y: target.y, r: tierRadius },
+      currentPoint,
+      getUnit(nextPoint.x - currentPoint.x, nextPoint.y - currentPoint.y)
+    );
+    if (iC != undefined && iC.d1 >= 0.0 && iC.d1 < pointDistance(currentPoint, nextPoint)) {
+      stir += iC.d1 + preStir;
+      if (RoundStirring) {
+        logAddStirCauldron(Math.ceil(stir * MinimalPourInv) / MinimalPourInv);
         return;
       }
-    } else {
-      if (lastStirLength >= 0) {
-        const nextDistance =
-          -nextUnit.y * (target.x - current.x) + nextUnit.x * (target.y - current.y);
-        const approximatedLastStirLength =
-          lastStirLength - Math.sqrt(requiredDistance ** 2 - nextDistance ** 2);
-        if (nextDistance < requiredDistance) {
-          logAddStirCauldron(
-            preStirLength +
-              currentStirLength +
-              Math.min(approximatedLastStirLength + afterBuffer, lastStirLength)
-          );
-          return;
-        }
-      }
+      logAddStirCauldron(stir + buffer);
+      return;
     }
-    currentIndex = nextIndex;
-    current = next;
-    currentStirLength += currentSegmentLength;
-    currentSegmentLength = 0.0;
+    stir += pointDistance(currentPoint, nextPoint);
+    i = j;
+    currentPoint = nextPoint;
   }
-
-  logError("stirring to tier", "cannot reach target tier.");
-  return;
 }
-
 /**
  * Stirs the potion to consume a specified length while in a vortex.
  * This is not affected by stir rounding, since the stir length is manually input.
@@ -807,48 +791,37 @@ function stirToConsume(consumeLength) {
  */
 function pourToVortexEdge() {
   const currentPoint = currentPlot.pendingPoints[0];
-  const vortex = fixUndef(currentPoint.bottleCollisions.find(isVortex));
+  const vortex = getTargetVortexPoint(currentPoint);
   if (vortex === undefined) {
     logError("pouring to edge", "bottle not in a vortex.");
     return;
-  } // In case this is called outside a vortex.
-  const vortexRadius = getCurrentVortexRadius();
-  const pourUnit = getUnit(-currentPoint.x, -currentPoint.y);
-  const l1 = pourUnit.x * (vortex.x - currentPoint.x) + pourUnit.y * (vortex.y - currentPoint.y);
-  const l2 = -pourUnit.y * (vortex.x - currentPoint.x) + pourUnit.x * (vortex.y - currentPoint.y);
-  const approximatedPourLength = Math.max(
-    (Math.floor((l1 + Math.sqrt(vortexRadius ** 2 - l2 ** 2)) * MinimalPourInv) - 0.5) /
-      MinimalPourInv,
-    0.0
-  );
-  logAddPourSolvent(approximatedPourLength);
+  }
+  const current = extractCoordinate(currentPoint);
+  const iC = intersectCircle(vortex, current, getUnit(-current.x, -current.y));
+  const pour = Math.max(iC.d2, 0.0);
+  logAddPourSolvent((Math.floor(pour * MinimalPourInv) - 0.5) / MinimalPourInv);
   return;
 }
 
 /**
  * Pours solvent into the target vortex.
  *
- * @param {number} targetVortexX - The x-coordinate of the target vortex.
- * @param {number} targetVortexY - The y-coordinate of the target vortex.
+ * @param {number} x - The x-coordinate of the target vortex.
+ * @param {number} y - The y-coordinate of the target vortex.
  */
-function pourIntoVortex(targetVortexX, targetVortexY) {
-  const vortex = getTargetVortex(targetVortexX, targetVortexY);
+function pourIntoVortex(x, y) {
   const current = extractCoordinate();
-  const pourUnit = getUnit(-current.x, -current.y);
-  const l1 = pourUnit.x * (vortex.x - current.x) + pourUnit.y * (vortex.y - current.y);
-  const l2 = -pourUnit.y * (vortex.x - current.x) + pourUnit.x * (vortex.y - current.y);
-  if (Math.abs(l2) >= vortex.r) {
-    logError("pouring into target vortex", "bottle polar angle deviates too much.");
+  const vortex = getTargetVortex(x, y);
+  const iC = intersectCircle(vortex, current, getUnit(x - current.x, y - current.y));
+  if (iC === undefined || iC.d2 < 0.0) {
+    logError(
+      "pouring into target vortex",
+      "bottle polar angle deviates too much or not behind the target vortex."
+    );
     return;
   }
-  const approximatedPourLength = l1 - Math.sqrt(vortex.r ** 2 - l2 ** 2);
-  if (approximatedPourLength <= 0) {
-    logError("pouring into target vortex", "bottle not behind the target vortex.");
-    return;
-  }
-  const actualPourLength =
-    (Math.ceil(approximatedPourLength * MinimalPourInv) - 0.5) / MinimalPourInv;
-  logAddPourSolvent(actualPourLength);
+  const pour = iC.d2;
+  logAddPourSolvent((Math.ceil(pour * MinimalPourInv) - 0.5) / MinimalPourInv);
   return;
 }
 
@@ -882,7 +855,7 @@ function heatAndPourToEdge(length, repeats) {
       if (maxLength < 0) {
         break;
       }
-      maxLength = maxLength * 0.75;
+      maxLength *= 0.75;
       maxLength = (Math.floor(maxLength * MinimalPourInv) - 0.5) / MinimalPourInv;
     }
     logAddHeatVortex(Math.min(length, maxLength));
@@ -895,23 +868,23 @@ function heatAndPourToEdge(length, repeats) {
  * Pours solvent to move the bottle towards or out of an assigned zone.
  * @param {object} [options] - Options for the pouring process.
  * @param {string[]} [options.zone=Entity.DangerZone] - The zone to pour towards or out of.
- * @param {number} [options.prePourLength=0.0] - The initial length of pouring.
- * @param {number} [options.maxPourLength=Infinity] - The maximum length of pouring.
+ * @param {number} [options.prePour=0.0] - The initial length of pouring.
+ * @param {number} [options.maxPour=Infinity] - The maximum length of pouring.
  * @param {boolean} [options.overPour=false] - Whether to pour slightly more than the minimum required.
  * @param {boolean} [options.exitZone=false] - Whether to exit the zone instead of entering it.
  */
 function pourToZoneV2(options = {}) {
   const {
     zone = Entity.DangerZone,
-    prePourLength = 0.0,
-    maxPourLength = Infinity,
+    prePour = 0.0,
+    maxPour = Infinity,
     overPour = false,
     exitZone = false,
   } = options;
-  logAddPourSolvent(prePourLength);
+  logAddPourSolvent(prePour);
   const detector = isEntityType(zone);
   const { x, y } = extractCoordinate();
-  const plot = computePlot([createSetPosition(x, y), createPourSolvent(maxPourLength)]);
+  const plot = computePlot([createSetPosition(x, y), createPourSolvent(maxPour)]);
   let inZone = false;
   let nextIndex = 0;
   let pourLength = 0.0;
@@ -945,8 +918,8 @@ function pourToZoneV2(options = {}) {
 }
 
 // for old recipe compatibility.
-const pourToZone = (maxPourLength, zone = Entity.DangerZone) =>
-  pourToZoneV2({ maxPourLength: maxPourLength, zone: zone });
+const pourToZone = (maxPour, zone = Entity.DangerZone) =>
+  pourToZoneV2({ maxPour: maxPour, zone: zone });
 
 /**
  * Derotates the bottle to the target angle.
@@ -1276,33 +1249,41 @@ function getCurrentVortexRadius() {
 
 /**
  * Retrieves information about the target vortex at specified coordinates.
- * @param {number} targetX - The x-coordinate of the target vortex.
- * @param {number} targetY - The y-coordinate of the target vortex.
+ * @param {number} x - The x-coordinate of the target vortex.
+ * @param {number} y - The y-coordinate of the target vortex.
  * @returns {{x:number, y:number, r:number}} An object containing the x and y
  * coordinates and the radius of the target vortex.
  */
-function getTargetVortex(targetX, targetY) {
-  const result = computePlot([
-    createSetPosition(targetX, targetY),
-  ]).pendingPoints[0].bottleCollisions.find(isVortex);
+function getTargetVortex(x, y) {
+  const result = fixUndef(
+    computePlot([createSetPosition(x, y)]).pendingPoints[0].bottleCollisions.find(isVortex)
+  );
   if (result == undefined) {
     logError("getting target vortex radius", "no vortex at target position.");
-    throw Error();
+    return;
   }
-  let testSmall = computePlot([
+  let small = computePlot([
     createSetPosition(result.x + 1.8, result.y),
   ]).pendingPoints[0].bottleCollisions.find(isVortex);
-  if (testSmall === undefined || testSmall.x != result.x || testSmall.y != result.y) {
+  if (small === undefined || small.x != result.x || small.y != result.y) {
     return { x: result.x, y: result.y, r: VortexRadiusSmall };
   }
-  let testMedium = computePlot([
+  let medium = computePlot([
     createSetPosition(result.x + 2.2, result.y),
   ]).pendingPoints[0].bottleCollisions.find(isVortex);
-  if (testMedium === undefined || testMedium.x != result.x || testMedium.y != result.y) {
+  if (medium === undefined || medium.x != result.x || medium.y != result.y) {
     return { x: result.x, y: result.y, r: VortexRadiusMedium };
   }
   return { x: result.x, y: result.y, r: VortexRadiusLarge };
 }
+
+/**
+ * Retrieves information about the target vortex at the specified coordinates.
+ * @param {{x:number, y:number}} point - A point object with `x` and `y` properties.
+ * @returns {{x:number, y:number, r:number}} An object containing the x and y
+ * coordinates and the radius of the target vortex.
+ */
+const getTargetVortexPoint = (point) => getTargetVortex(point.x || 0.0, point.y || 0.0);
 
 /**
  * Returns the total amount of Sun Salt added so far.
@@ -1329,10 +1310,10 @@ function getTotalMoon() {
  * @param {number} direction The direction to be stirred in radian.
  * @param {string} salt The type of salt to be added. It must be "moon" or "sun".
  * @param {Object} [options] Options for the straightening process.
- * @param {number} [options.maxStirLength=Infinity] The maximum distance to be stirred.
+ * @param {number} [options.maxStir=Infinity] The maximum distance to be stirred.
  * @param {number} [options.maxGrains=Infinity] The maximum amount of salt to be added.
  * @param {boolean} [options.ignoreReverse=true] If set to false, the function will terminate when a reversed direction is detected.
- * @param {number} [options.preStirLength=0.0] The amount of stirring to be added before the straightening process.
+ * @param {number} [options.preStir=0.0] The amount of stirring to be added before the straightening process.
  * @param {number} [options.leastSegmentLength=1e-9] The minimal length of each segment of the potion path.
  * @returns {number} The total amount of salt added.
  */
@@ -1342,23 +1323,23 @@ function straighten(direction, salt, options = {}) {
     return 0;
   }
   const {
-    maxStirLength = Infinity,
+    maxStir = Infinity,
     maxGrains = Infinity,
     ignoreReverse = true,
-    preStirLength = 0.0,
+    preStir = 0.0,
     leastSegmentLength = 1e-9,
   } = options;
-  const _maxStirLength = maxStirLength + preStirLength;
+  const _maxStir = maxStir + preStir;
   let stirredLength = 0.0;
   let nextStirLength = 0.0;
   let nextSegmentLength = 0.0;
   let totalGrains = 0;
   let currentIndex = 0;
   let pendingPoints = computePlot(
-    currentRecipeItems.concat([createStirCauldron(preStirLength)])
+    currentRecipeItems.concat([createStirCauldron(preStir)])
   ).pendingPoints;
   let lastSegment = false;
-  let _preStirLength = preStirLength;
+  let _preStirLength = preStir;
   while (!lastSegment) {
     const current = extractCoordinate(pendingPoints[currentIndex]);
     let nextIndex = currentIndex;
@@ -1406,7 +1387,7 @@ function straighten(direction, salt, options = {}) {
         nextStirLength += _preStirLength;
         _preStirLength = 0.0;
         if (RoundStirring) {
-          nextStirLength = Math.ceil(nextStirLength * StirringUnitInverse) / StirringUnitInverse;
+          nextStirLength = Math.ceil(nextStirLength * StirUnitInv) / StirUnitInv;
         }
         logAddStirCauldron(nextStirLength);
         stirredLength += nextStirLength;
@@ -1432,12 +1413,12 @@ function straighten(direction, salt, options = {}) {
     } else {
       nextStirLength += nextSegmentLength;
       nextSegmentLength = 0.0;
-      if (nextStirLength + stirredLength >= _maxStirLength) {
+      if (nextStirLength + stirredLength >= _maxStir) {
         // capped stir length.
-        nextStirLength = _maxStirLength - stirredLength + _preStirLength;
+        nextStirLength = _maxStir - stirredLength + _preStirLength;
         _preStirLength = 0.0;
         if (RoundStirring) {
-          nextStirLength = Math.ceil(nextStirLength * StirringUnitInverse) / StirringUnitInverse;
+          nextStirLength = Math.ceil(nextStirLength * StirUnitInv) / StirUnitInv;
         }
         logAddStirCauldron(nextStirLength);
         console.log("Straignten terminated by maximal length stirred.");

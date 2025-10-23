@@ -1,72 +1,20 @@
-/**
- * Full import script.
- */
-
 import {
-  logAddIngredient,
   logSkirt,
-  logAddMoonSalt,
   logAddSunSalt,
-  logAddRotationSalt,
   logAddHeatVortex,
   logAddStirCauldron,
   logAddPourSolvent,
-  logAddSetPosition,
-  isVortex,
-  stirIntoVortex,
-  stirToVortexEdge,
   stirToTurn,
-  stirToZone,
-  stirToDangerZoneExit,
-  stirToNearestTarget,
-  stirToTier,
-  stirToConsume,
-  pourToVortexEdge,
-  heatAndPourToEdge,
   pourToZoneV2,
-  pourToZone,
-  pourIntoVortex,
-  derotateToAngle,
   pourUntilAngle,
-  degToRad,
-  radToDeg,
-  degToSalt,
-  radToSalt,
   saltToDeg,
-  saltToRad,
-  getDirectionByVector,
-  getVectorByDirection,
-  getRelativeDirection,
   getBottlePolarAngle,
-  getBottlePolarAngleByEntity,
   getCurrentStirDirection,
   checkBase,
-  getCurrentVortexRadius,
-  getTargetVortex,
   straighten,
-  getUnit,
-  getTotalMoon,
   getTotalSun,
-  setDisplay,
-  setStirRounding,
-  logError,
-  logSalt,
-} from "../main";
-import {
-  SaltAngle,
-  VortexRadiusLarge,
-  VortexRadiusMedium,
-  VortexRadiusSmall,
-  DeviationT2,
-  DeviationT3,
-  DeviationT1,
-  Entity,
-  Salt,
-  Effects,
-} from "../main";
-
-import { Ingredients, PotionBases } from "@potionous/dataset";
-import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
+} from "../mainScript";
+import { Salt } from "../mainScript";
 
 const recipes = {
   r1: {

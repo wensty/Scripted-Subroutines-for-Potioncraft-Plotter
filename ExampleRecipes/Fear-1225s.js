@@ -14,8 +14,8 @@ import {
   checkBase,
   straighten,
   getTotalSun,
-} from "../main";
-import { SaltAngle, Effects } from "../main";
+} from "../mainScript";
+import { SaltAngle, Effects } from "../mainScript";
 
 function main() {
   checkBase("wine");

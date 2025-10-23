@@ -10,7 +10,7 @@ import {
   degToRad,
   checkBase,
   straighten,
-} from "../main";
+} from "../mainScript";
 
 function main() {
   checkBase("water");

@@ -25,8 +25,8 @@ import {
   straighten,
   getTotalSun,
   setDisplay,
-} from "../main";
-import { Salt, Effects } from "../main";
+} from "../mainScript";
+import { Salt, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -65,7 +65,7 @@ const recipes = {
       derotateToAngle(0);
       logAddHeatVortex(Infinity);
       logAddSunSalt(49);
-      straighten(degToRad(120), Salt.Sun, { preStirLength: 9, maxGrains: 72 });
+      straighten(degToRad(120), Salt.Sun, { preStir: 9, maxGrains: 72 });
       stirToDangerZoneExit(3.3);
       pourToVortexEdge();
       heatAndPourToEdge(0.2, 7);
@@ -95,7 +95,7 @@ const recipes = {
       logAddHeatVortex(5);
       logAddStirCauldron(5.396);
       logAddSunSalt(1);
-      stirToNearestTarget(Effects.Water.Rejuvenation, { preStirLength: 5.2, maxStirLength: 0.5 });
+      stirToNearestTarget(Effects.Water.Rejuvenation, { preStir: 5.2, maxStir: 0.5 });
     },
   },
   r2: {
@@ -154,7 +154,7 @@ const recipes = {
       stirToZone({ preStirLength: 1.4, exitZone: true, overStir: true });
       // logAddSunSalt(47)
       straighten(degToRad(-177.2), Salt.Sun, {
-        preStirLength: 2.8,
+        preStir: 2.8,
         maxGrains: Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36),
       });
       const { x: x2, y: y2 } = currentPlot.pendingPoints[0];
@@ -168,11 +168,11 @@ const recipes = {
       const las = 113;
       derotateToAngle(saltToDeg("moon", las - 0.1) - 12);
       logAddHeatVortex(5.04);
-      straighten(degToRad(153), Salt.Sun, { preStirLength: 4, maxGrains: las - 1 });
+      straighten(degToRad(153), Salt.Sun, { preStir: 4, maxGrains: las - 1 });
       logAddStirCauldron(1.31); // centering. Empirical.
       logAddSunSalt(1);
       setDisplay(true);
-      stirToNearestTarget(Effects.Oil.Rejuvenation, { preStirLength: 9.6 });
+      stirToNearestTarget(Effects.Oil.Rejuvenation, { preStir: 9.6 });
     },
   },
 };

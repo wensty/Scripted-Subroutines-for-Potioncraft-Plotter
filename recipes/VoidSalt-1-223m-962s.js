@@ -8,8 +8,8 @@ import {
   stirToNearestTarget,
   pourToZone,
   derotateToAngle,
-} from "../main";
-import { Effects } from "../main";
+} from "../mainScript";
+import { Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
@@ -25,7 +25,7 @@ function main() {
   }
   logAddStirCauldron(0.1);
   logAddPourSolvent(0.01);
-  stirToNearestTarget(Effects.Wine.Swiftness, { preStirLength: 1.5, maxStirLength: 0.1 });
+  stirToNearestTarget(Effects.Wine.Swiftness, { preStir: 1.5, maxStir: 0.1 });
   logAddMoonSalt(Math.round((45 - currentPlot.pendingPoints[0].angle) / 0.36));
   logAddStirCauldron(1e-9);
   logAddMoonSalt(178);

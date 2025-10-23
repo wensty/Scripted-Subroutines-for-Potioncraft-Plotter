@@ -21,8 +21,8 @@ import {
   straighten,
   getTotalSun,
   setStirRounding,
-} from "../main";
-import { DeviationT1, Salt, Effects } from "../main";
+} from "../mainScript";
+import { DeviationT1, Salt, Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -40,8 +40,8 @@ function main() {
   derotateToAngle(-154.5);
   // MagicVision
   stirToTier(Effects.Water.MagicalVision, {
-    preStirLength: 3.6,
-    maxDeviation: DeviationT1,
+    preStir: 3.6,
+    deviation: DeviationT1,
     ignoreAngle: true,
   });
   pourIntoVortex(16, 6);
@@ -52,8 +52,8 @@ function main() {
   derotateToAngle(-79);
   // Dexterity
   stirToTier(Effects.Water.Dexterity, {
-    preStirLength: 2.0,
-    maxDeviation: DeviationT1,
+    preStir: 2.0,
+    deviation: DeviationT1,
     ignoreAngle: true,
   });
   logAddPourSolvent(6.05); // 2 empirical value

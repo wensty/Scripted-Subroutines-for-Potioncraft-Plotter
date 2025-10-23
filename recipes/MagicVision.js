@@ -10,8 +10,8 @@ import {
   degToRad,
   checkBase,
   straighten,
-} from "../main";
-import { Entity, Salt, Effects } from "../main";
+} from "../mainScript";
+import { Entity, Salt, Effects } from "../mainScript";
 
 const recipes = {
   r1: {
@@ -34,13 +34,13 @@ const recipes = {
       straighten(degToRad(85), Salt.Sun, { maxGrains: 328 });
       stirToZone({ zone: Entity.DangerZone, preStirLength: 3, overStir: false });
       logAddSunSalt(20);
-      straighten(degToRad(40), Salt.Sun, { preStirLength: 5, maxGrains: 145 });
+      straighten(degToRad(40), Salt.Sun, { preStir: 5, maxGrains: 145 });
       logAddStirCauldron(6.833);
       logAddPourSolvent(0.7);
       logAddMoonSalt(53);
       logAddStirCauldron(3.925);
       logAddMoonSalt(1);
-      stirToNearestTarget(Effects.Wine.MagicalVision, { maxStirLength: 0.5 });
+      stirToNearestTarget(Effects.Wine.MagicalVision, { maxStir: 0.5 });
       logAddMoonSalt(139);
     },
   },

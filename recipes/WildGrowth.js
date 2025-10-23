@@ -12,8 +12,8 @@ import {
   checkBase,
   logError,
   logSalt,
-} from "../main";
-import { Effects } from "../main";
+} from "../mainScript";
+import { Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -52,7 +52,7 @@ const recipes = {
       derotateToAngle(0);
       heatAndPourToEdge(3, 7);
       logAddHeatVortex(1.64);
-      stirToNearestTarget(Effects.Water.WildGrowth, { preStirLength: 3.3, maxStirLength: 0.2 });
+      stirToNearestTarget(Effects.Water.WildGrowth, { preStir: 3.3, maxStir: 0.2 });
     },
   },
 };

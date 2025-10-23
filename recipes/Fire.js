@@ -11,8 +11,8 @@ import {
   straighten,
   getTotalSun,
   checkBase,
-} from "../main";
-import { Salt, Effects } from "../main";
+} from "../mainScript";
+import { Salt, Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";

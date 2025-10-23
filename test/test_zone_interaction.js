@@ -5,8 +5,8 @@ import {
   stirToZone,
   pourToZoneV2,
   checkBase,
-} from "../main";
-import { Entity } from "../main";
+} from "../mainScript";
+import { Entity } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -21,8 +21,8 @@ function test_pour_to_zone_full_parameter() {
   logAddSetPosition(15, 14);
   pourToZoneV2({
     zone: Entity.StrongDangerZone,
-    prePourLength: 4.7,
-    maxPourLength: 0.5,
+    prePour: 4.7,
+    maxPour: 0.5,
     exitZone: false,
     overPour: true,
   });

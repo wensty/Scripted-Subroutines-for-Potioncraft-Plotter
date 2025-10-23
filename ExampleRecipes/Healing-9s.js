@@ -1,5 +1,10 @@
-import { logAddIngredient, logAddSunSalt, logAddStirCauldron, stirToNearestTarget } from "../main";
-import { Effects } from "../main";
+import {
+  logAddIngredient,
+  logAddSunSalt,
+  logAddStirCauldron,
+  stirToNearestTarget,
+} from "../mainScript";
+import { Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 

@@ -11,7 +11,7 @@ import {
   heatAndPourToEdge,
   pourIntoVortex,
   checkBase,
-} from "../main";
+} from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 /**
