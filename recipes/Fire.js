@@ -3,7 +3,7 @@ import {
   logAddSunSalt,
   logAddStirCauldron,
   logAddPourSolvent,
-  stirToNearestTarget,
+  stirToTarget,
   degToRad,
   radToDeg,
   vecToDirCoord,
@@ -42,7 +42,7 @@ const recipes = {
       logAddSunSalt(5);
       logAddStirCauldron(0.154);
       logAddSunSalt(1);
-      stirToNearestTarget(Effects.Oil.Fire);
+      stirToTarget(Effects.Oil.Fire);
       logAddSunSalt(156 - getTotalSun());
     },
   },

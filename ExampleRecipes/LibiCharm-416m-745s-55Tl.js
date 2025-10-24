@@ -5,7 +5,7 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
   stirToTurn,
-  stirToNearestTarget,
+  stirToTarget,
   degToRad,
   checkBase,
   straighten,
@@ -26,7 +26,7 @@ function main() {
   logAddStirCauldron(1.09);
   logAddMoonSalt(1);
   logAddStirCauldron(3.7);
-  stirToNearestTarget(Effects.Wine.Libido, { maxStir: 0.2 });
+  stirToTarget(Effects.Wine.Libido, { maxStir: 0.2 });
   logAddSunSalt(133);
   logAddPourSolvent(5.44);
   stirToTurn();

@@ -4,7 +4,7 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
   stirToTurn,
-  stirToNearestTarget,
+  stirToTarget,
   derotateToAngle,
   degToRad,
   radToDeg,
@@ -48,5 +48,5 @@ function beta() {
   straighten(degToRad(48.5), "sun", { maxStir: 1.3, maxGrains: 825 - getTotalSun() });
   logAddStirCauldron(1.13);
   logAddSunSalt(1);
-  console.log("least distance: " + stirToNearestTarget(Effects.Wine.Hallucinations));
+  console.log("least distance: " + stirToTarget(Effects.Wine.Hallucinations));
 }

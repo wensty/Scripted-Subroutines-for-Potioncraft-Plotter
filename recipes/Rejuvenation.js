@@ -8,7 +8,7 @@ import {
   stirToTurn,
   stirToZone,
   stirToDangerZoneExit,
-  stirToNearestTarget,
+  stirToTarget,
   pourToVortexEdge,
   heatAndPourToEdge,
   pourToZoneV2,
@@ -91,7 +91,7 @@ const recipes = {
       logAddHeatVortex(5);
       logAddStirCauldron(5.396);
       logAddSunSalt(1);
-      stirToNearestTarget(Effects.Water.Rejuvenation, { preStir: 5.2, maxStir: 0.5 });
+      stirToTarget(Effects.Water.Rejuvenation, { preStir: 5.2, maxStir: 0.5 });
     },
   },
   r2: {
@@ -168,7 +168,7 @@ const recipes = {
       logAddStirCauldron(1.31); // centering. Empirical.
       logAddSunSalt(1);
       setDisplay(true);
-      stirToNearestTarget(Effects.Oil.Rejuvenation, { preStir: 9.6 });
+      stirToTarget(Effects.Oil.Rejuvenation, { preStir: 9.6 });
     },
   },
 };

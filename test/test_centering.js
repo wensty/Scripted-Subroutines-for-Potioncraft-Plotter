@@ -2,7 +2,7 @@ import {
   logAddIngredient,
   logAddSunSalt,
   logAddStirCauldron,
-  stirToNearestTarget,
+  stirToTarget,
   stirToTier,
   checkBase,
 } from "../mainScript";
@@ -21,7 +21,7 @@ function test_stir_to_nearest_target() {
   logAddSunSalt(6);
   logAddStirCauldron(2.636);
   logAddSunSalt(3);
-  stirToNearestTarget(Effects.Oil.Healing, { preStir: 6.8, maxStir: 0.5 });
+  stirToTarget(Effects.Oil.Healing, { preStir: 6.8, maxStir: 0.5 });
 }
 
 /**

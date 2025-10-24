@@ -7,7 +7,7 @@ import {
   logAddPourSolvent,
   stirIntoVortex,
   stirToTurn,
-  stirToNearestTarget,
+  stirToTarget,
   stirToTier,
   pourToVortexEdge,
   heatAndPourToEdge,
@@ -108,6 +108,6 @@ function beta_20m_978s_125hT() {
   logAddStirCauldron(2.369);
   logAddSunSalt(1);
   logAddStirCauldron(5.7);
-  stirToNearestTarget(Effects.Water.Enlargement);
+  stirToTarget(Effects.Water.Enlargement);
   logAddSunSalt(201);
 }

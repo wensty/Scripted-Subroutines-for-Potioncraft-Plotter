@@ -10,6 +10,7 @@ import {
   addSetPosition,
   createPourSolvent,
   createStirCauldron,
+  createSetPosition,
 } from "@potionous/instructions";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";
@@ -141,13 +142,6 @@ const Effects = {
 /**
  * Utility functions.
  */
-
-/**
- * Simulation of plotter API `createSetPosition(x, y)`.
- * @param {number} x
- * @param {number} y
- */
-const createSetPosition = (x, y) => ({ type: "set-position", x: x, y: y });
 
 /**
  * Fixes undefined coordinates in a PotionBaseEntity object by setting them to 0.0.
@@ -630,7 +624,7 @@ const stirToDangerZoneExit = (preStirLength) => {
  *   each segment in the optimization process.
  * @returns {number} The optimal distance to the target after stirring.
  */
-function stirToNearestTarget(target, options = {}) {
+function stirToTarget(target, options = {}) {
   const { preStir = 0.0, maxStir = Infinity, segmentLength = 1e-9 } = options;
   let pendingPoints = currentPlot.pendingPoints;
   if (preStir > 0.0) {
@@ -1444,12 +1438,15 @@ function straighten(direction, salt, options = {}) {
 
 /** main function. */
 function main() {
+  // Your Script here...
   logSalt();
 }
 
+main();
+
 /**
  * Useful for scripting offline.
- * Currently plotter do not support exports. Delete these export lines.
+ *Currently online plotter do not support exports. Delete these export lines.
  */
 export {
   logAddIngredient,
@@ -1470,7 +1467,7 @@ export {
   stirToTurn,
   stirToZone,
   stirToDangerZoneExit,
-  stirToNearestTarget,
+  stirToTarget,
   stirToTier,
   stirToConsume,
   // Pouring subroutines.

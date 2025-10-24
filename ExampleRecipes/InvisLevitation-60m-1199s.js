@@ -8,7 +8,7 @@ import {
   stirIntoVortex,
   stirToTurn,
   stirToDangerZoneExit,
-  stirToNearestTarget,
+  stirToTarget,
   stirToTier,
   pourToVortexEdge,
   heatAndPourToEdge,
@@ -92,7 +92,7 @@ function main() {
   // last salt for precise centering
   logAddStirCauldron(1.286);
   logAddSunSalt(1);
-  console.log("path deviation: " + stirToNearestTarget(Effects.Water.Levitation, { preStir: 3.2 }));
+  console.log("path deviation: " + stirToTarget(Effects.Water.Levitation, { preStir: 3.2 }));
 }
 
 function beta() {
@@ -160,5 +160,5 @@ function beta() {
   // last salt for precise centering
   logAddStirCauldron(0.862);
   logAddSunSalt(1);
-  console.log("path deviation: " + stirToNearestTarget(Effects.Water.Levitation, { preStir: 0.0 }));
+  console.log("path deviation: " + stirToTarget(Effects.Water.Levitation, { preStir: 0.0 }));
 }

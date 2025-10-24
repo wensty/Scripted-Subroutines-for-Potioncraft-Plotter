@@ -5,7 +5,7 @@ import {
   logAddStirCauldron,
   stirIntoVortex,
   stirToTurn,
-  stirToNearestTarget,
+  stirToTarget,
   heatAndPourToEdge,
   derotateToAngle,
   degToRad,
@@ -50,6 +50,6 @@ function beta() {
   straighten(degToRad(-110), Salt.Sun, { maxGrains: 257 });
   logAddStirCauldron(2.81);
   logAddSunSalt(1);
-  console.log("nearest:" + stirToNearestTarget(Effects.Water.Acid, { preStir: 2 }));
+  console.log("nearest:" + stirToTarget(Effects.Water.Acid, { preStir: 2 }));
   logAddSunSalt(111);
 }

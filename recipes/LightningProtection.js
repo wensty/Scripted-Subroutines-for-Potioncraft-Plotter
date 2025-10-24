@@ -14,7 +14,7 @@ import {
   stirToTurn,
   stirToZone,
   stirToDangerZoneExit,
-  stirToNearestTarget,
+  stirToTarget,
   derotateToAngle,
   degToRad,
   radToDeg,
@@ -85,8 +85,7 @@ const recipes = {
       logAddStirCauldron(0);
       logAddSunSalt(1);
       console.log(
-        "Minimal distance: " +
-          stirToNearestTarget(Effects.Oil.LightningProtection, { preStir: 3.0 })
+        "Minimal distance: " + stirToTarget(Effects.Oil.LightningProtection, { preStir: 3.0 })
       );
       logAddSetPosition(3.66, -30.72);
     },
@@ -127,7 +126,7 @@ const recipes = {
       logAddSunSalt(35);
       console.log(
         "centering:" +
-          stirToNearestTarget(Effects.Water.LightningProtection, {
+          stirToTarget(Effects.Water.LightningProtection, {
             preStir: 9.2,
             maxStir: 0.5,
           })

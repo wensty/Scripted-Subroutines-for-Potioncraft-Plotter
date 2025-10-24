@@ -4,7 +4,7 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
   stirToTurn,
-  stirToNearestTarget,
+  stirToTarget,
   pourToZone,
   derotateToAngle,
   degToRad,
@@ -56,7 +56,7 @@ function main() {
   }
   logAddStirCauldron(0.1);
   logAddPourSolvent(0.166);
-  stirToNearestTarget(Effects.Wine.Fear);
+  stirToTarget(Effects.Wine.Fear);
 }
 function beta_1226s() {
   checkBase("wine");
@@ -98,6 +98,6 @@ function beta_1226s() {
   // New technique to avoid pouring centering.
   logAddStirCauldron(0.3);
   logAddPourSolvent(0.036);
-  console.log(stirToNearestTarget(Effects.Wine.Fear));
+  console.log(stirToTarget(Effects.Wine.Fear));
   logAddSunSalt(1); // do not enough derorate.
 }

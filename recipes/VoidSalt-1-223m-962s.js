@@ -5,7 +5,7 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
   stirToDangerZoneExit,
-  stirToNearestTarget,
+  stirToTarget,
   pourToZone,
   derotateToAngle,
 } from "../mainScript";
@@ -25,7 +25,7 @@ function main() {
   }
   logAddStirCauldron(0.1);
   logAddPourSolvent(0.01);
-  stirToNearestTarget(Effects.Wine.Swiftness, { preStir: 1.5, maxStir: 0.1 });
+  stirToTarget(Effects.Wine.Swiftness, { preStir: 1.5, maxStir: 0.1 });
   logAddMoonSalt(Math.round((45 - currentPlot.pendingPoints[0].angle) / 0.36));
   logAddStirCauldron(1e-9);
   logAddMoonSalt(178);

@@ -5,7 +5,7 @@ import {
   logAddHeatVortex,
   stirIntoVortex,
   stirToTurn,
-  stirToNearestTarget,
+  stirToTarget,
   heatAndPourToEdge,
   derotateToAngle,
   getBottlePolarAngleByEntity,
@@ -47,7 +47,7 @@ const recipes = {
       derotateToAngle(0);
       heatAndPourToEdge(3, 7);
       logAddHeatVortex(1.64);
-      stirToNearestTarget(Effects.Water.WildGrowth, { preStir: 3.3, maxStir: 0.2 });
+      stirToTarget(Effects.Water.WildGrowth, { preStir: 3.3, maxStir: 0.2 });
     },
   },
 };

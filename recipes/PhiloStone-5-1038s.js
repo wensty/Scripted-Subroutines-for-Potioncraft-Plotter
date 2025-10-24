@@ -6,7 +6,7 @@ import {
   logAddPourSolvent,
   stirIntoVortex,
   stirToTurn,
-  stirToNearestTarget,
+  stirToTarget,
   stirToTier,
   heatAndPourToEdge,
   derotateToAngle,
@@ -67,7 +67,7 @@ function beta() {
   heatAndPourToEdge(3, 6);
   logAddHeatVortex(5.3);
   derotateToAngle(50, { toAngle: false });
-  stirToNearestTarget(Effects.Water.Libido, { preStir: 5.7, maxStir: 0.3 });
+  stirToTarget(Effects.Water.Libido, { preStir: 5.7, maxStir: 0.3 });
   logAddPourSolvent(1.5);
   logAddStirCauldron(4);
   logAddPourSolvent(5);

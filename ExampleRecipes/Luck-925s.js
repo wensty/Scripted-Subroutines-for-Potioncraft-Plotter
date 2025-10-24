@@ -4,7 +4,7 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
   stirToTurn,
-  stirToNearestTarget,
+  stirToTarget,
   degToRad,
   getBottlePolarAngle,
   checkBase,
@@ -29,6 +29,6 @@ function beta() {
   totalSun += straighten(degToRad(42.1), "sun", { maxStir: 1.3, maxGrains: s });
   logAddStirCauldron(0.207); // centering.
   totalSun += logAddSunSalt(1);
-  console.log(stirToNearestTarget(Effects.Wine.Luck));
+  console.log(stirToTarget(Effects.Wine.Luck));
   logAddSunSalt(s + 501 - totalSun);
 }

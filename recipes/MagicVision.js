@@ -6,7 +6,7 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
   stirToZone,
-  stirToNearestTarget,
+  stirToTarget,
   degToRad,
   checkBase,
   straighten,
@@ -35,7 +35,7 @@ const recipes = {
       logAddMoonSalt(53);
       logAddStirCauldron(3.925);
       logAddMoonSalt(1);
-      stirToNearestTarget(Effects.Wine.MagicalVision, { maxStir: 0.5 });
+      stirToTarget(Effects.Wine.MagicalVision, { maxStir: 0.5 });
       logAddMoonSalt(139);
     },
   },

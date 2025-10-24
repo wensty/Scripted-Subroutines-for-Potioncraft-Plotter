@@ -7,7 +7,7 @@ import {
   stirIntoVortex,
   stirToTurn,
   stirToDangerZoneExit,
-  stirToNearestTarget,
+  stirToTarget,
   heatAndPourToEdge,
   derotateToAngle,
   radToDeg,
@@ -45,5 +45,5 @@ function beta() {
   logAddHeatVortex(3.13);
   logAddStirCauldron(0.832);
   logAddHeatVortex(4.58);
-  stirToNearestTarget(Effects.Water.Fire);
+  stirToTarget(Effects.Water.Fire);
 }

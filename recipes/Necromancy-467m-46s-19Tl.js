@@ -5,7 +5,7 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
   stirToTurn,
-  stirToNearestTarget,
+  stirToTarget,
   degToRad,
   straighten,
   getTotalMoon,
@@ -26,5 +26,5 @@ function beta() {
   logAddMoonSalt(1);
   logAddStirCauldron(0.452);
   logAddMoonSalt(467 - getTotalMoon());
-  stirToNearestTarget(Effects.Wine.Necromancy, { preStir: 9 });
+  stirToTarget(Effects.Wine.Necromancy, { preStir: 9 });
 }

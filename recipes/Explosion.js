@@ -8,7 +8,7 @@ import {
   stirIntoVortex,
   stirToVortexEdge,
   stirToZone,
-  stirToNearestTarget,
+  stirToTarget,
   stirToConsume,
   pourToZoneV2,
   derotateToAngle,
@@ -66,7 +66,7 @@ const recipes = {
       logAddMoonSalt(59);
       logAddStirCauldron(1.306);
       logAddMoonSalt(1);
-      stirToNearestTarget(Effects.Water.Explosion, { preStir: 4.1, maxStir: 0.5 });
+      stirToTarget(Effects.Water.Explosion, { preStir: 4.1, maxStir: 0.5 });
       logAddSunSalt(27);
     },
   },

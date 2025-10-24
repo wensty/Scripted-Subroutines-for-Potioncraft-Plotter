@@ -9,7 +9,7 @@ import {
   stirToTurn,
   stirToZone,
   stirToDangerZoneExit,
-  stirToNearestTarget,
+  stirToTarget,
   stirToConsume,
   pourToVortexEdge,
   heatAndPourToEdge,
@@ -105,7 +105,7 @@ const recipes = {
       stirIntoVortex(5);
       derotateToAngle(-135);
       logAddHeatVortex(4.435);
-      console.log(stirToNearestTarget(Effects.Water.Stench, { preStir: 3.3, maxStir: 0.5 }));
+      console.log(stirToTarget(Effects.Water.Stench, { preStir: 3.3, maxStir: 0.5 }));
     },
   },
 };

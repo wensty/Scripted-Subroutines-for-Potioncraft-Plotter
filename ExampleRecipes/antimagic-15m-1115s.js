@@ -5,7 +5,7 @@ import {
   logAddStirCauldron,
   stirIntoVortex,
   stirToTurn,
-  stirToNearestTarget,
+  stirToTarget,
   heatAndPourToEdge,
   derotateToAngle,
   degToRad,
@@ -46,7 +46,7 @@ function main() {
   straighten(degToRad(11), "sun", { maxStir: 4, maxGrains: 201 });
   logAddStirCauldron(3.11);
   logAddSunSalt(1);
-  console.log("path deviation: " + stirToNearestTarget(Effects.Oil.AntiMagic, { preStir: 1.2 }));
+  console.log("path deviation: " + stirToTarget(Effects.Oil.AntiMagic, { preStir: 1.2 }));
 }
 
 function beta() {
@@ -85,5 +85,5 @@ function beta() {
   straighten(degToRad(11), "sun", { maxStir: 4, maxGrains: 207 });
   logAddStirCauldron(1.21);
   logAddSunSalt(1);
-  console.log("path deviation: " + stirToNearestTarget(Effects.Oil.AntiMagic, { preStir: 1.2 }));
+  console.log("path deviation: " + stirToTarget(Effects.Oil.AntiMagic, { preStir: 1.2 }));
 }

@@ -4,7 +4,7 @@ import {
   logAddHeatVortex,
   logAddStirCauldron,
   stirIntoVortex,
-  stirToNearestTarget,
+  stirToTarget,
   degToRad,
   checkBase,
   straighten,
@@ -29,5 +29,5 @@ function beta() {
   logAddStirCauldron(1.3);
   logAddHeatVortex(Infinity);
   straighten(degToRad(70), Salt.Moon, { maxGrains: 16, preStir: 5 });
-  stirToNearestTarget(Effects.Oil.Invisibility, { preStir: 4.4 });
+  stirToTarget(Effects.Oil.Invisibility, { preStir: 4.4 });
 }

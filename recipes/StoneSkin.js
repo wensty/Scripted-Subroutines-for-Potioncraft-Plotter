@@ -6,7 +6,7 @@ import {
   stirToConsume,
   pourToVortexEdge,
   heatAndPourToEdge,
-  stirToNearestTarget,
+  stirToTarget,
   Effects,
   checkBase,
 } from "../mainScript";
@@ -39,7 +39,7 @@ const recipes = {
         logAddHeatVortex(0.1);
       }
       logAddHeatVortex(1.4);
-      stirToNearestTarget(Effects.Water.StoneSkin);
+      stirToTarget(Effects.Water.StoneSkin);
     },
   },
 };
