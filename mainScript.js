@@ -253,9 +253,9 @@ function checkBase(expectedBase) {
   if (!["water", "oil", "wine"].includes(expectedBase)) {
     logError("checkBase", "Unknown expected base: " + expectedBase + ".");
   } else {
-    const currentBase = PotionBases.current.id;
-    if (currentBase != expectedBase) {
-      logError("checkBase", "" + currentBase + " is not the expected base " + expectedBase + ".");
+    const base = PotionBases.current.id;
+    if (base != expectedBase) {
+      logError("checkBase", "" + base + " is not the expected base " + expectedBase + ".");
       return;
     }
   }
@@ -1231,6 +1231,23 @@ function getCurrentStirDirection(segmentLength = 1e-9) {
 }
 
 /**
+ * Computes the direction the bottle moves when heating the potion.
+ * @returns {number} The direction angle in radians.
+ */
+function getCurrentHeatDirection() {
+  const point = currentPlot.pendingPoints[0];
+  const vortex = fixUndef(point.bottleCollisions.find(isVortex));
+  if (vortex == undefined) {
+    logError("getting current heat direction", "no vortex at current position.");
+    return 0.0;
+  }
+  const c = 0.16;
+  const dist = vMag(vSub(vortex, point));
+  const rot = Math.atan(c / dist);
+  return vecToDir(vRot(vSub(point, vortex), -Math.PI / 2 - rot));
+}
+
+/**
  * Retrieves the radius of the current vortex.
  * @returns {number} The radius of the current vortex.
  */
@@ -1491,6 +1508,7 @@ export {
   getBottlePolarAngle,
   getBottlePolarAngleByEntity,
   getCurrentStirDirection,
+  getCurrentHeatDirection,
   // Extraction of other informations.
   checkBase,
   getCurrentVortexRadius,

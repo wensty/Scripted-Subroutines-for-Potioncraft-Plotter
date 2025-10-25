@@ -41,6 +41,7 @@ import {
   getBottlePolarAngle,
   getBottlePolarAngleByEntity,
   getCurrentStirDirection,
+  getCurrentHeatDirection,
   checkBase,
   getCurrentVortexRadius,
   getTargetVortex,
