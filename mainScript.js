@@ -553,7 +553,7 @@ function stirToTurn(options = {}) {
  * @param {number} [options.preStir=0.0] - The minimum initial stir length.
  * @param {boolean} [options.overStir=false] - Whether to over stir by a small amount.
  * @param {boolean} [options.exitZone=false] - Whether to exit the zone instead of entering it.
- * @param {number} [options.buffer=1e-5] - The buffer to add when over stirring.
+ * @param {number} [options.buffer=1e-5] - The added buffer length  when not rounding the stir length.
  */
 function stirToZone(options = {}) {
   const {
@@ -766,16 +766,16 @@ function stirToTier(target, options = {}) {
 /**
  * Stirs the potion to consume a specified length while in a vortex.
  * This is not affected by stir rounding, since the stir length is manually input.
- * @param {number} consumeLength - The length of stirring to consume.
+ * @param {number} length - The length of stirring to consume.
  */
-function stirToConsume(consumeLength) {
+function stirToConsume(length) {
   const currentPoint = currentPlot.pendingPoints[0];
   const result = currentPoint.bottleCollisions.find(isVortex);
   if (result == undefined) {
     logError("stirring to consume", "bottle not in a vortex.");
     return;
   }
-  logAddStirCauldron(consumeLength);
+  logAddStirCauldron(length);
   logAddSetPosition(currentPoint.x, currentPoint.y);
   return;
 }

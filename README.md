@@ -137,58 +137,61 @@ Used to detection of certain entities.
 
 ### Stirring subroutines.
 
-- `stirIntoVortex()`: stir to a different vortex.
-- `StirToEdge()`: stir to edge of the current vortex.
+- `stirIntoVortex(preStir?=0.0,buffer?=1e-5)`: stir to a different vortex.
+  - `preStir`: stir the length before stirring to vortex. Accelerate the script.
+- `StirToVortexEdge(preStir?=0.0,buffer?=1e-5)`: stir to edge of the current vortex.
+  - `preStir`: stir the length before stirring to edge of vortex. Accelerate the script.
 - `stirToTurn(option={})`: stir to the point where the direction changes vastly.
-  - `option.preStirLength`: the stir length before stirring to turn.
-  - `option.maxStirLength`: the maximal length it will stir.
+  - `option.preStir`: the stir length before stirring to turn.
+  - `option.maxStir`: the maximal length it will stir.
   - `option.directionBuffer`: the angular threshold in radians to be considered as "vast" change.
-  - `option.leastSegmentLength`: the minimum length between points to consider in the calculation.
-- `StirToZone(options={})`: stir to the nearest point in the given zone.
-  - `options.zone`: the zone to stir to. Not recommended to use with vortex and effects.
-  - `options.preStirLength`: the stir length before stirring to zone. To accelerate the script.
-  - `options.exitZone`: Set to exit the given zone.
+  - `option.segmentLength`: the minimum length between points to consider in the calculation.
+- `StirToZone(options={})`: stir to given zone. Can be configured to enter or leave the given zone, or stop before or after the point.
+  - `options.zone`: the zone to stir to. Recommended to be danger zones, swamps or heal zones.
+  - `options.preStir`: the stir length before stirring to zone. To accelerate the script.
   - `options.overStir`: Set to stir a bit more to ensure entrance or exit.
+  - `options.exitZone`: Set to exit the given zone.
+  - `options.buffer`: the buffer to add when stir is not rounded.
 - `StirIntoDangerZoneExit()`: special case of last function to stir to the nearest point outside of the nearest danger zone.
-- `stirToNearestTarget(target, options?)`: stir to the nearest point to the target position within the given maximum stir length.
+- `stirToTarget(target, options?)`: stir to the nearest point to the target position within the given maximum stir length.
   - `target`: the target effect. An object with `x` and `y` properties.
     - Can be one of the pre-defined `Effects` constant.
   - `options`: an object with the following options:
-    - `preStirLength`: the stir length before the optimization. Default to `0.0`.
-    - `maxStirLength`: the maximal stir length allowed in the optimization. Default to be `Infinity`.
-    - `leastSegmentLength`: the minimal length of each segment in the optimization process. Default to be `1e-9`.
+    - `preStir`: the stir length before the optimization. Default to `0.0`.
+    - `maxStir`: the maximal stir length allowed in the optimization. Default to be `Infinity`.
+    - `segmentLength`: the minimal length of each segment in the optimization process. Default to be `1e-9`.
 - `stirToTier(target, options?)`: stir to the specified tier of certain effect, adjusting the stir length based on the current angle and position.
   - `target`: the target effect. An object with `x`, `y` and `angle` properties.
     - Can be one of the pre-defined `Effects` constant.
   - `options`: an object with the following options:
-    - `preStirLength`: the stir length before the optimization. Default to `0.0`.
-    - `maxDeviation`: the maximum angle deviation to the target effect. Default to be `DeviationT2`, i.e. the max deviation to get tier 2 effect.
+    - `preStir`: the stir length before the optimization. Default to `0.0`.
+    - `deviation`: the maximum angle deviation to the target effect. Default to be `DeviationT2`, i.e. the max deviation to get tier 2 effect.
     - `ignoreAngle`: whether to ignore the angle deviation. whether T1 effects are reached is not affected by angle deviation.
-    - `leastSegmentLength`: the minimal length of each segment in the optimization process. Default to be `1e-9`
+    - `segmentLength`: the minimal length of each segment in the optimization process. Default to be `1e-9`
     - `afterBuffer`: the buffer added after stirring. Default to be `1e-5`.
 - `stirToConsume(consumeLength)`: stir to consume a specified length while in a vortex.
-  - `consumeLength`: the length of stirring to consume.
-  - <em>The consume is virtual</em>. Consider if it can be translated to real path consuming.
+  - <em>Generally you can move the bottle fairly free with heating inside a vortex, so you can carefully stir and heating, so the bottle do not move as you stir. This process is called "consuming" path in a vortex. This function does a virtual consuming process using tp(to ensure the current point definitely do not move), so consider if it can be translated into a real path consuming process and the possily unavoidable solvent pouring.</em>
+  - `length`: the length of stirring to consume.
 
 ### Pouring subroutines.
 
-- `pourToEdge()`: pour to the edge of the current vortex.
+- `pourToVortexEdge()`: pour to the edge of the current vortex.
 - `heatAndPourToEdge(length, repeats)`: repeatedly heating the vortex and pouring to edge of it, to move the bottle with the vortex and keep it at the boundary of the vortex.
   - `length`: the maximal length of pour. Overridden at the last stage where we can not heat too much.
   - `repeats`: the number of times to repeat the heating and pouring process.
-- `pourtoZoneV2(options)`: pour to the assigned zone with more control.
+- `pourtoZoneV2(options)`: pour to the assigned zone with more control options.
   - `options`: an object with the following options:
     - `zone`: the zone to pour towards. Default to be `Entity.DangerZone`.
-    - `maxPourLength`: the maximal length it will pour.
-    - `prePourLength`: the initial length of pouring.
+    - `maxPour`: the maximal length it will pour.
+    - `prePour`: the initial length of pouring.
     - `overPour`: whether to pour **slightly** more than the minimum required to ensure into or exit the zone.
     - `exitZone`: whether to exit the zone instead of entering it.
-- `pourToZone(maxPourLength, zone?)`: special case. Left here for old recipe compatibility.
-- `pourIntoVortex(targetVortexX, targetVortexY)`: pour into the target vortex.
-  - `targetVortexX`, `targetVortexY`: the rough coordinates of the target vortex.
+- `pourToZone(maxPourLength, zone?)`: special case that pour and stop before the zone. For old recipe script compatibility.
+- `pourIntoVortex(x, y)`: pour into the target vortex.
+  - `x`, `y`: the rough coordinates of the target vortex.
 - `derotateToAngle(targetAngle, {toAngle?})`: de-rotate the bottle to a target angle **at origin or in a vortex without moving the bottle.**
   - `targetAngle`: the target angle **in degrees**.
-  - `toAgle`: de-rotate to the target angle or by the target angle.
+  - `toAngle`: de-rotate to the target angle or by the target angle.
   - **Note that this de-rotation process is not real de-rotation process. Check that it can be translated back to real de-rotation before using it**.
 - `pourUntilAngle(targetAngle,{minPour = 0.0,maxPour?,epsHigh?,epsLow?,buffer?,overPour?})`: pour until the bottle is at the target angle. This will **move the bottle toward origin**.
   - `targetAngle`: the target angle **in degrees**.
@@ -209,14 +212,20 @@ Used to detection of certain entities.
 - `saltToDeg`
 - `saltToRad`
 
-### Angle and direction extractions
+### Angle and direction conversions
 
-- `getDirectionByVector(x, y, baseDirection?)` : computes the direction angle of a 2D vector relative to a base direction.
+- `vecToDir(v, baseDirection?)` : computes the direction angle of a 2D vector relative to a base direction.
+  - `v`: the 2D vector.
+  - `baseDirection`: the base direction in radian. Default to be 0.
+- `vecToDirCoord(x, y, baseDirection?)` : the same as `vecToDir` but with coordinates.
   - `x`, `y`: the x and y components of the vector.
   - `baseDirection`: the base direction in radian. Default to be 0.
-- `getVectorByDirection(direction, baseDirection?)` : computes a 2D vector from a direction angle and an optional base direction angle.
-- `getRelativeDirection(direction, baseDirection?)` : computes the relative direction between two direction angles.
+- `dirToVec(direction, baseDirection?)` : computes a 2D vector from a direction angle and an optional base direction angle.
+- `relDir(direction, baseDirection?)` : computes the relative direction between two direction angles.
   - This is dedicated to compute the relative direction. So the base direction must be provided.
+
+### Extraction of information.
+
 - `getBottlePolarAngle(toBottle?)`: computes the direction angle of the current bottle position.
   - `toBottle`: Boolean default to be `true`. Decide to calculate the angle toward the bottle or from the bottle.
 - `getBottlePolarAngleByEntity(expectedEntityTypes, toBottle?)`: computes the direction angle of the current bottle position _relative to the center_ of the given entity touching the current bottle.
@@ -224,26 +233,24 @@ Used to detection of certain entities.
   - `expectedEntityTypes`: an array of entity type names, default to be `EntityVortex=["Vortex"]`. Some constants have been defined for this.
   - `toBottle`: Boolean default to be `true`. Decide to calculate the angle toward the bottle or from the bottle.
 - `getCurrentStirDirection()`: computes the direction angle of the current stir in radians.
-
-### Extraction of other informations.
-
 - `checkBase(expectedBase)`: checks if the current potion base is the given expected base. If not, this check produce an error.
 - `getCurrentVortexRadius()`: returns the radius of the current vortex.
-- `getTargetVortexInfo(targetX, targetY)`: returns the coordinates and radius of the target vortex.
-  - return: `{x:number, y:number, r:number}` be a object with `x`, `y`, `r` as keys.
+- `getTargetVortex(x, y)`: returns the coordinates and radius of the target vortex.
+  - `x`, `y`: the rough coordinates of the target vortex (i.e. inside the vortex).
+  - return: `{x:number, y:number, r:number}` be a object with `x`, `y`, `r` as keys. The center of the vortex and the radius of the vortex.
 
 ### Complex subroutines.
 
 - `straighten(direction, salt, {maxStirLength?, maxGrains?, ignoreReverse?,preStirLength?, leastSegmentLength?})`: straighten the potion path with rotation salts, i.e. automatically adding proper number of rotation salt while stirring to make the potion path straight.
   - `direction`: the direction to be stirred in radian.
   - `salt`: the type of salt to be added, it must be "moon" or "sun".
-  - `maxStirLength`, `maxGrains`: stopping conditions of the straightening process. Default to be `Infinity`, i.e. stopping condition not set.
-  - `preStirLength`: the amount of stirring to be added before the straightening process. Default to be `0`.
+  - `maxStir`, `maxGrains`: stopping conditions of the straightening process. Default to be `Infinity`, i.e. stopping condition not set.
+  - `preStir`: the amount of stirring to be added before the straightening process. Default to be `0`.
   - `ignoreReverse`: Controls the behavior when reversed direction(i.e. should add another rotation salt to bend it to the given direction) is detected. If set, no salt will be added and the process continues. If not set, the function terminate when a reversed direction is detected.
     - Default to be `true`, i.e. not set the reversed direction terminate condition.
-  - Generally you should set at least one of the terminate condition.
-  - Straightening is important for many highly-salty recipes with brute-force bending of path, like `AntiMagic-15m-1115s.js`.
-    > Under some assumption, we can prove that that the optimal path is:
+  - **Generally you should set at least one of the 3 terminate condition.**
+  - Straightening is important for many high-salt recipes with brute-force bended path.
+    > Under some assumption, we can prove that that the optimal path is:.
     >
     > 1. A part of the ingredient.
     > 2. A straightened part.
@@ -252,7 +259,9 @@ Used to detection of certain entities.
 
 ### Other utilities
 
-- `getUnit(x,y)`: get the unit vector of the vector (x, y).
+- `unitV(v)`: calculate the unit vector of a 2D vector.
+  - `v`: the 2D vector.
+  - `unit(x,y)`: The coordinated version.
 - `getTotalMoon()`: get the total amount of moon salt added so far _in this script_.
 - `getTotalSun()`: get the total amount of sun salt added so far _in this script_.
 - `setDisplay(display)`: set the display mode of the plotter.
@@ -262,6 +271,23 @@ Used to detection of certain entities.
   - some operations that potentially require high precision is not rounded. For example stirring to certain target effect.
 - `logSalt()`: log the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
   - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.
+
+---
+
+The following utilities are used for implementation and not exported:
+
+- `vMag(v)`: compute the magnitude of a vector.
+- `vSub(v1, v2)`: subtract two vectors.
+- `vAdd(v1, v2)`: add two vectors.
+- `vProd(v1, v2)`: compute the dot product of two vectors.
+- `vRot(v, angle)`: rotate a vector by a given angle.
+- `vRot90(v)`: rotate a vector by 90 degrees.
+- `vNeg(v)`: negate a vector (i.e. rotate by 180 degrees).
+- `vRot270(v)`: rotate a vector by 270 degrees.
+- `intersectCircle(circle, point, direction)`: calculate the intersection points of a line defined by a point and direction, and a circle.
+  - `circle`: `{x: number, y: number, r: number}` be a object with `x`, `y`, `r` as keys.
+  - `point`: `{x: number, y: number}` be a object with `x`, `y` as keys.
+  - `direction`: `{x: number, y: number}` be a object with `x`, `y` as keys.
 
 ### Constants
 
