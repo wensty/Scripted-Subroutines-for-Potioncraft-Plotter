@@ -2,19 +2,23 @@ import { pointDistance } from "@potionous/common";
 
 import {
   addIngredient,
-  addSunSalt,
   addMoonSalt,
+  addSunSalt,
   addHeatVortex,
   addStirCauldron,
   addPourSolvent,
   addSetPosition,
+  createAddIngredient,
+  createAddMoonSalt,
+  createAddSunSalt,
   createPourSolvent,
+  createHeatVortex,
   createStirCauldron,
   createSetPosition,
 } from "@potionous/instructions";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";
-import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";
+import { currentPlot, computePlot, startingRecipeItems, currentRecipeItems } from "@potionous/plot";
 
 const LuckyInfinity = 1437;
 const SaltAngle = (2 * Math.PI) / 1000.0; // angle per salt in radian.
@@ -271,54 +275,70 @@ function logSalt() {
 
 /**
  * Logs the addition of an ingredient and adds it to the current plot.
- * @param {import("@potionous/dataset").IngredientId} ingredientId The ID of the ingredient to add.
- * @param {number} [grindPercent=1.0] The percentage of the ingredient to grind, default to be 1.0.
- * @param {boolean} [display=Display] Whether to display the step message, default to the value of Display.
+ * @param {string} ingredientId The ID of the ingredient to add.
+ * @param {Object} [options] Options for the instruction.
+ * @param {number} [options.grindPercent=1.0] The percentage of the ingredient to grind as a decimal (0-1).
+ * @param {boolean} [options.virtual=false] If set to true, the instruction will not be added to the current plot.
  */
-function logAddIngredient(ingredientId, grindPercent = 1.0) {
+function logAddIngredient(ingredientId, options = {}) {
+  const { grindPercent = 1.0, virtual = false } = options;
   displayStep("Adding " + grindPercent * 100 + "% of " + ingredientId);
   Step += 1;
-  addIngredient(ingredientId, grindPercent);
+  if (!virtual) addIngredient(ingredientId, grindPercent);
+  return createAddIngredient(ingredientId, grindPercent);
 }
 const logSkirt = (grindPercent = 1.0) => logAddIngredient(Ingredients.PhantomSkirt, grindPercent);
 
 /**
  * Logs the addition of sun salt and adds it to the current plot.
  * @param {number} grains The amount of sun salt to add in grains.
+ * @param {Object} [options] Options for the instruction.
+ * @param {boolean} [options.virtual=false] If set to true, the instruction will not be added to the current plot.
  */
-function logAddSunSalt(grains) {
+function logAddSunSalt(grains, options = {}) {
+  const { virtual = false } = options;
   if (grains <= 0) return;
-  displayStep("Adding " + grains + " grains of sun salt");
-  Step += 1;
-  TotalSun += grains;
-  addSunSalt(grains);
+  if (!virtual) {
+    displayStep("Adding " + grains + " grains of sun salt");
+    Step += 1;
+    TotalSun += grains;
+    addSunSalt(grains);
+  }
+  return createAddSunSalt(grains);
 }
 
 /**
  * Logs the addition of moon salt and adds it to the current plot.
  * @param {number} grains The amount of moon salt to add in grains.
+ * @param {Object} [options] Options for the instruction.
+ * @param {boolean} [options.virtual=false] If set to true, the instruction will not be added to the current plot.
  */
-function logAddMoonSalt(grains) {
+function logAddMoonSalt(grains, options = {}) {
+  const { virtual = false } = options;
   if (grains <= 0) return;
-  displayStep("Adding " + grains + " grains of moon salt");
-  Step += 1;
-  TotalMoon += grains;
-  addMoonSalt(grains);
+  if (!virtual) {
+    displayStep("Adding " + grains + " grains of moon salt");
+    Step += 1;
+    TotalMoon += grains;
+    addMoonSalt(grains);
+  }
+  return createAddMoonSalt(grains);
 }
 
 /**
  * Logs the addition of rotation salt and adds it to the current plot.
  * @param {"moon"|"sun"} salt The type of rotation salt to add ("sun" or "moon").
  * @param {number} grains The amount of salt to add in grains.
+ * @param {Object} [options] Options for the instruction.
+ * @param {boolean} [options.virtual=false] If set to true, the instruction will not be added to the current plot.
  */
-function logAddRotationSalt(salt, grains) {
+function logAddRotationSalt(salt, grains, options = {}) {
+  const { virtual = false } = options;
   if (salt == "moon") {
-    logAddMoonSalt(grains);
-    return;
+    return logAddMoonSalt(grains, { virtual });
   }
   if (salt == "sun") {
-    logAddSunSalt(grains);
-    return;
+    return logAddSunSalt(grains, { virtual });
   }
   logError("adding rotation salt", "salt must be moon or sun.");
 }
@@ -326,48 +346,68 @@ function logAddRotationSalt(salt, grains) {
 /**
  * Logs the addition of heat to a vortex and adds it to the current plot.
  * @param {number} length The amount of heat to add to the vortex in PotionCraft units.
- * If "display" is not given, the value of "Display" is used.
+ * @param {Object} [options] Additional options.
+ * @param {boolean} [options.virtual=false] If true, the instruction is not actually added to the current plot.
  */
-function logAddHeatVortex(length) {
-  if (length <= 0) return;
-  displayStep("Heat the vortex by " + length + " distance.");
-  Step += 1;
-  addHeatVortex(Math.min(length, LuckyInfinity));
+function logAddHeatVortex(length, options = {}) {
+  const { virtual = false } = options;
+  if (!virtual) {
+    if (length <= 0) return;
+    displayStep("Heat the vortex by " + length + " distance.");
+    Step += 1;
+    addHeatVortex(Math.min(length, LuckyInfinity));
+  }
+  return createHeatVortex(Math.min(length, LuckyInfinity));
 }
 
 /**
  * Logs the addition of a stir cauldron instruction and adds it to the current plot.
  * @param {number} length The amount of stirring to add in PotionCraft units.
- * If "display" is not given, the value of "Display" is used.
+ * @param {Object} [options] Additional options.
+ * @param {boolean} [options.virtual=false] If true, the instruction is not actually added to the current plot.
  */
-function logAddStirCauldron(length) {
+function logAddStirCauldron(length, options = {}) {
+  const { virtual = false } = options;
   if (length <= 0) return;
-  displayStep("Stir the cauldron by " + length + " distance.");
-  Step += 1;
-  addStirCauldron(Math.min(length, LuckyInfinity));
-  return;
+  if (!virtual) {
+    displayStep("Stir the cauldron by " + length + " distance.");
+    Step += 1;
+    addStirCauldron(Math.min(length, LuckyInfinity));
+  }
+  return createStirCauldron(Math.min(length, LuckyInfinity));
 }
 /**
  * Logs the addition of a pour solvent instruction and adds it to the current plot.
  * @param {number} length The amount of solvent to pour in PotionCraft units.
- * If "display" is not given, the value of "Display" is used.
+ * @param {Object} [options] Additional options.
+ * @param {boolean} [options.virtual=false] If true, the instruction is not actually added to the current plot.
  */
-function logAddPourSolvent(length) {
+function logAddPourSolvent(length, options = {}) {
+  const { virtual = false } = options;
   if (length <= 0) return;
-  displayStep("Pour solvent by " + length + " distance.");
-  Step += 1;
-  addPourSolvent(Math.min(length, LuckyInfinity));
+  if (!virtual) {
+    displayStep("Pour solvent by " + length + " distance.");
+    Step += 1;
+    addPourSolvent(Math.min(length, LuckyInfinity));
+  }
+  return createPourSolvent(Math.min(length, LuckyInfinity));
 }
 
 /**
  * Logs the addition of a set position instruction and adds it to the current plot.
  * @param {number} x The x coordinate to set
  * @param {number} y The y coordinate to set
+ * @param {Object} [options] Additional options.
+ * @param {boolean} [options.virtual=false] If true, the instruction is not actually added to the current plot.
  */
-function logAddSetPosition(x, y) {
-  displayStep("Teleporting to (" + x + ", " + y + ")");
-  Step += 1;
-  addSetPosition(x, y);
+function logAddSetPosition(x, y, options = {}) {
+  const { virtual = false } = options;
+  if (!virtual) {
+    displayStep("Teleporting to (" + x + ", " + y + ")");
+    Step += 1;
+    addSetPosition(x, y);
+  }
+  return createSetPosition(x, y);
 }
 
 /**
@@ -387,16 +427,21 @@ const isVortex = isEntityType(Entity.Vortex);
  */
 
 /**
- * Stirs the solution into next vortex.
- * @param {number} [preStir=0.0] The stir length before stirring into vortex.
- * @param {number} [buffer=1e-5] The buffer to adjust the final stir length.
+ * Stirs the potion into the next vortex.
+ * @param {number} [preStir=0.0] The stir length before stirring into the next vortex.
+ * @param {object} [options] - Options for the stirring process.
+ * @param {number} [options.buffer=1e-5] The buffer to adjust the final stir length.
+ * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] The current recipe items.
+ * @param {boolean} [options.virtual=false] If true, the instruction is not actually added to the current plot.
+ * @returns {import("@potionous/instructions").RecipeItem} A recipe item representing the stirring instruction.
  */
-function stirIntoVortex(preStir = 0.0, buffer = 1e-5) {
-  let pendingPoints = currentPlot.pendingPoints;
+function stirIntoVortex(preStir = 0.0, options = {}) {
+  const { recipeItems = currentRecipeItems, buffer = 1e-5, virtual = false } = options;
+  let pendingPoints;
   if (preStir > 0.0) {
-    pendingPoints = computePlot(
-      currentRecipeItems.concat(createStirCauldron(preStir))
-    ).pendingPoints;
+    pendingPoints = computePlot(recipeItems.concat(createStirCauldron(preStir))).pendingPoints;
+  } else {
+    pendingPoints = computePlot(recipeItems).pendingPoints;
   }
   const currentVortex = fixUndef(pendingPoints[0].bottleCollisions.find(isVortex));
   let currentStirLength = 0.0;
@@ -419,11 +464,9 @@ function stirIntoVortex(preStir = 0.0, buffer = 1e-5) {
         currentStirLength +
         intersectCircle(getTargetVortexPoint(vortex), current, unitV(vSub(next, current))).d1;
       if (RoundStirring) {
-        logAddStirCauldron(Math.ceil(stir * StirUnitInv) / StirUnitInv);
-        return;
+        return logAddStirCauldron(Math.ceil(stir * StirUnitInv) / StirUnitInv, { virtual });
       }
-      logAddStirCauldron(stir + buffer);
-      return;
+      return logAddStirCauldron(stir + buffer, { virtual });
     }
     currentStirLength += pointDistance(pendingPoints[index - 1], pendingPoints[index]);
     current = extractCoordinate(pendingPoints[index]);

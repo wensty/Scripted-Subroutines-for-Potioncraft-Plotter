@@ -90,7 +90,7 @@ Actual optimization on plotter, even with scripts, still requires skill and expe
 - `currentPlot` : current plot, the plot up to the current script.
 - `startingPlot` : starting plot, the plot up to before the current plot.
 - `currentRecipeItems` : An array of all instructions in the current plot.
-- `startingRecipeItem` : An array of all instructions in the starting plot.
+- `startingRecipeItems` : An array of all instructions in the starting plot.
 
 #### the plot object
 
