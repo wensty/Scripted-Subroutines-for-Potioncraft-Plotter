@@ -12,6 +12,7 @@ import {
   vecToDirCoord,
   getBottlePolarAngleByEntity,
   getCurrentStirDirection,
+  getCurrentHeatDirection,
   checkBase,
   straighten,
   getTotalSun,
@@ -45,10 +46,10 @@ function s1() {
   console.log("a2~a1: " + (radToDeg(getBottlePolarAngleByEntity()) - 90));
   logAddHeatVortex(4.3);
   logAddPourSolvent(1.268);
-  logAddHeatVortex(3.8);
-  console.log("a3: " + radToDeg(getBottlePolarAngleByEntity()));
-  straighten(degToRad(-52.5), Salt.Sun, { maxGrains: 210 - getTotalSun(), preStir: 4.5 });
-  stirIntoVortex(4.8);
+  logAddHeatVortex(3.69);
+  console.log("a3:" + (radToDeg(getCurrentHeatDirection()) - 90));
+  straighten(degToRad(-51.25), Salt.Sun, { maxGrains: 210 - getTotalSun(), preStir: 4.5 });
+  stirIntoVortex(4.7);
   console.log("a4~>a3: " + (radToDeg(getBottlePolarAngleByEntity()) - 180));
   derotateToAngle(31.7, { toAngle: false });
   logAddHeatVortex(Infinity);
