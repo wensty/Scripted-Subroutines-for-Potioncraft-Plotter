@@ -213,9 +213,7 @@ const vAdd = (v1, v2) => ({ x: v1.x + v2.x, y: v1.y + v2.y });
 /** @type {(v1: {x: number, y: number}, v2: {x: number, y: number}) => {x: number, y: number}} */
 const vSub = (v1, v2) => ({ x: v1.x - v2.x, y: v1.y - v2.y });
 /** @type {(v1: {x: number, y: number}, v2: {x: number, y: number}) => number} */
-const vIProd = (v1, v2) => v1.x * v2.x + v1.y * v2.y;
-/** @type {(v1: {x: number, y: number}, v2: {x: number, y: number}) => {x: number, y: number}} */
-const vCProd = (v1, v2) => ({ x: v1.x * v2.x - v1.y * v2.y, y: v1.x * v2.y + v1.y * v2.x });
+const vProd = (v1, v2) => v1.x * v2.x + v1.y * v2.y;
 /** @type {(v: {x: number, y: number}, angle: number) => {x: number, y: number}} */
 const vRot = (v, angle) => ({
   x: v.x * Math.cos(angle) - v.y * Math.sin(angle),
@@ -238,7 +236,7 @@ const vRot270 = (v) => ({ x: v.y, y: -v.x });
 function intersectCircle(circle, point, direction) {
   const { r } = circle;
   const a = vMag(direction) ** 2;
-  const b = 2 * vIProd(direction, vSub(point, circle));
+  const b = 2 * vProd(direction, vSub(point, circle));
   const c = vMag(vSub(point, circle)) ** 2 - r ** 2;
   const discriminant = b ** 2 - 4 * a * c;
   if (discriminant < 0) return undefined;
@@ -486,7 +484,7 @@ function stirToVortexEdge(preStir = 0.0, buffer = 1e-5) {
  *     allowed beyond the initial length before stopping.
  * @param {number} [options.directionBuffer=20 * SaltAngle] - The buffer angle used to
  *     determine the change in direction.
- * @param {number} [options.leastSegmentLength=1e-9] - The minimal length of each
+ * @param {number} [options.segmentLength=1e-9] - The minimal length of each
  *     segment of the potion path.
  */
 function stirToTurn(options = {}) {
@@ -494,7 +492,7 @@ function stirToTurn(options = {}) {
     preStirLength = 0.0,
     maxStirLength = Infinity,
     directionBuffer = 20 * SaltAngle,
-    leastSegmentLength = 1e-9,
+    segmentLength = 1e-9,
   } = options;
 
   const minCosine = Math.cos(directionBuffer);
@@ -518,12 +516,12 @@ function stirToTurn(options = {}) {
         return;
       } // Did not find a node that is not the current point.
       nextSegmentLength += pointDistance(pendingPoints[j - 1], pendingPoints[j]);
-      if (nextSegmentLength > leastSegmentLength) {
+      if (nextSegmentLength > segmentLength) {
         break;
       }
     }
     const nextUnit = unitV(vSub(pendingPoints[j], pendingPoints[i]));
-    if (currentUnit != undefined && vIProd(currentUnit, nextUnit) < minCosine) {
+    if (currentUnit != undefined && vProd(currentUnit, nextUnit) < minCosine) {
       if (RoundStirring) {
         logAddStirCauldron(Math.ceil((preStirLength + stirLength) * StirUnitInv) / StirUnitInv);
         return;
@@ -662,7 +660,7 @@ function stirToTarget(target, options = {}) {
     }
     const next = extractCoordinate(pendingPoints[j]);
     const nextUnit = unitV(vSub(next, current));
-    const lastStir = vIProd(nextUnit, vSub(target, current));
+    const lastStir = vProd(nextUnit, vSub(target, current));
     if (lastStir > nextSegmentLength) {
       const nextDistance = vMag(vSub(target, next));
       if (nextDistance < optimalDistance) {
@@ -671,7 +669,7 @@ function stirToTarget(target, options = {}) {
       }
     } else {
       if (lastStir >= 0) {
-        const lastOptimalDistance = Math.abs(vIProd(vRot90(nextUnit), vSub(target, current)));
+        const lastOptimalDistance = Math.abs(vProd(vRot90(nextUnit), vSub(target, current)));
         if (lastOptimalDistance < optimalDistance) {
           optimalDistance = lastOptimalDistance;
           optimalStir = currentStirLength + lastStir;
@@ -841,8 +839,8 @@ function heatAndPourToEdge(maxHeat, repeats) {
   for (let i = 0; i < repeats; i++) {
     const point = extractCoordinate();
     let maxLength = Infinity;
-    if (vIProd(edgeLimit, vSub(point, vortexCenter)) > 0) {
-      maxLength = vIProd(vRot90(edgeLimit), vSub(point, vortexCenter)) - c;
+    if (vProd(edgeLimit, vSub(point, vortexCenter)) > 0) {
+      maxLength = vProd(vRot90(edgeLimit), vSub(point, vortexCenter)) - c;
       if (maxLength < 0) {
         break;
       }
@@ -1503,8 +1501,7 @@ export {
   vMag,
   vAdd,
   vSub,
-  vIProd,
-  vCProd,
+  vProd,
   vRot,
   vRot90,
   vNeg,
