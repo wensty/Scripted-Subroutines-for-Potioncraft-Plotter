@@ -655,7 +655,7 @@ function stirToZone(options = {}) {
 /**
  * Stirs the potion to the nearest point outside of the nearest danger zone. For compatibility.
  */
-const stirToDangerZoneExit = (preStir) => {
+const stirToDangerZoneExit = (preStir = 0.0) => {
   setPreStir(preStir);
   stirToZone({ zone: Entity.DangerZone, exitZone: true, overStir: true });
 };
@@ -742,10 +742,7 @@ function stirToTarget(target, options = {}) {
 /**
  * Stirs the potion to the specified tier of a certain effect
  * This stir is not rounded for precision reason.
- * @param {object} target - The target effect.
- * @param {number} target.x - The x-coordinate of the target effect.
- * @param {number} target.y - The y-coordinate of the target effect.
- * @param {number} target.angle - The angle of the target effect in degrees.
+ * @param {{x: number, y: number, angle: number}} target - The target effect.
  * @param {object} options - Options for the stirring process.
  * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The current recipe items.
  * @param {number} [options.deviation=DeviationT2] - The maximal allowable deviation from the target effect.
