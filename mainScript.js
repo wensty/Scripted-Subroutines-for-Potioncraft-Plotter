@@ -807,7 +807,7 @@ function pourToVortexEdge() {
 function pourIntoVortex(x, y) {
   const current = extractCoordinate();
   const vortex = getTargetVortex(x, y);
-  const iC = intersectCircle(vortex, current, unitV(vSub(vortex, current)));
+  const iC = intersectCircle(vortex, current, unitV(vNeg(current)));
   if (iC === undefined || iC.d2 < 0.0) {
     logError(
       "pouring into target vortex",
