@@ -24,6 +24,7 @@ import {
   checkBase,
   straighten,
   getTotalSun,
+  setPreStir,
   setDisplay,
 } from "../mainScript";
 import { Salt, Effects } from "../mainScript";
@@ -49,7 +50,8 @@ const recipes = {
       logAddSunSalt(120);
       logAddStirCauldron(6);
       logAddHeatVortex(Infinity);
-      stirToTurn({ preStirLength: 5.3 });
+      setPreStir(5.3);
+      stirToTurn();
       logAddSunSalt(501 - getTotalSun());
       const a1 = 37;
       derotateToAngle(-a1, { toAngle: true });
@@ -61,11 +63,12 @@ const recipes = {
       derotateToAngle(0);
       logAddHeatVortex(Infinity);
       logAddSunSalt(49);
-      straighten(degToRad(120), Salt.Sun, { preStir: 9, maxGrains: 72 });
+      setPreStir(9);
+      straighten(degToRad(120), Salt.Sun, { maxGrains: 72 });
       stirToDangerZoneExit(3.3);
       pourToVortexEdge();
       heatAndPourToEdge(0.2, 7);
-      logAddHeatVortex(0);
+      logAddHeatVortex(0.052);
       stirToZone();
       logAddSunSalt(43);
       stirToDangerZoneExit(2);
@@ -76,7 +79,8 @@ const recipes = {
       logAddPourSolvent(1);
       derotateToAngle(0);
       logAddHeatVortex(1);
-      stirToTurn({ preStirLength: 2.7 });
+      setPreStir(2.6);
+      stirToTurn();
       logAddHeatVortex(Infinity);
       logAddStirCauldron(10);
       logAddHeatVortex(Infinity);
@@ -86,12 +90,14 @@ const recipes = {
       logAddSunSalt(155);
       stirToDangerZoneExit();
       logAddSunSalt(36);
-      stirToTurn({ preStirLength: 4.5 });
+      setPreStir(4.5);
+      stirToTurn();
       logAddSunSalt(201);
       logAddHeatVortex(5);
       logAddStirCauldron(5.396);
       logAddSunSalt(1);
-      stirToTarget(Effects.Water.Rejuvenation, { preStir: 5.2, maxStir: 0.5 });
+      setPreStir(5.0);
+      console.log(stirToTarget(Effects.Water.Rejuvenation, { maxStir: 1 }).distance);
     },
   },
   r2: {

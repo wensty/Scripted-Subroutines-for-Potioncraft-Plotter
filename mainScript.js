@@ -188,7 +188,7 @@ function logError(operation, info) {
   const terminator = 0;
   // eslint-disable-next-line no-const-assign
   terminator = 1;
-  throw Error(); // plotter do not catch this inside if statements. Inform linter script should end here.
+  throw Error();
 }
 
 /**
@@ -360,7 +360,7 @@ function logAddRotationSalt(salt, grains, options = {}) {
  * @param {boolean} [options.virtual=false] If true, the instruction is not actually added to the current plot.
  */
 function logAddHeatVortex(length, options = {}) {
-  const { virtual = false, round = 1 } = options;
+  const { virtual = false, round = 0 } = options;
   var _length;
   if (round > 0) {
     _length = Math.max(Math.ceil(length * pourUnitInv) - 0.5, 0) / pourUnitInv;
@@ -416,7 +416,7 @@ function logAddStirCauldron(length, options = {}) {
  * @param {number} [options.round] 1 if rounding up, -1 if rounding down, 0 if not rounding.
  */
 function logAddPourSolvent(length, options = {}) {
-  const { virtual = false, round = 1 } = options;
+  const { virtual = false, round = 0 } = options;
   if (length <= 0) return undefined;
   var _length = length;
   if (round) {
@@ -507,10 +507,10 @@ function stirIntoVortexV2(options = {}) {
 
 /**
  * Stirs the potion into the next vortex. For compatibility.
- * @param {number} preStir The pre-stir length before the optimization.
+ * @param {number|undefined} preStir The pre-stir length before the optimization.
  */
-const stirIntoVortex = (preStir) => {
-  setPreStir(preStir);
+const stirIntoVortex = (preStir = undefined) => {
+  if (preStir != undefined) setPreStir(preStir);
   stirIntoVortexV2();
 };
 
@@ -654,9 +654,9 @@ function stirToZone(options = {}) {
 
 /**
  * Stirs the potion to the nearest point outside of the nearest danger zone. For compatibility.
- * @param {number} [preStirLength=0.0] - The minimum initial stir length.
  */
-const stirToDangerZoneExit = () => {
+const stirToDangerZoneExit = (preStir) => {
+  setPreStir(preStir);
   stirToZone({ zone: Entity.DangerZone, exitZone: true, overStir: true });
 };
 
@@ -855,6 +855,9 @@ function pourToVortexEdge(options = {}) {
  *
  * @param {number} x - The x-coordinate of the target vortex.
  * @param {number} y - The y-coordinate of the target vortex.
+ * @param {object} options - Options for the pouring process.
+ * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The current recipe items.
+ * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
  */
 function pourIntoVortex(x, y, options = {}) {
   const { recipeItems = currentRecipeItems, virtual = false } = options;
@@ -976,7 +979,7 @@ function pourToZoneV2(options = {}) {
   return instructions;
 }
 // for old recipe compatibility.
-const pourToZone = (maxPour) => pourToZoneV2({ maxPour });
+const pourToZone = (maxPour = Infinity) => pourToZoneV2({ maxPour });
 
 /**
  * Derotates the bottle to the target angle.
@@ -1055,6 +1058,7 @@ function pourUntilAngle(targetAngle, options = {}) {
       buffer = 0.012,
       overPour = true,
     } = options;
+    const round = 2 * overPour - 1;
     const dist = vMag(getCoord(point));
     var toOrigin = false;
     var _angleAtOrigin =
@@ -1086,8 +1090,7 @@ function pourUntilAngle(targetAngle, options = {}) {
       }
     }
     if (!toOrigin) {
-      // logAddPourSolvent((Math.floor(r * MinimalPourInv) - 0.5 + overPour) / MinimalPourInv);
-      return logAddPourSolvent(r, { virtual, round: overPour });
+      return logAddPourSolvent(r, { virtual, round });
     } else {
       return logAddPourSolvent(l + (r - l) / 2, { virtual, round: 0 });
     }
@@ -1306,9 +1309,8 @@ function getCurrentStirDirection(segmentLength = 1e-9) {
   if (i == currentPlot.pendingPoints.length) {
     logError("getting current stir direction", "no next node.");
     return 0.0;
-  } // Did not find a pendingPoints that is not the current point.
+  }
   const to = getCoord(pendingPoints[i]);
-  // return getDirectionByVectorStartEnd(from, to);
   return vecToDir(vSub(to, from));
 }
 
