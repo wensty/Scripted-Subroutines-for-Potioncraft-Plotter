@@ -49,8 +49,45 @@ let RoundStirring = true; // macro to control whether round stirrings.
 let Step = 1;
 let TotalSun = 0;
 let TotalMoon = 0;
-let PreStir = 0.0;
-let EnablePreStir = true;
+/** Virtual mode structure */
+let Virtual = false;
+/** @type {import("@potionous/instructions").RecipeItem[]} */
+let VirtualRecipeItems;
+/** @type {import("@potionous/plot").PlotResult} */
+let VirtualPlot;
+
+/**
+ * Enable virtual mode. All subsequent plotting and instruction addition will be virtual, and will not affect the actual plot.
+ * This allows you to test out and experiment with different plots without having to worry about overwriting the actual plot.
+ * Can also be used to reset virtual mode.
+ * To disable virtual mode, call unsetVirtual().
+ */
+function setVirtual() {
+  Virtual = true;
+  VirtualRecipeItems = currentRecipeItems;
+  VirtualPlot = currentPlot;
+}
+
+/**
+ * Disable virtual mode. All subsequent plotting and instruction addition will affect the actual plot.
+ * To re-enable virtual mode, call setVirtual().
+ */
+function unsetVirtual() {
+  Virtual = false;
+}
+function getRecipeItems() {
+  if (Virtual) return VirtualRecipeItems;
+  return currentRecipeItems;
+}
+
+function getPlot() {
+  if (Virtual) return VirtualPlot;
+  return currentPlot;
+}
+
+function updateVirtual() {
+  VirtualPlot = computePlot(VirtualRecipeItems);
+}
 
 const Effects = {
   Water: {
@@ -161,20 +198,13 @@ function getEntityCoord(entity) {
 
 /**
  * Extracts the x and y coordinates from a given plot point, defaulting to the current point.
- * @param {import("@potionous/plot").PlotPoint} [point=currentPlot.pendingPoints[0]] - The plot point to extract coordinates from.
- * @returns {{x: number, y: number}} The extracted coordinates with defaults applied.
+ * @param {import("@potionous/dataset").PlotPoint} point - The plot point to extract coordinates from.
+ * @returns {{x: number, y: number}} - The extracted coordinates with defaults applied.
  */
-function getCoord(point = currentPlot.pendingPoints[0]) {
+
+function getCoord(point = getPlot().pendingPoints[0]) {
   const { x, y } = point;
   return { x: x || 0.0, y: y || 0.0 };
-}
-
-/**
- * Sets the pre-stir value for the current recipe.
- * @param {number} preStir - The pre-stir value to set.
- */
-function setPreStir(preStir) {
-  PreStir = preStir;
 }
 
 /**
@@ -274,7 +304,10 @@ function checkBase(expectedBase) {
   }
 }
 
-function logSalt() {
+/**
+ * Prints the total amount of moon and sun salt used so far in the script.
+ */
+function printSalt() {
   console.log("Total moon salt: " + TotalMoon + ", Total sun salt: " + TotalSun);
 }
 
@@ -287,32 +320,34 @@ function logSalt() {
  * @param {string} ingredientId The ID of the ingredient to add.
  * @param {Object} [options] Options for the instruction.
  * @param {number} [options.grindPercent=1.0] The percentage of the ingredient to grind as a decimal (0-1).
- * @param {boolean} [options.virtual=false] If set to true, the instruction will not be added to the current plot.
  */
-function logAddIngredient(ingredientId, options = {}) {
-  const { grindPercent = 1.0, virtual = false } = options;
-  displayStep("Adding " + grindPercent * 100 + "% of " + ingredientId);
-  Step += 1;
-  if (!virtual) addIngredient(ingredientId, grindPercent);
+function logAddIngredient(ingredientId, grindPercent = 1.0) {
+  if (!Virtual) {
+    displayStep("Adding " + grindPercent * 100 + "% of " + ingredientId);
+    Step += 1;
+    addIngredient(ingredientId, grindPercent);
+  } else {
+    VirtualRecipeItems.push(createAddIngredient(ingredientId, grindPercent));
+    updateVirtual();
+  }
   return createAddIngredient(ingredientId, grindPercent);
 }
-const logSkirt = (grindPercent = 1.0) =>
-  logAddIngredient(Ingredients.PhantomSkirt, { grindPercent });
+const logSkirt = (grindPercent = 1.0) => logAddIngredient(Ingredients.PhantomSkirt, grindPercent);
 
 /**
  * Logs the addition of sun salt and adds it to the current plot.
  * @param {number} grains The amount of sun salt to add in grains.
- * @param {Object} [options] Options for the instruction.
- * @param {boolean} [options.virtual=false] If set to true, the instruction will not be added to the current plot.
  */
-function logAddSunSalt(grains, options = {}) {
-  const { virtual = false } = options;
-  if (grains <= 0) return;
-  if (!virtual) {
+function logAddSunSalt(grains) {
+  if (grains <= 0) return createAddSunSalt(0);
+  if (!Virtual) {
     displayStep("Adding " + grains + " grains of sun salt");
     Step += 1;
     TotalSun += grains;
     addSunSalt(grains);
+  } else {
+    VirtualRecipeItems.push(createAddSunSalt(grains));
+    updateVirtual();
   }
   return createAddSunSalt(grains);
 }
@@ -320,17 +355,17 @@ function logAddSunSalt(grains, options = {}) {
 /**
  * Logs the addition of moon salt and adds it to the current plot.
  * @param {number} grains The amount of moon salt to add in grains.
- * @param {Object} [options] Options for the instruction.
- * @param {boolean} [options.virtual=false] If set to true, the instruction will not be added to the current plot.
  */
-function logAddMoonSalt(grains, options = {}) {
-  const { virtual = false } = options;
-  if (grains <= 0) return;
-  if (!virtual) {
+function logAddMoonSalt(grains) {
+  if (grains <= 0) return createAddMoonSalt(0);
+  if (!Virtual) {
     displayStep("Adding " + grains + " grains of moon salt");
     Step += 1;
     TotalMoon += grains;
     addMoonSalt(grains);
+  } else {
+    VirtualRecipeItems.push(createAddMoonSalt(grains));
+    updateVirtual();
   }
   return createAddMoonSalt(grains);
 }
@@ -339,16 +374,13 @@ function logAddMoonSalt(grains, options = {}) {
  * Logs the addition of rotation salt and adds it to the current plot.
  * @param {"moon"|"sun"} salt The type of rotation salt to add ("sun" or "moon").
  * @param {number} grains The amount of salt to add in grains.
- * @param {Object} [options] Options for the instruction.
- * @param {boolean} [options.virtual=false] If set to true, the instruction will not be added to the current plot.
  */
-function logAddRotationSalt(salt, grains, options = {}) {
-  const { virtual = false } = options;
+function logAddRotationSalt(salt, grains) {
   if (salt == "moon") {
-    return logAddMoonSalt(grains, { virtual });
+    return logAddMoonSalt(grains);
   }
   if (salt == "sun") {
-    return logAddSunSalt(grains, { virtual });
+    return logAddSunSalt(grains);
   }
   logError("adding rotation salt", "salt must be moon or sun.");
 }
@@ -356,22 +388,23 @@ function logAddRotationSalt(salt, grains, options = {}) {
 /**
  * Logs the addition of heat to a vortex and adds it to the current plot.
  * @param {number} length The amount of heat to add to the vortex in PotionCraft units.
- * @param {Object} [options] Additional options.
- * @param {boolean} [options.virtual=false] If true, the instruction is not actually added to the current plot.
+ * @param {number} [round=0] 1 if rounding up, -1 if rounding down, 0 if not rounding.
  */
-function logAddHeatVortex(length, options = {}) {
-  const { virtual = false, round = 0 } = options;
+function logAddHeatVortex(length, round) {
   var _length;
   if (round > 0) {
     _length = Math.max(Math.ceil(length * pourUnitInv) - 0.5, 0) / pourUnitInv;
   } else {
     _length = Math.max(Math.floor(length * pourUnitInv) - 0.5, 0) / pourUnitInv;
   }
-  if (!virtual) {
-    if (length <= 0) return undefined;
+  if (_length <= 0) return createHeatVortex(0);
+  if (!Virtual) {
     displayStep("Heat the vortex by " + _length + " distance.");
     Step += 1;
     addHeatVortex(Math.min(_length, LuckyInfinity));
+  } else {
+    VirtualRecipeItems.push(createHeatVortex(Math.min(_length, LuckyInfinity)));
+    updateVirtual();
   }
   return createHeatVortex(Math.min(_length, LuckyInfinity));
 }
@@ -380,31 +413,29 @@ function logAddHeatVortex(length, options = {}) {
  * Logs the addition of a stir cauldron instruction and adds it to the current plot.
  * @param {number} length The amount of stirring to add in PotionCraft units.
  * @param {Object} [options] Additional options.
- * @param {boolean} [options.virtual=false] If true, the instruction is not actually added to the current plot.
- * @param {number} [options.round] 1 if rounding up, -1 if rounding down, 0 if not rounding.
- * @param {number} [options.buffer=1e-5] The buffer to use whenthe stir length is not rounded.
+ * @param {number} [options.shift] 1 if shifting up, -1 if shifting down, 0 if not shifting. Default to be 1.
+ * @param {number} [options.buffer=1e-5] The shifted buffer to use whenthe stir length is not rounded.
  */
 function logAddStirCauldron(length, options = {}) {
-  const { virtual = false, round = 1, buffer = 1e-5 } = options;
+  const { shift = 1, buffer = 1e-5 } = options;
   let _length = Math.max(length, 0);
-  if (EnablePreStir) {
-    _length += PreStir;
-    PreStir = 0;
-  }
-  if (RoundStirring && round) {
-    if (round > 0) {
+  if (RoundStirring && shift) {
+    if (shift > 0) {
       _length = Math.ceil(_length * StirUnitInv) / StirUnitInv;
     } else {
       _length = Math.floor(_length * StirUnitInv) / StirUnitInv;
     }
   } else {
-    _length += round * buffer;
+    _length += shift * buffer;
   }
-  if (_length <= 0) return undefined;
-  if (!virtual) {
+  if (_length <= 0) return createStirCauldron(0);
+  if (!Virtual) {
     displayStep("Stir the cauldron by " + _length + " distance.");
     Step += 1;
     addStirCauldron(Math.min(_length, LuckyInfinity));
+  } else {
+    VirtualRecipeItems.push(createStirCauldron(Math.min(_length, LuckyInfinity)));
+    updateVirtual();
   }
   return createStirCauldron(Math.min(_length, LuckyInfinity));
 }
@@ -412,24 +443,26 @@ function logAddStirCauldron(length, options = {}) {
  * Logs the addition of a pour solvent instruction and adds it to the current plot.
  * @param {number} length The amount of solvent to pour in PotionCraft units.
  * @param {Object} [options] Additional options.
- * @param {boolean} [options.virtual=false] If true, the instruction is not actually added to the current plot.
- * @param {number} [options.round] 1 if rounding up, -1 if rounding down, 0 if not rounding.
+ * @param {number} [options.shift] 1 if shifting up, -1 if shifting down, 0 if not shifting.
  */
 function logAddPourSolvent(length, options = {}) {
-  const { virtual = false, round = 0 } = options;
-  if (length <= 0) return undefined;
+  const { virtual = false, shift = 0 } = options;
   var _length = length;
-  if (round) {
-    if (round > 0) {
+  if (shift) {
+    if (shift > 0) {
       _length = Math.max(Math.ceil(length * pourUnitInv) - 0.5, 0) / pourUnitInv;
     } else {
       _length = Math.max(Math.floor(length * pourUnitInv) - 0.5, 0) / pourUnitInv;
     }
   }
-  if (!virtual) {
+  if (_length <= 0) return createPourSolvent(0);
+  if (!Virtual) {
     displayStep("Pour solvent by " + _length + " distance.");
     Step += 1;
     addPourSolvent(Math.min(_length, LuckyInfinity));
+  } else {
+    VirtualRecipeItems.push(createPourSolvent(Math.min(_length, LuckyInfinity)));
+    updateVirtual();
   }
   return createPourSolvent(Math.min(_length, LuckyInfinity));
 }
@@ -438,15 +471,15 @@ function logAddPourSolvent(length, options = {}) {
  * Logs the addition of a set position instruction and adds it to the current plot.
  * @param {number} x The x coordinate to set
  * @param {number} y The y coordinate to set
- * @param {Object} [options] Additional options.
- * @param {boolean} [options.virtual=false] If true, the instruction is not actually added to the current plot.
  */
-function logAddSetPosition(x, y, options = {}) {
-  const { virtual = false } = options;
-  if (!virtual) {
+function logAddSetPosition(x, y) {
+  if (!Virtual) {
     displayStep("Teleporting to (" + x + ", " + y + ")");
     Step += 1;
     addSetPosition(x, y);
+  } else {
+    VirtualRecipeItems.push(createSetPosition(x, y));
+    updateVirtual();
   }
   return createSetPosition(x, y);
 }
@@ -470,17 +503,15 @@ const isVortex = isEntityType(Entity.Vortex);
 /**
  * Stirs the potion into the next vortex.
  * @param {object} [options] - Options for the stirring process.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] The current recipe items.
+ * @param {number} [options.preStir=0.0] The amount of pre-stirring to add.
  * @param {number} [options.buffer=1e-5] The buffer to adjust the final stir length.
- * @param {boolean} [options.virtual=false] If true, the instruction is not actually added to the current plot.
  */
 function stirIntoVortexV2(options = {}) {
-  const {
-    recipeItems = currentRecipeItems.concat(createStirCauldron(PreStir)),
-    buffer = 1e-5,
-    virtual = false,
-  } = options;
-  let pendingPoints = computePlot(recipeItems).pendingPoints;
+  const { preStir = 0.0, buffer = 1e-5 } = options;
+  let pendingPoints = getPlot().pendingPoints;
+  if (preStir > 0.0) {
+    pendingPoints = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
+  }
   const currentVortex = getEntityCoord(pendingPoints[0].bottleCollisions.find(isVortex));
   let stir = 0.0;
   let i = 0;
@@ -497,97 +528,89 @@ function stirIntoVortexV2(options = {}) {
       (currentVortex == undefined || vortex.x != currentVortex.x || vortex.y != currentVortex.y)
     ) {
       const next = getCoord(pendingPoints[i]);
-      stir += intersectCircle(getTargetVortexP(vortex), point, unitV(vSub(next, point))).d1;
-      return logAddStirCauldron(stir, { virtual, buffer, round: 1 });
+      stir += intersectCircle(getVortexC(vortex), point, unitV(vSub(next, point))).d1;
+      stir += preStir;
+      return logAddStirCauldron(stir, { buffer, shift: 1 });
     }
     stir += pointDistance(pendingPoints[i - 1], pendingPoints[i]);
     point = getCoord(pendingPoints[i]);
   }
 }
-
-/**
- * Stirs the potion into the next vortex. For compatibility.
- * @param {number|undefined} preStir The pre-stir length before the optimization.
- */
-const stirIntoVortex = (preStir = undefined) => {
-  if (preStir != undefined) setPreStir(preStir);
-  stirIntoVortexV2();
-};
+const stirIntoVortex = (preStir = 0.0) => stirIntoVortexV2({ preStir });
 
 /**
  * Stirs the potion to the edge of the current vortex.
  * @param {object} [options] - Options for the stirring process.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] The current recipe items.
+ * @param {number} [options.preStir=0.0] The amount of pre-stirring to add.
  * @param {number} [options.buffer=1e-5] The buffer to adjust the final stir length.
- * @param {boolean} [options.virtual=false] If true, the instruction is not actually added to the current plot.
  */
 function stirToVortexEdge(options = {}) {
-  const {
-    recipeItems = currentRecipeItems.concat(createStirCauldron(PreStir)),
-    buffer = 1e-5,
-    virtual = false,
-  } = options;
-  let plot = computePlot(recipeItems);
+  const { preStir = 0.0, buffer = 1e-5 } = options;
+  let plot = getPlot();
+  if (preStir > 0.0) {
+    plot = computePlot(getRecipeItems().concat(createStirCauldron(preStir)));
+  }
   const pendingPoints = plot.pendingPoints;
-  const vortex = getTargetVortexP(pendingPoints[0]);
-  let stirLength = 0.0;
+  const vortex = getVortexP(pendingPoints[0]);
+  let stir = preStir;
   if (vortex === undefined) {
     logError("stirring to edge", "bottle not in a vortex.");
     return;
   }
-  let index = 0;
+  let i = 0;
   while (true) {
-    index += 1;
-    const result = getEntityCoord(pendingPoints[index].bottleCollisions.find(isVortex));
+    i += 1;
+    const result = getEntityCoord(pendingPoints[i].bottleCollisions.find(isVortex));
     if (result === undefined || result.x != vortex.x || result.y != vortex.y) {
       break;
     } else {
-      if (index == pendingPoints.length) {
+      if (i == pendingPoints.length) {
         logError("stirring to edge of vortex", "Can not reach the edge of the vortex.");
         return;
       }
-      stirLength += pointDistance(pendingPoints[index - 1], pendingPoints[index]);
+      stir += pointDistance(pendingPoints[i - 1], pendingPoints[i]);
     }
   }
-  const current = getCoord(pendingPoints[index - 1]);
-  const next = getCoord(pendingPoints[index]);
+  const current = getCoord(pendingPoints[i - 1]);
+  const next = getCoord(pendingPoints[i]);
   const iC = intersectCircle(vortex, current, unit(next.x - current.x, next.y - current.y));
-  const stir = stirLength + iC.d2;
-  return logAddStirCauldron(stir, { virtual, buffer, round: -1 });
+  stir += iC.d2;
+  return logAddStirCauldron(stir, { buffer, shift: -1 });
 }
 
 /**
  * Stirs the potion until a change in direction is detected or the path is used up.
  *
  * @param {object} [options] - Options for the stirring process allowed beyond the initial length before stopping.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The current recipe items.
+ * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
  * @param {number} [options.directionBuffer=20 * SaltAngle] - The buffer angle used to determine the change in direction.
  * @param {number} [options.buffer=1e-5] - The buffer to adjust the final stir length.
  * @param {number} [options.segmentLength=1e-9] - The minimal length of each segment of the potion path.
- * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
  */
 function stirToTurn(options = {}) {
   const {
-    recipeItems = currentRecipeItems.concat(createStirCauldron(PreStir)),
+    preStir = 0.0,
     directionBuffer = 20 * SaltAngle,
     buffer = 1e-5,
     segmentLength = 1e-9,
-    virtual = false,
   } = options;
 
   const minCosine = Math.cos(directionBuffer);
-  let pendingPoints = computePlot(recipeItems).pendingPoints;
+  let pendingPoints = getPlot().pendingPoints;
+  if (preStir > 0.0) {
+    pendingPoints = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
+  }
   let currentUnit = undefined;
   let i = 0;
   let j;
-  let stirLength = 0.0;
+  let stir = preStir;
   let nextSegmentLength = 0.0;
   while (true) {
     j = i;
     while (true) {
       j += 1;
       if (j >= pendingPoints.length) {
-        return logAddStirCauldron(Infinity, { virtual });
+        return logAddStirCauldron(Infinity);
       } // no turning point found before the end of path.
       nextSegmentLength += pointDistance(pendingPoints[j - 1], pendingPoints[j]);
       if (nextSegmentLength > segmentLength) {
@@ -596,9 +619,9 @@ function stirToTurn(options = {}) {
     }
     const nextUnit = unitV(vSub(pendingPoints[j], pendingPoints[i]));
     if (currentUnit != undefined && vProd(currentUnit, nextUnit) < minCosine) {
-      return logAddStirCauldron(stirLength, { virtual, buffer, round: 1 });
+      return logAddStirCauldron(stir, { buffer });
     } else {
-      stirLength += nextSegmentLength;
+      stir += nextSegmentLength;
       nextSegmentLength = 0.0;
       i = j;
       currentUnit = nextUnit;
@@ -609,35 +632,36 @@ function stirToTurn(options = {}) {
 /**
  * Stirs the potion until it enters or exits a specified zone.
  * @param {object} [options] - Options for the stirring process.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The base plotter recipe items.
  * @param {object} [options.zone=Entity.DangerZone] - The zone to be entered or exited.
+ * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
  * @param {boolean} [options.overStir=false] - Whether to over stir by a small amount.
  * @param {boolean} [options.exitZone=false] - Whether to exit the zone instead of entering it.
  * @param {number} [options.buffer=1e-5] - The added buffer length  when not rounding the stir length.
- * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
  */
 function stirToZone(options = {}) {
   const {
-    recipeItems = currentRecipeItems.concat(createStirCauldron(PreStir)),
+    preStir = 0.0,
     zone = Entity.DangerZone,
     overStir = false,
     exitZone = false,
     buffer = 1e-5,
-    virtual = false,
   } = options;
-  let plot = computePlot(recipeItems);
+  let plot = getPlot();
+  if (preStir > 0.0) {
+    plot = computePlot(getRecipeItems().concat(createStirCauldron(preStir)));
+  }
   const pendingPoints = plot.pendingPoints;
-  let nextIndex = 0;
+  let i = 0;
   let inZone = false;
   let stir = 0;
   while (true) {
-    nextIndex += 1;
-    if (nextIndex == pendingPoints.length) {
+    i += 1;
+    if (i == pendingPoints.length) {
       logError("stir to zone", "no zone found.");
       return;
     }
-    stir += pointDistance(pendingPoints[nextIndex - 1], pendingPoints[nextIndex]);
-    const result = pendingPoints[nextIndex].bottleCollisions.find(isEntityType(zone));
+    stir += pointDistance(pendingPoints[i - 1], pendingPoints[i]);
+    const result = pendingPoints[i].bottleCollisions.find(isEntityType(zone));
     if (result != undefined) {
       if (!exitZone) {
         break;
@@ -649,15 +673,10 @@ function stirToZone(options = {}) {
       }
     }
   }
-  return logAddStirCauldron(stir, { virtual, buffer, round: 2 * overStir - 1 });
+  return logAddStirCauldron(stir, { buffer, shift: 2 * overStir - 1 });
 }
-
-/**
- * Stirs the potion to the nearest point outside of the nearest danger zone. For compatibility.
- */
-const stirToDangerZoneExit = (preStir = undefined) => {
-  if (preStir != undefined) setPreStir(preStir);
-  stirToZone({ zone: Entity.DangerZone, exitZone: true, overStir: true });
+const stirToDangerZoneExit = (preStir = 0.0) => {
+  stirToZone({ preStir, zone: Entity.DangerZone, exitZone: true, overStir: true });
 };
 
 /**
@@ -667,23 +686,19 @@ const stirToDangerZoneExit = (preStir = undefined) => {
  * @param {number} target.x - The x-coordinate of the target effect.
  * @param {number} target.y - The y-coordinate of the target effect.
  * @param {object} options - Options for the stirToNearestTarget function.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The current recipe items.
+ * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
  * @param {number} [options.maxStir=Infinity] - The maximal stir length allowed in the optimization.
  * @param {number} [options.segmentLength=1e-9] - The minimal length of each segment in the optimization process.
- * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
  * @returns {instruction: import("@potionous/instructions").RecipeItem, distance: number} The added instruction and the optimal distance to the target.
  */
 function stirToTarget(target, options = {}) {
-  const {
-    recipeItems = currentRecipeItems.concat(createStirCauldron(PreStir)),
-    maxStir = Infinity,
-    segmentLength = 1e-9,
-    virtual = false,
-  } = options;
-  let pendingPoints = computePlot(recipeItems).pendingPoints;
-
-  const initial = getCoord(pendingPoints[0]);
-  const initialDistance = vMag(vSub(initial, target));
+  const { preStir = 0.0, maxStir = Infinity, segmentLength = 1e-9 } = options;
+  let pendingPoints = getPlot().pendingPoints;
+  if (preStir > 0.0) {
+    pendingPoints = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
+  }
+  const initialPoint = getCoord(pendingPoints[0]);
+  const initialDistance = vMag(vSub(initialPoint, target));
   let isLastSegment = false;
   let currentStir = 0.0;
   let optimalStir = 0.0;
@@ -691,7 +706,7 @@ function stirToTarget(target, options = {}) {
   let i = 0;
   let j = i;
   let nextSegmentLength = 0.0;
-  let current = initial;
+  let currentPoint = initialPoint;
   while (!isLastSegment) {
     while (true) {
       j += 1;
@@ -711,8 +726,8 @@ function stirToTarget(target, options = {}) {
       isLastSegment = true;
     }
     const next = getCoord(pendingPoints[j]);
-    const nextUnit = unitV(vSub(next, current));
-    const lastStir = vProd(nextUnit, vSub(target, current));
+    const nextUnit = unitV(vSub(next, currentPoint));
+    const lastStir = vProd(nextUnit, vSub(target, currentPoint));
     if (lastStir > nextSegmentLength) {
       const nextDistance = vMag(vSub(target, next));
       if (nextDistance < optimalDistance) {
@@ -721,7 +736,7 @@ function stirToTarget(target, options = {}) {
       }
     } else {
       if (lastStir >= 0) {
-        const lastOptimalDistance = Math.abs(vProd(vRot90(nextUnit), vSub(target, current)));
+        const lastOptimalDistance = Math.abs(vProd(vRot90(nextUnit), vSub(target, currentPoint)));
         if (lastOptimalDistance < optimalDistance) {
           optimalDistance = lastOptimalDistance;
           optimalStir = currentStir + lastStir;
@@ -729,12 +744,12 @@ function stirToTarget(target, options = {}) {
       }
     }
     i = j;
-    current = getCoord(pendingPoints[i]);
+    currentPoint = getCoord(pendingPoints[i]);
     currentStir += nextSegmentLength;
     nextSegmentLength = 0.0;
   }
   return {
-    instruction: logAddStirCauldron(optimalStir, { virtual, round: 0 }),
+    instruction: logAddStirCauldron(optimalStir, { shift: 0 }),
     distance: optimalDistance,
   };
 }
@@ -744,27 +759,28 @@ function stirToTarget(target, options = {}) {
  * This stir is not rounded for precision reason.
  * @param {{x: number, y: number, angle: number}} target - The target effect.
  * @param {object} options - Options for the stirring process.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The current recipe items.
+ * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
  * @param {number} [options.deviation=DeviationT2] - The maximal allowable deviation from the target effect.
  * @param {boolean} [options.ignoreAngle=false] - Whether to ignore the angle deviation.
  * @param {number} [options.segmentLength=1e-9] - The minimal length of each segment in the stirring path.
  * @param {number} [options.buffer=1e-5] - The buffer added after stirring to ensure entrance of the tier.
- * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
  */
 function stirToTier(target, options = {}) {
   const {
-    recipeItems = currentRecipeItems.concat(createStirCauldron(PreStir)),
+    preStir = 0.0,
     deviation = DeviationT2,
     ignoreAngle = false,
     segmentLength = 1e-9,
     buffer = 1e-5,
-    virtual = false,
   } = options;
-  let pendingPoints = computePlot(recipeItems).pendingPoints;
-  let currentPoint = pendingPoints[0];
+  let pendingPoints = getPlot().pendingPoints;
+  if (preStir > 0.0) {
+    pendingPoints = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
+  }
+  let cP = pendingPoints[0];
   let angleDeviation = 0.0;
   if (!ignoreAngle) {
-    const currentAngle = -currentPoint.angle || 0.0;
+    const currentAngle = -cP.angle || 0.0;
     const angleDelta = radToDeg(Math.abs(relDir(degToRad(currentAngle), degToRad(target.angle))));
     angleDeviation = angleDelta * (100.0 / 12.0);
     if (angleDeviation >= deviation) {
@@ -786,19 +802,19 @@ function stirToTier(target, options = {}) {
       logError("stirring to tier", "cannot reach target tier.");
       return;
     }
-    const nextPoint = pendingPoints[j];
+    const nP = pendingPoints[j];
     const iC = intersectCircle(
       { x: target.x, y: target.y, r: tierRadius },
-      currentPoint,
-      unitV(vSub(nextPoint, currentPoint))
+      cP,
+      unitV(vSub(nP, cP))
     );
-    if (iC != undefined && iC.d1 >= 0.0 && iC.d1 < pointDistance(currentPoint, nextPoint)) {
+    if (iC != undefined && iC.d1 >= 0.0 && iC.d1 < pointDistance(cP, nP)) {
       stir += iC.d1;
-      return logAddStirCauldron(stir + buffer, { virtual, round: 0 });
+      return logAddStirCauldron(stir + buffer, { shift: 0 });
     }
-    stir += pointDistance(currentPoint, nextPoint);
+    stir += pointDistance(cP, nP);
     i = j;
-    currentPoint = nextPoint;
+    cP = nP;
   }
 }
 
@@ -806,14 +822,9 @@ function stirToTier(target, options = {}) {
  * Stirs the potion to consume a specified length while in a vortex.
  * This is not affected by stir rounding, since the stir length is manually input.
  * @param {number} length - The length of stirring to consume.
- * @param {object} options - Options for the stirring process.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The recipe items.
- * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
  */
-function stirToConsume(length, options = {}) {
-  const { recipeItems = currentRecipeItems, virtual = false } = options;
-  EnablePreStir = false;
-  const point = computePlot(recipeItems).pendingPoints[0];
+function stirToConsume(length) {
+  const point = getPlot().pendingPoints[0];
   const { x, y } = getCoord(point);
   const result = point.bottleCollisions.find(isVortex);
   if (result == undefined) {
@@ -821,9 +832,8 @@ function stirToConsume(length, options = {}) {
     return;
   }
   let instructions = [];
-  instructions.push(logAddStirCauldron(length, { round: 0, virtual }));
-  instructions.push(logAddSetPosition(x, y, { virtual }));
-  EnablePreStir = true;
+  instructions.push(logAddStirCauldron(length, { shift: 0 }));
+  instructions.push(logAddSetPosition(x, y));
   return instructions;
 }
 
@@ -831,22 +841,18 @@ function stirToConsume(length, options = {}) {
 
 /**
  * Pours solvent to the edge of the current vortex.
- * @param {object} options - Options for the pouring process.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The current recipe items.
- * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
  */
 
-function pourToVortexEdge(options = {}) {
-  const { recipeItems = currentRecipeItems, virtual = false } = options;
-  const point = computePlot(recipeItems).pendingPoints[0];
-  const vortex = getTargetVortexP(point);
+function pourToVortexEdge() {
+  const p = getPlot().pendingPoints[0];
+  const vortex = getVortexC(p);
   if (vortex === undefined) {
     logError("pouring to edge", "bottle not in a vortex.");
     return;
   }
-  const current = getCoord(point);
+  const current = getCoord(p);
   const pour = intersectCircle(vortex, current, unitV(vNeg(current))).d2;
-  return logAddPourSolvent(pour, { virtual, round: -1 });
+  return logAddPourSolvent(pour, { shift: -1 });
 }
 
 /**
@@ -854,14 +860,10 @@ function pourToVortexEdge(options = {}) {
  *
  * @param {number} x - The x-coordinate of the target vortex.
  * @param {number} y - The y-coordinate of the target vortex.
- * @param {object} options - Options for the pouring process.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The current recipe items.
- * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
  */
-function pourIntoVortex(x, y, options = {}) {
-  const { recipeItems = currentRecipeItems, virtual = false } = options;
-  const point = getCoord(computePlot(recipeItems).pendingPoints[0]);
-  const vortex = getTargetVortex(x, y);
+function pourIntoVortex(x, y) {
+  const point = getPlot().pendingPoints[0];
+  const vortex = getVortex(x, y);
   const iC = intersectCircle(vortex, point, unitV(vNeg(point)));
   if (iC === undefined || iC.d2 < 0.0) {
     logError(
@@ -871,49 +873,39 @@ function pourIntoVortex(x, y, options = {}) {
     return;
   }
   const pour = iC.d1;
-  return logAddPourSolvent(pour, { virtual, round: 1 });
+  return logAddPourSolvent(pour, { shift: 1 });
 }
 
 /**
  * Heats and pours to the edge of the current vortex.
  * @param {number} maxHeat - The maximum length to heat.
  * @param {number} repeats - The number of times to repeat the heating and pouring process.
- * @param {object} options - Options for the pouring process.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The recipe items to use.
- * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
+ * @return {import("@potionous/instructions").RecipeItem[]} The instructions to be added to the recipe.
  */
-function heatAndPourToEdge(maxHeat, repeats, options = {}) {
-  const { recipeItems = currentRecipeItems, virtual = false } = options;
+function heatAndPourToEdge(maxHeat, repeats) {
   let instructions = [];
-  const vortexCenter = getEntityCoord(
-    computePlot(recipeItems).pendingPoints[0].bottleCollisions.find(isVortex)
-  );
-  if (vortexCenter === undefined) {
+  const vC = getEntityCoord(getPlot().pendingPoints[0].bottleCollisions.find(isVortex));
+  if (vC === undefined) {
     logError("pouring to edge", "bottle not in a vortex.");
     return;
   }
-  const vortexRadius = getTargetVortexP(vortexCenter).r;
+  const vR = getVortexC(vC).r;
   const c = 0.17; // the coefficient of the archimedean spiral formed by the vortex.
-  const vortexDistance = vMag(vortexCenter);
-  const alpha = Math.acos(vortexRadius / vortexDistance);
-  const edgeLimit = unitV(vRot(vNeg(vortexCenter), -alpha));
+  const vD = vMag(vC);
+  const alpha = Math.acos(vR / vD);
+  const edgeLimit = unitV(vRot(vNeg(vC), -alpha));
   for (let i = 0; i < repeats; i++) {
-    const point = getCoord(computePlot(recipeItems.concat(instructions)).pendingPoints[0]);
+    const point = getCoord(getPlot().pendingPoints[0]);
     let maxLength = Infinity;
-    if (vProd(edgeLimit, vSub(point, vortexCenter)) > 0) {
-      maxLength = vProd(vRot90(edgeLimit), vSub(point, vortexCenter)) - c;
+    if (vProd(edgeLimit, vSub(point, vC)) > 0) {
+      maxLength = vProd(vRot90(edgeLimit), vSub(point, vC)) - c;
       if (maxLength < 0) {
         break;
       }
       maxLength = maxLength * 0.75;
     }
-    instructions.push(
-      logAddHeatVortex(Math.min(maxHeat, maxLength), {
-        recipeItems: recipeItems.concat(instructions),
-        virtual,
-      })
-    );
-    instructions.push(pourToVortexEdge({ recipeItems: recipeItems.concat(instructions), virtual }));
+    instructions.push(logAddHeatVortex(Math.min(maxHeat, maxLength)));
+    instructions.push(pourToVortexEdge());
   }
   return instructions;
 }
@@ -921,32 +913,27 @@ function heatAndPourToEdge(maxHeat, repeats, options = {}) {
 /**
  * Pours solvent to move the bottle towards or out of an assigned zone.
  * @param {object} [options] - Options for the pouring process.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The current recipe items.
  * @param {string[]} [options.zone=Entity.DangerZone] - The zone to pour towards or out of.
  * @param {number} [options.prePour=0.0] - The initial length of pouring.
  * @param {number} [options.maxPour=Infinity] - The maximum length of pouring.
  * @param {boolean} [options.overPour=false] - Whether to pour slightly more than the minimum required.
  * @param {boolean} [options.exitZone=false] - Whether to exit the zone instead of entering it.
- * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
  */
 function pourToZoneV2(options = {}) {
   const {
-    recipeItems = currentRecipeItems,
     zone = Entity.DangerZone,
     prePour = 0.0,
     maxPour = Infinity,
     overPour = false,
     exitZone = false,
-    virtual = false,
   } = options;
   const detector = isEntityType(zone);
   let instructions = [];
-  const prePourInstruction = logAddPourSolvent(prePour, { virtual, round: 0 });
-  if (prePourInstruction) {
-    instructions.push(prePourInstruction);
+  if (prePour > 0) {
+    instructions.push(logAddPourSolvent(prePour, { shift: 0 }));
   }
   const round = 2 * overPour - 1;
-  const { x, y } = computePlot(recipeItems.concat(instructions)).pendingPoints[0];
+  const { x, y } = getCoord(getPlot().pendingPoints[0]);
   const plot = computePlot([createSetPosition(x, y), createPourSolvent(maxPour)]);
   let inZone = false;
   let i = 0;
@@ -955,13 +942,13 @@ function pourToZoneV2(options = {}) {
     let entity = plot.committedPoints[i].bottleCollisions.find(detector);
     if (entity != undefined) {
       if (!exitZone) {
-        instructions.push(logAddPourSolvent(pour, { virtual, round }));
+        instructions.push(logAddPourSolvent(pour, { shift: round }));
         break;
       }
       inZone = true;
     }
     if (entity == undefined && inZone) {
-      instructions.push(logAddPourSolvent(pour, { virtual, round }));
+      instructions.push(logAddPourSolvent(pour, { shift: round }));
       break;
     }
     pour = pointDistance(plot.committedPoints[0], plot.committedPoints[i]);
@@ -973,7 +960,6 @@ function pourToZoneV2(options = {}) {
   }
   return instructions;
 }
-// for old recipe compatibility.
 const pourToZone = (maxPour = Infinity) => pourToZoneV2({ maxPour });
 
 /**
@@ -981,20 +967,13 @@ const pourToZone = (maxPour = Infinity) => pourToZoneV2({ maxPour });
  * @param {number} targetAngle - The target angle in degrees.
  * @param {Object} [options] - Optional parameters for derotating.
  * @param {boolean} [options.toAngle=true] - Whether to derotate to the target angle or by the target angle.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The current recipe items.
- * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
  * @param {boolean} [options.overPour=false] - Whether pour slightly more (to derorate more).
  */
 function derotateToAngle(targetAngle, options = {}) {
-  const {
-    recipeItems = currentRecipeItems,
-    toAngle = true,
-    virtual = false,
-    overPour = false,
-  } = options;
+  const { toAngle = true, overPour = false } = options;
   var _targetAngle = targetAngle;
   let instructions = [];
-  const initialPoint = computePlot(recipeItems).pendingPoints[0];
+  const initialPoint = getPlot().pendingPoints[0];
   const { x, y } = getCoord(initialPoint);
   const currentAngle = -initialPoint.angle;
   if (toAngle) {
@@ -1011,16 +990,10 @@ function derotateToAngle(targetAngle, options = {}) {
       logError("derotating", "Cannot derotate outside vortex.");
       return;
     }
-    instructions.push(logAddSetPosition(0, 0, { virtual }));
+    instructions.push(logAddSetPosition(0, 0));
   }
-  instructions.push(
-    pourUntilAngle(_targetAngle, {
-      recipeItems: recipeItems.concat(instructions),
-      virtual,
-      overPour,
-    })
-  );
-  if (!atOrigin) instructions.push(logAddSetPosition(x, y, { virtual }));
+  instructions.push(pourUntilAngle(_targetAngle, { overPour }));
+  if (!atOrigin) instructions.push(logAddSetPosition(x, y));
   return instructions;
 }
 
@@ -1034,15 +1007,9 @@ function derotateToAngle(targetAngle, options = {}) {
  * @param {number} [options.epsLow=EpsLow] - The precision for low range binary search.
  * @param {number} [options.buffer=0.012] - Buffer value for adjusting the binary search range.
  * @param {boolean} [options.overPour=true] - Decides whether to slightly over pour.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The current recipe items.
- * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
  */
 function pourUntilAngle(targetAngle, options = {}) {
-  const { recipeItems = currentRecipeItems, virtual = false } = options;
-  if (targetAngle == 0.0) {
-    return logAddPourSolvent(Infinity, { virtual });
-  }
-  const point = computePlot(recipeItems).pendingPoints[0];
+  const point = getPlot().pendingPoints[0];
   const currentAngle = -point.angle || 0.0;
   if (targetAngle * (targetAngle - currentAngle) <= 0) {
     const {
@@ -1055,12 +1022,14 @@ function pourUntilAngle(targetAngle, options = {}) {
     } = options;
     const round = 2 * overPour - 1;
     const dist = vMag(getCoord(point));
+    /** @type {import("@potionous/instructions").RecipeItem[]} */
+    const instructions = [];
     var toOrigin = false;
     var _angleAtOrigin =
-      -computePlot(recipeItems.concat(createPourSolvent(dist))).pendingPoints[0].angle || 0.0;
+      -computePlot(getRecipeItems().concat(createPourSolvent(dist))).pendingPoints[0].angle || 0.0;
     var l, r, e;
     if (targetAngle * (targetAngle - _angleAtOrigin) <= 0) {
-      logAddPourSolvent(dist);
+      instructions.push(logAddPourSolvent(dist));
       l = Math.abs(targetAngle - _angleAtOrigin) / 9.0 - buffer;
       r = Math.abs(targetAngle - _angleAtOrigin) / 9.0 + buffer;
       e = epsHigh;
@@ -1076,7 +1045,7 @@ function pourUntilAngle(targetAngle, options = {}) {
     }
     while (r - l > e) {
       const m = l + (r - l) / 2;
-      const plot = computePlot(recipeItems.concat(createPourSolvent(m)));
+      const plot = computePlot(getRecipeItems().concat(createPourSolvent(m)));
       const testAngle = -plot.pendingPoints[0].angle;
       if (targetAngle * (targetAngle - testAngle) <= 0) {
         l = m;
@@ -1085,11 +1054,14 @@ function pourUntilAngle(targetAngle, options = {}) {
       }
     }
     if (!toOrigin) {
-      return logAddPourSolvent(r, { virtual, round });
+      instructions.push(logAddPourSolvent(r, { shift: round }));
     } else {
-      return logAddPourSolvent(l + (r - l) / 2, { virtual, round: 0 });
+      instructions.push(logAddPourSolvent(l + (r - l) / 2, { shift: 0 }));
     }
+    return instructions;
   }
+  logError("pourUntilAngle", "Cannot pour to larger or reversed angle.");
+  return [];
 }
 
 /**
@@ -1261,28 +1233,23 @@ function getAngleOrigin(toBottle = true) {
  * @returns {number} The direction angle in radians.
  */
 function getAngleEntity(expectedEntityTypes = Entity.Vortex, toBottle = true) {
-  const currentPoint = currentPlot.pendingPoints[0];
-  let entity = undefined;
+  const point = getPlot().pendingPoints[0];
+  const pC = getCoord(point);
+  /** @type {{x: number, y: number}|undefined} */
+  let eC;
   for (let i = 0; i < expectedEntityTypes.length; i++) {
-    entity = getEntityCoord(
-      currentPoint.bottleCollisions.find((x) => x.entityType === expectedEntityTypes[i])
+    eC = getEntityCoord(
+      point.bottleCollisions.find((x) => x.entityType === expectedEntityTypes[i])
     );
-    if (entity !== undefined) break;
+    if (eC !== undefined) break;
   }
-  if (entity === undefined) {
+  if (eC === undefined) {
     logError("getting bottle polar angle by entity", "given entity not found.");
     return 0.0;
   }
-  let delta = { x: (currentPoint.x || 0.0) - entity.x, y: (currentPoint.y || 0.0) - entity.y };
-  if (Math.abs(delta.x) < 1e-9 && Math.abs(delta.y) < 1e-9) {
-    logError("getting bottle polar angle by entity", "bottle coincides the entity.");
-    return 0.0;
-  }
-  if (!toBottle) {
-    delta.x = -delta.x;
-    delta.y = -delta.y;
-  }
-  return vecToDirCoord(delta.x, delta.y);
+  let delta = vSub(pC, eC);
+  if (!toBottle) delta = vNeg(delta);
+  return vecToDir(delta);
 }
 
 /**
@@ -1291,7 +1258,7 @@ function getAngleEntity(expectedEntityTypes = Entity.Vortex, toBottle = true) {
  * @returns {number} The direction angle in radians.
  */
 function getStirDirection(segmentLength = 1e-9) {
-  const pendingPoints = currentPlot.pendingPoints;
+  const pendingPoints = getPlot().pendingPoints;
   /** the points have no coordinate at origin */
   const from = getCoord();
   let i = 0;
@@ -1314,16 +1281,17 @@ function getStirDirection(segmentLength = 1e-9) {
  * @returns {number} The direction angle in radians.
  */
 function getHeatDirection() {
-  const point = currentPlot.pendingPoints[0];
-  const vortex = getEntityCoord(point.bottleCollisions.find(isVortex));
-  if (vortex == undefined) {
+  const point = getPlot().pendingPoints[0];
+  const vC = getEntityCoord(point.bottleCollisions.find(isVortex));
+  if (vC == undefined) {
     logError("getting current heat direction", "no vortex at current position.");
     return 0.0;
   }
   const c = 0.16;
-  const dist = vMag(vSub(vortex, point));
+  const pC = getCoord(point);
+  const dist = vMag(vSub(vC, pC));
   const rot = Math.atan(c / dist);
-  return vecToDir(vRot(vSub(point, vortex), -Math.PI / 2 - rot));
+  return vecToDir(vRot(vSub(pC, vC), -Math.PI / 2 - rot));
 }
 
 /**
@@ -1333,7 +1301,7 @@ function getHeatDirection() {
  * @returns {{x:number, y:number, r:number}} An object containing the x and y
  * coordinates and the radius of the target vortex.
  */
-function getTargetVortex(x, y) {
+function getVortex(x, y) {
   const result = getEntityCoord(
     computePlot([createSetPosition(x, y)]).pendingPoints[0].bottleCollisions.find(isVortex)
   );
@@ -1355,14 +1323,8 @@ function getTargetVortex(x, y) {
   }
   return { x: result.x, y: result.y, r: VortexRadiusLarge };
 }
-
-/**
- * Retrieves information about the target vortex at the specified coordinates.
- * @param {{x:number, y:number}} point - The coordinates of the target vortex.
- * @returns {{x:number, y:number, r:number}} - An object containing the x and y
- * coordinates and the radius of the target vortex.
- */
-const getTargetVortexP = (point = getCoord()) => getTargetVortex(point.x || 0.0, point.y || 0.0);
+const getVortexC = (point = getCoord()) => getVortex(point.x || 0.0, point.y || 0.0);
+const getVortexP = (point = getPlot().pendingPoints[0]) => getVortexC(getCoord(point));
 
 /**
  * Utilities to get the variable salt counter outside this file.
@@ -1393,12 +1355,11 @@ function getTotalMoon() {
  * @param {number} direction The direction to be stirred in radian.
  * @param {string} salt The type of salt to be added. It must be "moon" or "sun".
  * @param {Object} [options] Options for the straightening process.
- * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] The current recipe items.
+ * @param {number} [options.preStir=0] The amount of salt to be added before stirring.
  * @param {number} [options.maxStir=Infinity] The maximum distance to be stirred.
  * @param {number} [options.maxGrains=Infinity] The maximum amount of salt to be added.
  * @param {boolean} [options.ignoreReverse=true] If set to false, the function will terminate when a reversed direction is detected.
  * @param {number} [options.segmentLength=1e-9] The minimal length of each segment of the potion path.
- * @param {boolean} [options.virtual=false] If set to true, the instruction is not really added.
  */
 function straighten(direction, salt, options = {}) {
   if (salt != "moon" && salt != "sun") {
@@ -1406,20 +1367,23 @@ function straighten(direction, salt, options = {}) {
     return 0;
   }
   const {
-    recipeItems = currentRecipeItems,
+    preStir = 0,
     maxStir = Infinity,
     maxGrains = Infinity,
     ignoreReverse = true,
     segmentLength = 1e-9,
-    virtual = false,
   } = options;
   const _maxStir = maxStir;
   var instructions = [];
   let stirredLength = 0.0;
-  let nextStirLength = 0.0;
+  let nextStir = 0.0;
   let nextSegmentLength = 0.0;
   let totalGrains = 0;
-  let pendingPoints = computePlot(recipeItems.concat(createStirCauldron(PreStir))).pendingPoints;
+  let pendingPoints = getPlot().pendingPoints;
+  if (preStir) {
+    pendingPoints = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
+  }
+  let _preStir = preStir;
   let lastSegment = false;
   let i = 0;
   while (!lastSegment) {
@@ -1463,40 +1427,35 @@ function straighten(direction, salt, options = {}) {
       }
     }
     if (grains > 0) {
-      const instruction = logAddStirCauldron(nextStirLength, { virtual });
-      if (instruction) {
-        stirredLength += instruction.distance;
+      const instruction = logAddStirCauldron(nextStir + _preStir);
+      _preStir = 0.0;
+      if (instruction.distance > 0) {
+        stirredLength += nextStir;
         instructions.push(instruction);
       }
       i = 0;
       nextSegmentLength = 0.0;
-      nextStirLength = 0.0;
+      nextStir = 0.0;
       if (totalGrains + grains >= maxGrains) {
         // capped grains
         grains = maxGrains - totalGrains;
         totalGrains += grains;
-        instructions.push(logAddRotationSalt(salt, grains, { virtual }));
+        instructions.push(logAddRotationSalt(salt, grains));
         console.log("Straignten terminated by maximal grains of salt added.");
         break;
       } else {
         totalGrains += grains;
-        const _instruction = logAddStirCauldron(0, { virtual });
-        if (_instruction) {
-          instructions.push(_instruction);
-        }
-        instructions.push(logAddRotationSalt(salt, grains, { virtual }));
+        instructions.push(logAddRotationSalt(salt, grains));
         // recalculate the new plotter after stir and salt.
-        pendingPoints = computePlot(
-          recipeItems.concat(createStirCauldron(PreStir)).concat(instructions)
-        ).pendingPoints;
+        pendingPoints = getPlot().pendingPoints;
       }
     } else {
-      nextStirLength += nextSegmentLength;
+      nextStir += nextSegmentLength;
       nextSegmentLength = 0.0;
-      if (nextStirLength + stirredLength >= _maxStir) {
+      if (nextStir + stirredLength >= _maxStir) {
         // capped stir length.
-        nextStirLength = _maxStir - stirredLength;
-        instructions.push(logAddStirCauldron(nextStirLength, { virtual }));
+        nextStir = _maxStir - stirredLength;
+        instructions.push(logAddStirCauldron(nextStir + _preStir));
         console.log("Straignten terminated by maximal length stirred.");
         break;
       }
@@ -1506,7 +1465,7 @@ function straighten(direction, salt, options = {}) {
   if (lastSegment) {
     // terminate by the end of path.
     console.log("straighten terminated by end of path.");
-    logAddStirCauldron(Infinity, { virtual });
+    instructions.push(logAddStirCauldron(Infinity));
   }
   console.log(
     "Added " + totalGrains + " grains of " + salt + " salt in total while straightening."
@@ -1517,7 +1476,7 @@ function straighten(direction, salt, options = {}) {
 /** main function. */
 function main() {
   // Your Script here...
-  logSalt();
+  printSalt();
 }
 
 main();
@@ -1575,7 +1534,7 @@ export {
   getHeatDirection,
   // Extraction of other informations.
   checkBase,
-  getTargetVortex,
+  getVortex,
   // Complex subroutines.
   straighten,
   // Utilities.
@@ -1591,10 +1550,9 @@ export {
   unit,
   getTotalMoon,
   getTotalSun,
-  setPreStir,
   setDisplay,
   setStirRounding,
-  logSalt,
+  printSalt,
 };
 
 export {

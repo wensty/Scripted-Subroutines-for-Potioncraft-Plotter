@@ -10,8 +10,6 @@ import {
   derotateToAngle,
   getAngleEntity,
   checkBase,
-  logError,
-  logSalt,
 } from "../mainScript";
 import { Effects } from "../mainScript";
 

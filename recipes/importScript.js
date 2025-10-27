@@ -51,7 +51,7 @@ import {
   getStirDirection,
   getHeatDirection,
   checkBase,
-  getTargetVortex,
+  getVortex,
   straighten,
   vMag,
   vAdd,
@@ -68,7 +68,7 @@ import {
   setDisplay,
   setStirRounding,
   logError,
-  logSalt,
+  printSalt,
 } from "../mainScript";
 import {
   SaltAngle,
