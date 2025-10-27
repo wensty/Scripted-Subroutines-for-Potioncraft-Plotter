@@ -16,7 +16,7 @@ import {
   derotateToAngle,
   degToRad,
   radToDeg,
-  getBottlePolarAngleByEntity,
+  getAngleEntity,
   checkBase,
   straighten,
   getTotalSun,
@@ -68,7 +68,7 @@ function main() {
   straighten(degToRad(direction), Salt.Sun, { maxGrains: 130 - delay }); // 501+130 sun
   // Strength
   stirIntoVortex();
-  console.log(radToDeg(getBottlePolarAngleByEntity()) + 180);
+  console.log(radToDeg(getAngleEntity()) + 180);
   derotateToAngle(25.903);
   logAddHeatVortex(Infinity);
   stirIntoVortex();

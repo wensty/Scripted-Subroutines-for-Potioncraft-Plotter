@@ -497,7 +497,7 @@ function stirIntoVortexV2(options = {}) {
       (currentVortex == undefined || vortex.x != currentVortex.x || vortex.y != currentVortex.y)
     ) {
       const next = getCoord(pendingPoints[i]);
-      stir += intersectCircle(getTargetVortexPoint(vortex), point, unitV(vSub(next, point))).d1;
+      stir += intersectCircle(getTargetVortexP(vortex), point, unitV(vSub(next, point))).d1;
       return logAddStirCauldron(stir, { virtual, buffer, round: 1 });
     }
     stir += pointDistance(pendingPoints[i - 1], pendingPoints[i]);
@@ -529,7 +529,7 @@ function stirToVortexEdge(options = {}) {
   } = options;
   let plot = computePlot(recipeItems);
   const pendingPoints = plot.pendingPoints;
-  const vortex = getTargetVortexPoint(pendingPoints[0]);
+  const vortex = getTargetVortexP(pendingPoints[0]);
   let stirLength = 0.0;
   if (vortex === undefined) {
     logError("stirring to edge", "bottle not in a vortex.");
@@ -655,8 +655,8 @@ function stirToZone(options = {}) {
 /**
  * Stirs the potion to the nearest point outside of the nearest danger zone. For compatibility.
  */
-const stirToDangerZoneExit = (preStir = 0.0) => {
-  setPreStir(preStir);
+const stirToDangerZoneExit = (preStir = undefined) => {
+  if (preStir != undefined) setPreStir(preStir);
   stirToZone({ zone: Entity.DangerZone, exitZone: true, overStir: true });
 };
 
@@ -807,20 +807,22 @@ function stirToTier(target, options = {}) {
  * This is not affected by stir rounding, since the stir length is manually input.
  * @param {number} length - The length of stirring to consume.
  * @param {object} options - Options for the stirring process.
+ * @param {import("@potionous/instructions").RecipeItem[]} [options.recipeItems=currentRecipeItems] - The recipe items.
  * @param {boolean} [options.virtual=false] - If true, the instruction is not really added.
  */
 function stirToConsume(length, options = {}) {
-  const { virtual = false } = options;
+  const { recipeItems = currentRecipeItems, virtual = false } = options;
   EnablePreStir = false;
-  const currentPoint = currentPlot.pendingPoints[0];
-  const result = currentPoint.bottleCollisions.find(isVortex);
+  const point = computePlot(recipeItems).pendingPoints[0];
+  const { x, y } = getCoord(point);
+  const result = point.bottleCollisions.find(isVortex);
   if (result == undefined) {
     logError("stirring to consume", "bottle not in a vortex.");
     return;
   }
   let instructions = [];
   instructions.push(logAddStirCauldron(length, { round: 0, virtual }));
-  instructions.push(logAddSetPosition(currentPoint.x, currentPoint.y, { virtual }));
+  instructions.push(logAddSetPosition(x, y, { virtual }));
   EnablePreStir = true;
   return instructions;
 }
@@ -837,7 +839,7 @@ function stirToConsume(length, options = {}) {
 function pourToVortexEdge(options = {}) {
   const { recipeItems = currentRecipeItems, virtual = false } = options;
   const point = computePlot(recipeItems).pendingPoints[0];
-  const vortex = getTargetVortexPoint(point);
+  const vortex = getTargetVortexP(point);
   if (vortex === undefined) {
     logError("pouring to edge", "bottle not in a vortex.");
     return;
@@ -890,7 +892,7 @@ function heatAndPourToEdge(maxHeat, repeats, options = {}) {
     logError("pouring to edge", "bottle not in a vortex.");
     return;
   }
-  const vortexRadius = getTargetVortexPoint(vortexCenter).r;
+  const vortexRadius = getTargetVortexP(vortexCenter).r;
   const c = 0.17; // the coefficient of the archimedean spiral formed by the vortex.
   const vortexDistance = vMag(vortexCenter);
   const alpha = Math.acos(vortexRadius / vortexDistance);
@@ -903,10 +905,6 @@ function heatAndPourToEdge(maxHeat, repeats, options = {}) {
       if (maxLength < 0) {
         break;
       }
-      /**
-       * buffer.
-       * online plotter do not support *= operand.
-       */
       maxLength = maxLength * 0.75;
     }
     instructions.push(
@@ -1243,7 +1241,7 @@ function vecToDirCoord(x, y, baseDirection = 0.0) {
  * @param {boolean} [toBottle=true] - Calculates the direction to or from the bottle. Default to.
  * @returns {number} The direction angle in radians.
  */
-function getBottlePolarAngle(toBottle = true) {
+function getAngleOrigin(toBottle = true) {
   let { x, y } = getCoord();
   if (x == 0.0 && y == 0.0) {
     logError("getting bottle polar angle", "bottle at origin.");
@@ -1262,7 +1260,7 @@ function getBottlePolarAngle(toBottle = true) {
  * @param {boolean} [toBottle=true] Calculates the direction to or from the bottle. Default to.
  * @returns {number} The direction angle in radians.
  */
-function getBottlePolarAngleByEntity(expectedEntityTypes = Entity.Vortex, toBottle = true) {
+function getAngleEntity(expectedEntityTypes = Entity.Vortex, toBottle = true) {
   const currentPoint = currentPlot.pendingPoints[0];
   let entity = undefined;
   for (let i = 0; i < expectedEntityTypes.length; i++) {
@@ -1288,11 +1286,11 @@ function getBottlePolarAngleByEntity(expectedEntityTypes = Entity.Vortex, toBott
 }
 
 /**
- * Compute the current stir direction.
+ * Compute the direction of stirring at current point.
  * @param {number} [segmentLength=1e-9] - The minimal length of each segment of the potion path.
  * @returns {number} The direction angle in radians.
  */
-function getCurrentStirDirection(segmentLength = 1e-9) {
+function getStirDirection(segmentLength = 1e-9) {
   const pendingPoints = currentPlot.pendingPoints;
   /** the points have no coordinate at origin */
   const from = getCoord();
@@ -1312,10 +1310,10 @@ function getCurrentStirDirection(segmentLength = 1e-9) {
 }
 
 /**
- * Computes the direction the bottle moves when heating the potion.
+ * Compute the direction of heating a vortex at current point.
  * @returns {number} The direction angle in radians.
  */
-function getCurrentHeatDirection() {
+function getHeatDirection() {
   const point = currentPlot.pendingPoints[0];
   const vortex = getEntityCoord(point.bottleCollisions.find(isVortex));
   if (vortex == undefined) {
@@ -1326,15 +1324,6 @@ function getCurrentHeatDirection() {
   const dist = vMag(vSub(vortex, point));
   const rot = Math.atan(c / dist);
   return vecToDir(vRot(vSub(point, vortex), -Math.PI / 2 - rot));
-}
-
-/**
- * Retrieves the radius of the current vortex.
- * @returns {number} The radius of the current vortex.
- */
-function getCurrentVortexRadius() {
-  const currentPoint = currentPlot.pendingPoints[0];
-  return getTargetVortex(currentPoint.x || 0.0, currentPoint.y || 0.0).r;
 }
 
 /**
@@ -1369,11 +1358,11 @@ function getTargetVortex(x, y) {
 
 /**
  * Retrieves information about the target vortex at the specified coordinates.
- * @param {{x:number, y:number}} point - A point object with `x` and `y` properties.
- * @returns {{x:number, y:number, r:number}} An object containing the x and y
+ * @param {{x:number, y:number}} point - The coordinates of the target vortex.
+ * @returns {{x:number, y:number, r:number}} - An object containing the x and y
  * coordinates and the radius of the target vortex.
  */
-const getTargetVortexPoint = (point) => getTargetVortex(point.x || 0.0, point.y || 0.0);
+const getTargetVortexP = (point = getCoord()) => getTargetVortex(point.x || 0.0, point.y || 0.0);
 
 /**
  * Utilities to get the variable salt counter outside this file.
@@ -1580,13 +1569,12 @@ export {
   dirToVec,
   relDir,
   // Angle and direction extractions.
-  getBottlePolarAngle,
-  getBottlePolarAngleByEntity,
-  getCurrentStirDirection,
-  getCurrentHeatDirection,
+  getAngleOrigin,
+  getAngleEntity,
+  getStirDirection,
+  getHeatDirection,
   // Extraction of other informations.
   checkBase,
-  getCurrentVortexRadius,
   getTargetVortex,
   // Complex subroutines.
   straighten,

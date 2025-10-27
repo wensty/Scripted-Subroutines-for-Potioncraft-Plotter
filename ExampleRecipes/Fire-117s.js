@@ -11,8 +11,8 @@ import {
   heatAndPourToEdge,
   derotateToAngle,
   radToDeg,
-  getBottlePolarAngleByEntity,
-  getCurrentStirDirection,
+  getAngleEntity,
+  getStirDirection,
   checkBase,
   straighten,
 } from "../mainScript";
@@ -23,9 +23,9 @@ function beta() {
   logSkirt();
   logAddStirCauldron(5.525);
   logAddPourSolvent(Infinity);
-  console.log(radToDeg(getCurrentStirDirection()));
+  console.log(radToDeg(getStirDirection()));
   stirIntoVortex();
-  console.log(radToDeg(getBottlePolarAngleByEntity()) - 90);
+  console.log(radToDeg(getAngleEntity()) - 90);
   logAddHeatVortex(3);
   logAddStirCauldron(4);
   stirToTurn();
@@ -36,7 +36,7 @@ function beta() {
   for (let i = 0; i < 3; i++) {
     stirToTurn();
   }
-  straighten(getCurrentStirDirection(), "sun", { maxStir: 0.8 });
+  straighten(getStirDirection(), "sun", { maxStir: 0.8 });
   stirToDangerZoneExit();
   logAddSunSalt(117 - 60);
   stirIntoVortex();

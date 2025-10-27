@@ -12,7 +12,7 @@ import {
   derotateToAngle,
   degToRad,
   radToDeg,
-  getBottlePolarAngleByEntity,
+  getAngleEntity,
   checkBase,
   straighten,
 } from "../mainScript";
@@ -35,32 +35,32 @@ function beta() {
     deviation: DeviationT1,
     ignoreAngle: true,
   });
-  console.log(radToDeg(Math.PI + getBottlePolarAngleByEntity(Entity.PotionEffect)));
+  console.log(radToDeg(Math.PI + getAngleEntity(Entity.PotionEffect)));
   logAddPourSolvent(Infinity);
   straighten(degToRad(149), Salt.Sun, { preStir: 11.2, maxGrains: 184 });
   stirIntoVortex(3.5);
-  console.log(radToDeg(getBottlePolarAngleByEntity()) + 180);
+  console.log(radToDeg(getAngleEntity()) + 180);
   heatAndPourToEdge(0.2, 14);
   logAddHeatVortex(3.35); // Empirical
-  console.log(getBottlePolarAngleByEntity());
+  console.log(getAngleEntity());
   stirToTier(Effects.Water.WildGrowth, {
     preStir: 1.7,
     deviation: DeviationT1,
     ignoreAngle: true,
   });
-  console.log(getBottlePolarAngleByEntity(Entity.PotionEffect) + Math.PI);
+  console.log(getAngleEntity(Entity.PotionEffect) + Math.PI);
 
   // section 2
   stirToTurn({ preStirLength: 3.25, directionBuffer: 0.0 }); // Empirical
   straighten(degToRad(-45), Salt.Sun, { maxStir: 0.85, maxGrains: 250 });
   stirIntoVortex();
   logAddStirCauldron(0.13); // to not die.
-  console.log(radToDeg(getBottlePolarAngleByEntity()) - 180);
+  console.log(radToDeg(getAngleEntity()) - 180);
   logAddHeatVortex(5.8);
   stirToTurn({ preStirLength: 7.0 });
   straighten(degToRad(-73), Salt.Sun, { maxGrains: 190 });
   stirIntoVortex();
-  console.log(radToDeg(getBottlePolarAngleByEntity()) - 180);
+  console.log(radToDeg(getAngleEntity()) - 180);
   logAddHeatVortex(Infinity);
   stirIntoVortex();
   logAddSunSalt(Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36));

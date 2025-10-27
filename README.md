@@ -226,13 +226,14 @@ Used to detection of certain entities.
 
 ### Extraction of information.
 
-- `getBottlePolarAngle(toBottle?)`: computes the direction angle of the current bottle position.
+- `getAngleOrigin(toBottle?)`: computes the direction angle of the current bottle position.
   - `toBottle`: Boolean default to be `true`. Decide to calculate the angle toward the bottle or from the bottle.
-- `getBottlePolarAngleByEntity(expectedEntityTypes, toBottle?)`: computes the direction angle of the current bottle position _relative to the center_ of the given entity touching the current bottle.
+- `getAngleEntity(expectedEntityTypes, toBottle?)`: computes the direction angle of the current bottle position _relative to the center_ of the given entity touching the current bottle.
   - Renamed to include potion effect angle calculation.
   - `expectedEntityTypes`: an array of entity type names, default to be `EntityVortex=["Vortex"]`. Some constants have been defined for this.
   - `toBottle`: Boolean default to be `true`. Decide to calculate the angle toward the bottle or from the bottle.
-- `getCurrentStirDirection()`: computes the direction angle of the current stir in radians.
+- `getStirDirection()`: computes the direction of stirring at current point in radians.
+- `getHeatDirection()`: computes the direction of heating a vortex at current point in radians.
 - `checkBase(expectedBase)`: checks if the current potion base is the given expected base. If not, this check produce an error.
 - `getCurrentVortexRadius()`: returns the radius of the current vortex.
 - `getTargetVortex(x, y)`: returns the coordinates and radius of the target vortex.

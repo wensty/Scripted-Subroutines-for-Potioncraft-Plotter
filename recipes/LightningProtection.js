@@ -19,9 +19,9 @@ import {
   degToRad,
   radToDeg,
   vecToDirCoord,
-  getBottlePolarAngle,
-  getBottlePolarAngleByEntity,
-  getCurrentStirDirection,
+  getAngleOrigin,
+  getAngleEntity,
+  getStirDirection,
   checkBase,
   straighten,
   getTotalMoon,
@@ -47,7 +47,7 @@ const recipes = {
       logSkirt();
       derotateToAngle(0);
       logAddStirCauldron(4.6);
-      straighten(getBottlePolarAngle() - degToRad(3), Salt.Sun, { maxStir: 1.35 });
+      straighten(getAngleOrigin() - degToRad(3), Salt.Sun, { maxStir: 1.35 });
       logAddStirCauldron(4.8);
       logAddSunSalt(42);
       logAddStirCauldron(1.25);
@@ -67,7 +67,7 @@ const recipes = {
         maxGrains: 315,
       });
       stirToTurn({ preStirLength: 0.6 });
-      console.log(radToDeg(getCurrentStirDirection()));
+      console.log(radToDeg(getStirDirection()));
       straighten(degToRad(-167), Salt.Moon, {
         preStir: 3.9,
         maxStir: 2.637,
@@ -111,7 +111,7 @@ const recipes = {
       logAddSunSalt(310);
       straighten(degToRad(180), Salt.Sun, { preStir: 4.8, maxGrains: 125 });
       stirIntoVortex(2.6);
-      console.log("~0:" + getBottlePolarAngleByEntity());
+      console.log("~0:" + getAngleEntity());
       logAddHeatVortex(Infinity);
       stirIntoVortex(3.2);
       logAddHeatVortex(Infinity);

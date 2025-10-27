@@ -9,7 +9,7 @@ import {
   derotateToAngle,
   degToRad,
   radToDeg,
-  getBottlePolarAngleByEntity,
+  getAngleEntity,
   checkBase,
   straighten,
 } from "../mainScript";
@@ -37,7 +37,7 @@ const recipes = {
       logAddHeatVortex(5.9);
       straighten(degToRad(129), "sun", { preStir: 10.5, maxGrains: 67 });
       stirIntoVortex(5.0);
-      console.log(radToDeg(getBottlePolarAngleByEntity()) + 180);
+      console.log(radToDeg(getAngleEntity()) + 180);
       logAddHeatVortex(5.12);
       derotateToAngle(0);
       logAddPourSolvent(4.129);

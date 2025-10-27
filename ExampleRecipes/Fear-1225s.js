@@ -9,8 +9,8 @@ import {
   derotateToAngle,
   degToRad,
   relDir,
-  getBottlePolarAngle,
-  getCurrentStirDirection,
+  getAngleOrigin,
+  getStirDirection,
   checkBase,
   straighten,
   getTotalSun,
@@ -28,9 +28,9 @@ function main() {
   logAddStirCauldron(0.9);
   logAddSunSalt(40);
   stirToTurn();
-  straighten(getBottlePolarAngle(), "sun", { maxGrains: 301 - 39 - 40 });
+  straighten(getAngleOrigin(), "sun", { maxGrains: 301 - 39 - 40 });
   logAddPourSolvent(0.8);
-  straighten(getBottlePolarAngle(), "sun", { maxGrains: 39 });
+  straighten(getAngleOrigin(), "sun", { maxGrains: 39 });
   logAddPourSolvent(0.05);
   stirToTurn();
   logAddPourSolvent(0.56);
@@ -40,8 +40,8 @@ function main() {
   logAddSunSalt(55);
   logAddStirCauldron(2.01);
   for (let i = 0; i < 39; i++) {
-    const bottlePolarAngle = getBottlePolarAngle();
-    const currentDirection = getCurrentStirDirection();
+    const bottlePolarAngle = getAngleOrigin();
+    const currentDirection = getStirDirection();
     const relativeDirection = relDir(currentDirection, bottlePolarAngle);
     if (relativeDirection < -SaltAngle / 2) {
       logAddSunSalt(Math.round(-relativeDirection / SaltAngle));
@@ -69,9 +69,9 @@ function beta_1226s() {
   logAddStirCauldron(0.9);
   logAddSunSalt(40);
   stirToTurn();
-  straighten(getBottlePolarAngle(), "sun", { maxGrains: 301 - 39 - 40 });
+  straighten(getAngleOrigin(), "sun", { maxGrains: 301 - 39 - 40 });
   logAddPourSolvent(0.8);
-  straighten(getBottlePolarAngle(), "sun", { maxGrains: 39 });
+  straighten(getAngleOrigin(), "sun", { maxGrains: 39 });
   logAddPourSolvent(0.05);
   stirToTurn();
   logAddPourSolvent(0.54);
@@ -81,8 +81,8 @@ function beta_1226s() {
   logAddSunSalt(59);
   logAddStirCauldron(2.13);
   for (let i = 0; i < 43; i++) {
-    const bottlePolarAngle = getBottlePolarAngle();
-    const currentDirection = getCurrentStirDirection();
+    const bottlePolarAngle = getAngleOrigin();
+    const currentDirection = getStirDirection();
     const relativeDirection = relDir(currentDirection, bottlePolarAngle);
     if (relativeDirection < -SaltAngle / 2) {
       logAddSunSalt(Math.round(-relativeDirection / SaltAngle));

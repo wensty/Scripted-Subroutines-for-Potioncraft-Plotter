@@ -18,9 +18,9 @@ import {
   derotateToAngle,
   degToRad,
   vecToDirCoord,
-  getBottlePolarAngle,
-  getBottlePolarAngleByEntity,
-  getCurrentStirDirection,
+  getAngleOrigin,
+  getAngleEntity,
+  getStirDirection,
   checkBase,
   straighten,
   getTotalSun,
@@ -49,7 +49,7 @@ function beta() {
   stirToTurn();
   straighten(degToRad(90), "sun", { maxStir: 0.8 });
   logAddSunSalt(73);
-  straighten(getCurrentStirDirection(), "sun", {
+  straighten(getStirDirection(), "sun", {
     maxStir: 1,
     maxGrains: 780 - getTotalSun(),
   });
@@ -65,20 +65,20 @@ function beta() {
   // return to vortex.
   logAddPourSolvent(7.27);
   logSkirt();
-  console.log(getBottlePolarAngle());
+  console.log(getAngleOrigin());
   stirIntoVortex();
-  console.log(getBottlePolarAngleByEntity() + Math.PI / 2);
+  console.log(getAngleEntity() + Math.PI / 2);
   logAddHeatVortex(0.4);
   pourToVortexEdge();
   heatAndPourToEdge(3, 5);
   derotateToAngle(0);
   logAddHeatVortex(6.95);
-  console.log(getBottlePolarAngle());
+  console.log(getAngleOrigin());
   // part 2
   logAddPourSolvent(12);
   const x = currentPlot.pendingPoints[0].x;
   const y = currentPlot.pendingPoints[0].y;
-  console.log(getBottlePolarAngle() + Math.PI / 2);
+  console.log(getAngleOrigin() + Math.PI / 2);
   console.log(vecToDirCoord(28.91 - x, 1.7 - y));
   logAddSunSalt(80);
   logSkirt();
@@ -86,7 +86,7 @@ function beta() {
   stirToTurn({ preStirLength: 4.0, maxStirLength: 0.1, directionBuffer: 0.01 * SaltAngle });
   const x2 = currentPlot.pendingPoints[0].x;
   const y2 = currentPlot.pendingPoints[0].y;
-  console.log(getCurrentStirDirection());
+  console.log(getStirDirection());
   console.log(vecToDirCoord(x2 - x, y2 - y));
   straighten(vecToDirCoord(28.91 - x2, 1.7 - y2), "sun", { maxGrains: 345 });
   // Fire protection.
@@ -95,12 +95,12 @@ function beta() {
     deviation: DeviationT1,
     ignoreAngle: true,
   });
-  console.log(getBottlePolarAngleByEntity(EntityPotionEffect) + Math.PI);
+  console.log(getAngleEntity(EntityPotionEffect) + Math.PI);
   logAddSunSalt(Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36));
   logAddPourSolvent(7.8);
   logAddStirCauldron(4);
   stirToTurn();
-  straighten(getCurrentStirDirection(), "sun", { maxStir: 1.1, maxGrains: 64 });
+  straighten(getStirDirection(), "sun", { maxStir: 1.1, maxGrains: 64 });
   stirToDangerZoneExit();
   logAddPourSolvent(0.9);
   stirToDangerZoneExit();
@@ -111,9 +111,9 @@ function beta() {
   logAddPourSolvent(0.99);
   stirToDangerZoneExit();
   logAddPourSolvent(0.88);
-  console.log(getBottlePolarAngle());
+  console.log(getAngleOrigin());
   stirIntoVortex();
-  console.log(getBottlePolarAngleByEntity() + Math.PI / 2);
+  console.log(getAngleEntity() + Math.PI / 2);
   logAddHeatVortex(2);
   logAddPourSolvent(0.5);
   derotateToAngle(0);
@@ -132,12 +132,12 @@ function beta() {
   });
   // part 3
   logAddPourSolvent(10.7);
-  console.log(getBottlePolarAngle());
+  console.log(getAngleOrigin());
   logAddMoonSalt(89);
   logSkirt();
   logAddMoonSalt(46);
   stirIntoVortex();
-  console.log(getBottlePolarAngleByEntity() + Math.PI / 2);
+  console.log(getAngleEntity() + Math.PI / 2);
   logAddHeatVortex(0.8);
   pourToVortexEdge();
   heatAndPourToEdge(3, 4);
@@ -167,9 +167,9 @@ function beta() {
   logAddPourSolvent(2.42);
   stirToDangerZoneExit();
   logAddPourSolvent(1.93);
-  console.log(getBottlePolarAngle());
+  console.log(getAngleOrigin());
   stirIntoVortex();
-  console.log(getBottlePolarAngleByEntity() - Math.PI / 2);
+  console.log(getAngleEntity() - Math.PI / 2);
   logAddHeatVortex(5);
   heatAndPourToEdge(3, 7);
   logAddHeatVortex(1.04);

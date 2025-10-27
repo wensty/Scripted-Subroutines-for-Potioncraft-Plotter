@@ -7,7 +7,7 @@ import {
   degToRad,
   radToDeg,
   vecToDirCoord,
-  getCurrentStirDirection,
+  getStirDirection,
   straighten,
   getTotalSun,
   checkBase,
@@ -32,7 +32,7 @@ const recipes = {
       logAddIngredient(Ingredients.MagmaMorel);
       logAddPourSolvent(Infinity);
       logAddStirCauldron(4.9);
-      const a1 = getCurrentStirDirection();
+      const a1 = getStirDirection();
       const { x, y } = currentPlot.pendingPoints[0];
       const a2 = vecToDirCoord(-11.65 - x, -0.98 - y);
       console.log(a1);

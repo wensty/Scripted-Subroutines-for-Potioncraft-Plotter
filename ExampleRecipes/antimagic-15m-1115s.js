@@ -11,7 +11,7 @@ import {
   degToRad,
   saltToDeg,
   vecToDirCoord,
-  getBottlePolarAngleByEntity,
+  getAngleEntity,
   checkBase,
   straighten,
   setDisplay,
@@ -77,7 +77,7 @@ function beta() {
   stirIntoVortex();
   const x3 = currentPlot.pendingPoints[0].x;
   const y3 = currentPlot.pendingPoints[0].y;
-  console.log(getBottlePolarAngleByEntity() + Math.PI);
+  console.log(getAngleEntity() + Math.PI);
 
   heatAndPourToEdge(0.1, 30);
   logAddHeatVortex(2.53);

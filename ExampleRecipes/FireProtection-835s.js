@@ -9,9 +9,9 @@ import {
   pourToZone,
   degToRad,
   vecToDirCoord,
-  getBottlePolarAngle,
-  getBottlePolarAngleByEntity,
-  getCurrentStirDirection,
+  getAngleOrigin,
+  getAngleEntity,
+  getStirDirection,
   checkBase,
   straighten,
   getTotalSun,
@@ -24,9 +24,9 @@ function beta() {
   checkBase("oil");
   logSkirt();
   logAddStirCauldron(4.55);
-  const a1 = getBottlePolarAngle();
+  const a1 = getAngleOrigin();
   console.log(a1);
-  console.log(getCurrentStirDirection());
+  console.log(getStirDirection());
   logAddPourSolvent(1.85);
   straighten(a1 - Math.PI / 2, Salt.Sun, { maxGrains: 129 });
   const d1 =
@@ -34,7 +34,7 @@ function beta() {
     Math.PI / 2;
   console.log(d1);
   stirIntoVortex();
-  console.log(getBottlePolarAngleByEntity() + Math.PI * 1.5);
+  console.log(getAngleEntity() + Math.PI * 1.5);
   // Part 2
   logAddHeatVortex(Infinity);
   const x1 = currentPlot.pendingPoints[0].x;
@@ -45,13 +45,13 @@ function beta() {
   const y2 = currentPlot.pendingPoints[0].y;
   straighten(vecToDirCoord(x2 - x1, y2 - y1), Salt.Sun, { maxGrains: 501 - getTotalSun() });
   stirToTurn();
-  const a2 = getBottlePolarAngle();
+  const a2 = getAngleOrigin();
   console.log("a2: " + a2);
   logAddPourSolvent(1.08);
-  console.log(getCurrentStirDirection());
+  console.log(getStirDirection());
   stirToTurn();
   logAddPourSolvent(2.73);
-  console.log(getCurrentStirDirection());
+  console.log(getStirDirection());
   stirToTurn();
   pourToZone(2, Entity.Swamp);
   for (let i = 0; i < 19; i++) {

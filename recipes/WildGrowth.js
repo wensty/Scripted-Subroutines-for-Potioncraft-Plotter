@@ -8,7 +8,7 @@ import {
   stirToTarget,
   heatAndPourToEdge,
   derotateToAngle,
-  getBottlePolarAngleByEntity,
+  getAngleEntity,
   checkBase,
   logError,
   logSalt,
@@ -38,9 +38,9 @@ const recipes = {
       derotateToAngle(0);
       logAddHeatVortex(1.09);
       logAddSunSalt(93);
-      console.log(getBottlePolarAngleByEntity());
+      console.log(getAngleEntity());
       stirIntoVortex();
-      console.log(getBottlePolarAngleByEntity() + Math.PI);
+      console.log(getAngleEntity() + Math.PI);
       heatAndPourToEdge(3, 6);
       logAddHeatVortex(0.3);
       stirIntoVortex();

@@ -6,7 +6,7 @@ import {
   stirToTurn,
   stirToTarget,
   degToRad,
-  getBottlePolarAngle,
+  getAngleOrigin,
   checkBase,
   straighten,
 } from "../mainScript";
@@ -21,7 +21,7 @@ function beta() {
   totalSun += straighten(degToRad(87), "sun", { maxGrains: 337 });
   logAddStirCauldron(9);
   stirToTurn();
-  totalSun += straighten(getBottlePolarAngle(), "sun", { maxGrains: 501 - totalSun });
+  totalSun += straighten(getAngleOrigin(), "sun", { maxGrains: 501 - totalSun });
   logAddPourSolvent(1.67);
   const s = Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36);
   console.log("Final Salt: " + (s + 501));

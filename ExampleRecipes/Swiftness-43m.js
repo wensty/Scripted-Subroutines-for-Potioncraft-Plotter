@@ -3,7 +3,7 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
   radToDeg,
-  getCurrentStirDirection,
+  getStirDirection,
   checkBase,
   straighten,
 } from "../mainScript";
@@ -15,9 +15,9 @@ function main() {
   logAddIngredient(Ingredients.RainbowCap, 1);
   logAddStirCauldron(14.4);
   logAddPourSolvent(100);
-  console.log("Current stir angle: " + radToDeg(getCurrentStirDirection()));
+  console.log("Current stir angle: " + radToDeg(getStirDirection()));
   logAddStirCauldron(3.8);
-  let currentStirAngle = getCurrentStirDirection();
+  let currentStirAngle = getStirDirection();
   console.log("Current stir angle: " + radToDeg(currentStirAngle));
   straighten(currentStirAngle, "moon", { maxStir: 10, maxGrains: 43 });
 }

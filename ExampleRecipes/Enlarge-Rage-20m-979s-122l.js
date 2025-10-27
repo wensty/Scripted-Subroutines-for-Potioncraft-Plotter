@@ -15,7 +15,7 @@ import {
   degToRad,
   radToDeg,
   saltToDeg,
-  getBottlePolarAngleByEntity,
+  getAngleEntity,
   checkBase,
   straighten,
 } from "../mainScript";
@@ -39,7 +39,7 @@ function main() {
   straighten(degToRad(-7), "sun", { maxGrains: 288 - 17 });
   stirIntoVortex();
 
-  console.log(radToDeg(getBottlePolarAngleByEntity()) - 180);
+  console.log(radToDeg(getAngleEntity()) - 180);
 
   derotateToAngle(saltToDeg("sun", 200 - 0.99 - 48));
   logAddHeatVortex(Infinity);
@@ -83,7 +83,7 @@ function beta_20m_978s_125hT() {
   stirToTurn();
   straighten(degToRad(-7), "sun", { maxGrains: 288 - 17 });
   stirIntoVortex();
-  console.log(radToDeg(getBottlePolarAngleByEntity()) - 180);
+  console.log(radToDeg(getAngleEntity()) - 180);
   derotateToAngle(saltToDeg("sun", 200 - 0.99 - 47));
   logAddHeatVortex(Infinity);
   logAddStirCauldron(5);

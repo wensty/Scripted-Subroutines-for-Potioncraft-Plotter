@@ -17,9 +17,9 @@ import {
   degToRad,
   saltToDeg,
   vecToDirCoord,
-  getBottlePolarAngle,
-  getBottlePolarAngleByEntity,
-  getCurrentStirDirection,
+  getAngleOrigin,
+  getAngleEntity,
+  getStirDirection,
   checkBase,
   straighten,
   getTotalSun,
@@ -45,14 +45,14 @@ const recipes = {
       logAddSunSalt(245);
       logAddStirCauldron(4.55);
       // console.log(getCurrentStirDirection())
-      const a1 = getBottlePolarAngle();
-      console.log(getBottlePolarAngle());
+      const a1 = getAngleOrigin();
+      console.log(getAngleOrigin());
       const adv = 106; // maybe 107.
       straighten(a1, Salt.Sun, { maxGrains: 501 - adv - getTotalSun() });
       logSkirt();
       straighten(a1, Salt.Sun, { maxGrains: adv });
       stirIntoVortex();
-      console.log(getBottlePolarAngleByEntity() - Math.PI);
+      console.log(getAngleEntity() - Math.PI);
       derotateToAngle(saltToDeg("sun", 191), { toAngle: false });
       logAddHeatVortex(Infinity);
       stirIntoVortex(3.1);
@@ -64,7 +64,7 @@ const recipes = {
       const { x: x1, y: y1 } = currentPlot.pendingPoints[0];
       logAddStirCauldron(9.8);
       const { x: x2, y: y2 } = currentPlot.pendingPoints[0];
-      console.log(getCurrentStirDirection());
+      console.log(getStirDirection());
       console.log(vecToDirCoord(x2 - x1, y2 - y1));
       console.log(degToRad(a));
       straighten(degToRad(a), Salt.Sun, { maxGrains: 300, maxStir: 0.73 });

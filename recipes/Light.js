@@ -10,9 +10,9 @@ import {
   degToRad,
   radToDeg,
   vecToDirCoord,
-  getBottlePolarAngleByEntity,
-  getCurrentStirDirection,
-  getCurrentHeatDirection,
+  getAngleEntity,
+  getStirDirection,
+  getHeatDirection,
   checkBase,
   straighten,
   getTotalSun,
@@ -41,16 +41,16 @@ function s1() {
   logSkirt();
   logAddStirCauldron(5.25);
   logAddPourSolvent(Infinity);
-  console.log("a1: " + radToDeg(getCurrentStirDirection()));
+  console.log("a1: " + radToDeg(getStirDirection()));
   stirIntoVortex(5.5);
-  console.log("a2~a1: " + (radToDeg(getBottlePolarAngleByEntity()) - 90));
+  console.log("a2~a1: " + (radToDeg(getAngleEntity()) - 90));
   logAddHeatVortex(4.3);
   logAddPourSolvent(1.268);
   logAddHeatVortex(3.69);
-  console.log("a3:" + (radToDeg(getCurrentHeatDirection()) - 90));
+  console.log("a3:" + (radToDeg(getHeatDirection()) - 90));
   straighten(degToRad(-51.25), Salt.Sun, { maxGrains: 210 - getTotalSun(), preStir: 4.5 });
   stirIntoVortex(4.7);
-  console.log("a4~>a3: " + (radToDeg(getBottlePolarAngleByEntity()) - 180));
+  console.log("a4~>a3: " + (radToDeg(getAngleEntity()) - 180));
   derotateToAngle(31.7, { toAngle: false });
   logAddHeatVortex(Infinity);
   const { x: x1, y: y1 } = currentPlot.pendingPoints[0];

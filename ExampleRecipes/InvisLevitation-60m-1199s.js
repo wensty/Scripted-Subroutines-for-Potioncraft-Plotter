@@ -17,9 +17,9 @@ import {
   degToRad,
   radToDeg,
   saltToDeg,
-  getBottlePolarAngle,
-  getBottlePolarAngleByEntity,
-  getCurrentStirDirection,
+  getAngleOrigin,
+  getAngleEntity,
+  getStirDirection,
   checkBase,
   straighten,
   setStirRounding,
@@ -36,9 +36,9 @@ function main() {
   logSkirt();
   logAddSunSalt(14);
   logAddStirCauldron(4.55);
-  console.log(getBottlePolarAngle());
-  console.log(getCurrentStirDirection());
-  const direction = getBottlePolarAngle();
+  console.log(getAngleOrigin());
+  console.log(getStirDirection());
+  const direction = getAngleOrigin();
   straighten(direction, "sun", { maxGrains: delay - 243 - 14 });
   logSkirt();
   straighten(direction, "sun", { maxGrains: 501 - delay });
@@ -82,7 +82,7 @@ function main() {
   // match the angle entering vortex.
   straighten(degToRad(-65.9), "sun", { maxGrains: saltToReverse });
   stirIntoVortex();
-  console.log(radToDeg(getBottlePolarAngleByEntity(EntityVortex, false)));
+  console.log(radToDeg(getAngleEntity(EntityVortex, false)));
   logAddHeatVortex(4.6);
   pourToVortexEdge();
   heatAndPourToEdge(1, 9);
@@ -103,9 +103,9 @@ function beta() {
   logSkirt();
   logAddSunSalt(14);
   logAddStirCauldron(4.55);
-  console.log(getBottlePolarAngle());
-  console.log(getCurrentStirDirection());
-  const direction = getBottlePolarAngle();
+  console.log(getAngleOrigin());
+  console.log(getStirDirection());
+  const direction = getAngleOrigin();
   straighten(direction, "sun", { maxGrains: delay - 243 - 14 });
   logSkirt();
   straighten(direction, "sun", { maxGrains: 501 - delay });
@@ -149,7 +149,7 @@ function beta() {
   // match the angle entering vortex.
   straighten(degToRad(-65.0), "sun", { maxGrains: saltToReverse });
   stirIntoVortex();
-  console.log(radToDeg(getBottlePolarAngleByEntity(EntityVortex, false)));
+  console.log(radToDeg(getAngleEntity(EntityVortex, false)));
   logAddHeatVortex(4.6);
   pourToVortexEdge();
   heatAndPourToEdge(1, 9);
