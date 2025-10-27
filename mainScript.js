@@ -57,7 +57,7 @@ let VirtualRecipeItems;
 let VirtualPlot;
 
 /**
- * Enable virtual mode. All subsequent plotting and instruction addition will be virtual, and will not affect the actual plot.
+ * Enable virtual mode. All subsequent plotting and instruction addition will be done on a virtual plot, and will not affect the actual plot.
  * This allows you to test out and experiment with different plots without having to worry about overwriting the actual plot.
  * Can also be used to reset virtual mode.
  * To disable virtual mode, call unsetVirtual().
@@ -79,13 +79,11 @@ function getRecipeItems() {
   if (Virtual) return VirtualRecipeItems;
   return currentRecipeItems;
 }
-
 function getPlot() {
   if (Virtual) return VirtualPlot;
   return currentPlot;
 }
-
-function updateVirtual() {
+function updateVirtualPlot() {
   VirtualPlot = computePlot(VirtualRecipeItems);
 }
 
@@ -328,7 +326,7 @@ function logAddIngredient(ingredientId, grindPercent = 1.0) {
     addIngredient(ingredientId, grindPercent);
   } else {
     VirtualRecipeItems.push(createAddIngredient(ingredientId, grindPercent));
-    updateVirtual();
+    updateVirtualPlot();
   }
   return createAddIngredient(ingredientId, grindPercent);
 }
@@ -347,7 +345,7 @@ function logAddSunSalt(grains) {
     addSunSalt(grains);
   } else {
     VirtualRecipeItems.push(createAddSunSalt(grains));
-    updateVirtual();
+    updateVirtualPlot();
   }
   return createAddSunSalt(grains);
 }
@@ -365,7 +363,7 @@ function logAddMoonSalt(grains) {
     addMoonSalt(grains);
   } else {
     VirtualRecipeItems.push(createAddMoonSalt(grains));
-    updateVirtual();
+    updateVirtualPlot();
   }
   return createAddMoonSalt(grains);
 }
@@ -404,7 +402,7 @@ function logAddHeatVortex(length, round) {
     addHeatVortex(Math.min(_length, LuckyInfinity));
   } else {
     VirtualRecipeItems.push(createHeatVortex(Math.min(_length, LuckyInfinity)));
-    updateVirtual();
+    updateVirtualPlot();
   }
   return createHeatVortex(Math.min(_length, LuckyInfinity));
 }
@@ -435,7 +433,7 @@ function logAddStirCauldron(length, options = {}) {
     addStirCauldron(Math.min(_length, LuckyInfinity));
   } else {
     VirtualRecipeItems.push(createStirCauldron(Math.min(_length, LuckyInfinity)));
-    updateVirtual();
+    updateVirtualPlot();
   }
   return createStirCauldron(Math.min(_length, LuckyInfinity));
 }
@@ -446,7 +444,7 @@ function logAddStirCauldron(length, options = {}) {
  * @param {number} [options.shift] 1 if shifting up, -1 if shifting down, 0 if not shifting.
  */
 function logAddPourSolvent(length, options = {}) {
-  const { virtual = false, shift = 0 } = options;
+  const { shift = 0 } = options;
   var _length = length;
   if (shift) {
     if (shift > 0) {
@@ -462,7 +460,7 @@ function logAddPourSolvent(length, options = {}) {
     addPourSolvent(Math.min(_length, LuckyInfinity));
   } else {
     VirtualRecipeItems.push(createPourSolvent(Math.min(_length, LuckyInfinity)));
-    updateVirtual();
+    updateVirtualPlot();
   }
   return createPourSolvent(Math.min(_length, LuckyInfinity));
 }
@@ -479,7 +477,7 @@ function logAddSetPosition(x, y) {
     addSetPosition(x, y);
   } else {
     VirtualRecipeItems.push(createSetPosition(x, y));
-    updateVirtual();
+    updateVirtualPlot();
   }
   return createSetPosition(x, y);
 }
@@ -504,10 +502,9 @@ const isVortex = isEntityType(Entity.Vortex);
  * Stirs the potion into the next vortex.
  * @param {object} [options] - Options for the stirring process.
  * @param {number} [options.preStir=0.0] The amount of pre-stirring to add.
- * @param {number} [options.buffer=1e-5] The buffer to adjust the final stir length.
  */
 function stirIntoVortexV2(options = {}) {
-  const { preStir = 0.0, buffer = 1e-5 } = options;
+  const { preStir = 0.0 } = options;
   let pendingPoints = getPlot().pendingPoints;
   if (preStir > 0.0) {
     pendingPoints = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
@@ -530,7 +527,7 @@ function stirIntoVortexV2(options = {}) {
       const next = getCoord(pendingPoints[i]);
       stir += intersectCircle(getVortexC(vortex), point, unitV(vSub(next, point))).d1;
       stir += preStir;
-      return logAddStirCauldron(stir, { buffer, shift: 1 });
+      return logAddStirCauldron(stir, { shift: 1 });
     }
     stir += pointDistance(pendingPoints[i - 1], pendingPoints[i]);
     point = getCoord(pendingPoints[i]);
@@ -542,10 +539,9 @@ const stirIntoVortex = (preStir = 0.0) => stirIntoVortexV2({ preStir });
  * Stirs the potion to the edge of the current vortex.
  * @param {object} [options] - Options for the stirring process.
  * @param {number} [options.preStir=0.0] The amount of pre-stirring to add.
- * @param {number} [options.buffer=1e-5] The buffer to adjust the final stir length.
  */
-function stirToVortexEdge(options = {}) {
-  const { preStir = 0.0, buffer = 1e-5 } = options;
+function stirToVortexEdgeV2(options = {}) {
+  const { preStir = 0.0 } = options;
   let plot = getPlot();
   if (preStir > 0.0) {
     plot = computePlot(getRecipeItems().concat(createStirCauldron(preStir)));
@@ -575,8 +571,9 @@ function stirToVortexEdge(options = {}) {
   const next = getCoord(pendingPoints[i]);
   const iC = intersectCircle(vortex, current, unit(next.x - current.x, next.y - current.y));
   stir += iC.d2;
-  return logAddStirCauldron(stir, { buffer, shift: -1 });
+  return logAddStirCauldron(stir, { shift: -1 });
 }
+const stirToVortexEdge = (preStir = 0.0) => stirToVortexEdgeV2({ preStir });
 
 /**
  * Stirs the potion until a change in direction is detected or the path is used up.
@@ -584,16 +581,10 @@ function stirToVortexEdge(options = {}) {
  * @param {object} [options] - Options for the stirring process allowed beyond the initial length before stopping.
  * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
  * @param {number} [options.directionBuffer=20 * SaltAngle] - The buffer angle used to determine the change in direction.
- * @param {number} [options.buffer=1e-5] - The buffer to adjust the final stir length.
  * @param {number} [options.segmentLength=1e-9] - The minimal length of each segment of the potion path.
  */
 function stirToTurn(options = {}) {
-  const {
-    preStir = 0.0,
-    directionBuffer = 20 * SaltAngle,
-    buffer = 1e-5,
-    segmentLength = 1e-9,
-  } = options;
+  const { preStir = 0.0, directionBuffer = 20 * SaltAngle, segmentLength = 1e-9 } = options;
 
   const minCosine = Math.cos(directionBuffer);
   let pendingPoints = getPlot().pendingPoints;
@@ -619,7 +610,7 @@ function stirToTurn(options = {}) {
     }
     const nextUnit = unitV(vSub(pendingPoints[j], pendingPoints[i]));
     if (currentUnit != undefined && vProd(currentUnit, nextUnit) < minCosine) {
-      return logAddStirCauldron(stir, { buffer });
+      return logAddStirCauldron(stir);
     } else {
       stir += nextSegmentLength;
       nextSegmentLength = 0.0;
@@ -636,16 +627,9 @@ function stirToTurn(options = {}) {
  * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
  * @param {boolean} [options.overStir=false] - Whether to over stir by a small amount.
  * @param {boolean} [options.exitZone=false] - Whether to exit the zone instead of entering it.
- * @param {number} [options.buffer=1e-5] - The added buffer length  when not rounding the stir length.
  */
 function stirToZone(options = {}) {
-  const {
-    preStir = 0.0,
-    zone = Entity.DangerZone,
-    overStir = false,
-    exitZone = false,
-    buffer = 1e-5,
-  } = options;
+  const { preStir = 0.0, zone = Entity.DangerZone, overStir = false, exitZone = false } = options;
   let plot = getPlot();
   if (preStir > 0.0) {
     plot = computePlot(getRecipeItems().concat(createStirCauldron(preStir)));
@@ -653,7 +637,7 @@ function stirToZone(options = {}) {
   const pendingPoints = plot.pendingPoints;
   let i = 0;
   let inZone = false;
-  let stir = 0;
+  let stir = preStir;
   while (true) {
     i += 1;
     if (i == pendingPoints.length) {
@@ -673,7 +657,7 @@ function stirToZone(options = {}) {
       }
     }
   }
-  return logAddStirCauldron(stir, { buffer, shift: 2 * overStir - 1 });
+  return logAddStirCauldron(stir, { shift: 2 * overStir - 1 });
 }
 const stirToDangerZoneExit = (preStir = 0.0) => {
   stirToZone({ preStir, zone: Entity.DangerZone, exitZone: true, overStir: true });
@@ -749,7 +733,7 @@ function stirToTarget(target, options = {}) {
     nextSegmentLength = 0.0;
   }
   return {
-    instruction: logAddStirCauldron(optimalStir, { shift: 0 }),
+    instruction: logAddStirCauldron(optimalStir + preStir, { shift: 0 }),
     distance: optimalDistance,
   };
 }
@@ -763,7 +747,7 @@ function stirToTarget(target, options = {}) {
  * @param {number} [options.deviation=DeviationT2] - The maximal allowable deviation from the target effect.
  * @param {boolean} [options.ignoreAngle=false] - Whether to ignore the angle deviation.
  * @param {number} [options.segmentLength=1e-9] - The minimal length of each segment in the stirring path.
- * @param {number} [options.buffer=1e-5] - The buffer added after stirring to ensure entrance of the tier.
+ * @param {number} [options.afterStir=1e-5] - The added length to ensure entrance.
  */
 function stirToTier(target, options = {}) {
   const {
@@ -771,7 +755,7 @@ function stirToTier(target, options = {}) {
     deviation = DeviationT2,
     ignoreAngle = false,
     segmentLength = 1e-9,
-    buffer = 1e-5,
+    afterStir = 1e-5,
   } = options;
   let pendingPoints = getPlot().pendingPoints;
   if (preStir > 0.0) {
@@ -810,7 +794,7 @@ function stirToTier(target, options = {}) {
     );
     if (iC != undefined && iC.d1 >= 0.0 && iC.d1 < pointDistance(cP, nP)) {
       stir += iC.d1;
-      return logAddStirCauldron(stir + buffer, { shift: 0 });
+      return logAddStirCauldron(stir + afterStir, { shift: 0 });
     }
     stir += pointDistance(cP, nP);
     i = j;
@@ -1550,6 +1534,10 @@ export {
   unit,
   getTotalMoon,
   getTotalSun,
+  setVirtual,
+  unsetVirtual,
+  getRecipeItems,
+  getPlot,
   setDisplay,
   setStirRounding,
   printSalt,

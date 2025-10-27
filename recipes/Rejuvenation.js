@@ -24,7 +24,6 @@ import {
   checkBase,
   straighten,
   getTotalSun,
-  setPreStir,
   setDisplay,
 } from "../mainScript";
 import { Salt, Effects } from "../mainScript";
@@ -50,8 +49,7 @@ const recipes = {
       logAddSunSalt(120);
       logAddStirCauldron(6);
       logAddHeatVortex(Infinity);
-      setPreStir(5.3);
-      stirToTurn();
+      stirToTurn({ preStir: 5.3 });
       logAddSunSalt(501 - getTotalSun());
       const a1 = 37;
       derotateToAngle(-a1, { toAngle: true });
@@ -63,8 +61,7 @@ const recipes = {
       derotateToAngle(0);
       logAddHeatVortex(Infinity);
       logAddSunSalt(49);
-      setPreStir(9);
-      straighten(degToRad(120), Salt.Sun, { maxGrains: 72 });
+      straighten(degToRad(120), Salt.Sun, { preStir: 9.0, maxGrains: 72 });
       stirToDangerZoneExit(3.3);
       pourToVortexEdge();
       heatAndPourToEdge(0.2, 7);
@@ -79,8 +76,7 @@ const recipes = {
       logAddPourSolvent(1);
       derotateToAngle(0);
       logAddHeatVortex(1);
-      setPreStir(2.6);
-      stirToTurn();
+      stirToTurn({ preStir: 2.6 });
       logAddHeatVortex(Infinity);
       logAddStirCauldron(10);
       logAddHeatVortex(Infinity);
@@ -90,14 +86,28 @@ const recipes = {
       logAddSunSalt(155);
       stirToDangerZoneExit();
       logAddSunSalt(36);
-      setPreStir(4.5);
-      stirToTurn();
+      stirToTurn({ preStir: 4.5 });
       logAddSunSalt(201);
       logAddHeatVortex(5);
-      logAddStirCauldron(5.396);
+      // setVirtual()
+      // let optimalStir=undefined
+      // let optimalDistance=Infinity
+      // for(let d=5.435;d<5.450;d+=0.001){
+      //   setVirtual()
+      //   logAddStirCauldron(d)
+      //   logAddSunSalt(1)
+      //   const distance=stirToTarget(Effects.Water.Rejuvenation, {preStir:5.0, maxStir:1.0}).distance
+      //   if(distance<optimalDistance){
+      //     optimalDistance=distance
+      //     optimalStir=d;
+      //   }
+      // }
+      // console.log(optimalDistance)
+      logAddStirCauldron(5.439);
       logAddSunSalt(1);
-      setPreStir(5.0);
-      console.log(stirToTarget(Effects.Water.Rejuvenation, { maxStir: 1 }).distance);
+      console.log(
+        stirToTarget(Effects.Water.Rejuvenation, { preStir: 5.0, maxStir: 1.0 }).distance
+      );
     },
   },
   r2: {

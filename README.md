@@ -28,13 +28,16 @@ project
 - `exampleRecipes/ImportScript.js` : Containing all the exported functions. Make it easier to import functions offline when storing scripts.
 - `recipes/*.js` : Script recipe dataset. May not get updated when main file is updated.
 
+---
+
 ## How to use this collection of functions and scripted subroutines.
 
+<!--
 > Import and export on plotter is under development _and now testing on beta version_.
 >
 > import the function from `github:wensty/Scripted-Subroutines-for-Potioncraft-Plotter/main.js`
 >
-> Note that online plotter scripting accepts only one input file
+> Note that online plotter scripting accepts only one input file -->
 
 ### LTS version
 
@@ -42,6 +45,7 @@ project
 - Delete all the export statements. Add a `main();` statement calling the main script function.
 - Write your script recipe in the `main()` function. All the defined utility functions and subroutines can be used.
 - This produce a too long link to share. To share it you flatten it into a regular instruction recipe.
+<!--
 
 ### beta version
 
@@ -49,26 +53,30 @@ project
 - <del>Write your script recipes.</del>
 - <del>This produce a script recipe link that can be shared.</del>
 - <del>but is volatile to future changes in the `main.js` file.</del>
-- Still, you can copy the whole `main.js` file as in LTS version.
+- Still, you can copy the whole `main.js` file as in LTS version. -->
+
+---
 
 ## What can scripts do and what _can't_ scripts do
 
 With scripts, you can:
 
-- Make some painful operations on plotter automatic and accurate, such as:
+- **Make some painful operations** to be **automatic and accurate** on plotter, such as:
   - pouring/stirring to push the bottle outward to the edge of a vortex
   - Stir and adding salt to make the bottle move in an exact straight line.
   - Accurately stir to the center of an effect, or into a vortex, or out of danger zones, etc.
-- Reduce the butterfly effect on modifying some steps.
+- **Reduce the butterfly effect** on modifying some steps.
   - You stir some distance into a vortex. Then you modify some step before, and it do not move into the vortex and mess up all the recipe.
   - You made a series of heating and pouring. You modify some steps before, and all the heating and pouring steps should be modified accordingly.
 
-With scripts, you _can't_:
+With scripts, you **can't**:
 
 - Declare a recipe to be optimal.
 - Easily find the optimal recipe, even with the given overall path.
 
 Actual optimization on plotter, even with scripts, still requires skill and experience.
+
+---
 
 ## credits
 
@@ -118,11 +126,15 @@ A `PlotPoint` item is a point on the map with the following information:
 
 ## Implemented utilities and subroutines
 
-### Important notes:
+### Very Important notes:
 
-- Without exceptions, directions are based on north and use radian input and output, clockwise(sun salt direction) being positive, anticlockwise(moon salt direction) being negative.
-  - `derotateToAngle()` uses degree input, this is because `.angle` of points is in degrees.
-- For the full details of the usages, see the JSDoc of functions.
+- **Virtual mode** is designed to automatically trying out recipes without overwriting the actual plot. When **entering** virtual mode a virtual plot and an instruction list is saved and initialized by **the current plot**, and all functions will add instruction to this virtual plot. The function to enter virtual mode is `setVirtual()` and the function to exit virtual mode is `unsetVirtual()`.
+  - The function to enter virtual mode will also save the current recipe items to `VirtualRecipeItems` and the current plot to `VirtualPlot`, so it is also used to **reset** the virtual mode.
+- All functions **return the instruction or instruction list** they added(or virtually added in virtual mode). You can use them to make some calculations.
+  - Only exception is `stirToTarget`. It returns an object, with field `instruction` returning the instruction added and the field `distance` returning the optimal distance to the target.
+- Without exceptions, directions are **based on north** and use **radian** input and output, clockwise(sun salt direction) being positive, anticlockwise(moon salt direction) being negative.
+  - The only exceptions are `derotateToAngle()` and `pourUntilAngle()`.They use **degree** input, this is because `.angle` of points is in degrees.
+- For the full details of the usages, see the JS Documentation of the functions in the main script.
 
 ### logged instruction
 
@@ -137,10 +149,12 @@ Used to detection of certain entities.
 
 ### Stirring subroutines.
 
-- `stirIntoVortex(preStir?=0.0,buffer?=1e-5)`: stir to a different vortex.
+- `stirIntoVortexV2({preStir?=0.0})`: stir to a different vortex.
   - `preStir`: stir the length before stirring to vortex. Accelerate the script.
-- `StirToVortexEdge(preStir?=0.0,buffer?=1e-5)`: stir to edge of the current vortex.
+  - `stirIntovortex(preStir?=0.0)`: Compatibility version.
+- `StirToVortexEdgeV2({preStir?=0.0})`: stir to edge of the current vortex.
   - `preStir`: stir the length before stirring to edge of vortex. Accelerate the script.
+  - `stirToVortexEdge(preStir?=0.0)`: Compatibility version.
 - `stirToTurn(option={})`: stir to the point where the direction changes vastly.
   - `option.preStir`: the stir length before stirring to turn.
   - `option.maxStir`: the maximal length it will stir.
@@ -151,7 +165,6 @@ Used to detection of certain entities.
   - `options.preStir`: the stir length before stirring to zone. To accelerate the script.
   - `options.overStir`: Set to stir a bit more to ensure entrance or exit.
   - `options.exitZone`: Set to exit the given zone.
-  - `options.buffer`: the buffer to add when stir is not rounded.
 - `StirIntoDangerZoneExit()`: special case of last function to stir to the nearest point outside of the nearest danger zone.
 - `stirToTarget(target, options?)`: stir to the nearest point to the target position within the given maximum stir length.
   - `target`: the target effect. An object with `x` and `y` properties.
@@ -168,7 +181,7 @@ Used to detection of certain entities.
     - `deviation`: the maximum angle deviation to the target effect. Default to be `DeviationT2`, i.e. the max deviation to get tier 2 effect.
     - `ignoreAngle`: whether to ignore the angle deviation. whether T1 effects are reached is not affected by angle deviation.
     - `segmentLength`: the minimal length of each segment in the optimization process. Default to be `1e-9`
-    - `afterBuffer`: the buffer added after stirring. Default to be `1e-5`.
+    - ``afterStir`: the additional stir length to ensure entrance. Default to be `1e-5`
 - `stirToConsume(consumeLength)`: stir to consume a specified length while in a vortex.
   - <em>Generally you can move the bottle fairly free with heating inside a vortex, so you can carefully stir and heating, so the bottle do not move as you stir. This process is called "consuming" path in a vortex. This function does a virtual consuming process using tp(to ensure the current point definitely do not move), so consider if it can be translated into a real path consuming process and the possily unavoidable solvent pouring.</em>
   - `length`: the length of stirring to consume.
@@ -235,10 +248,11 @@ Used to detection of certain entities.
 - `getStirDirection()`: computes the direction of stirring at current point in radians.
 - `getHeatDirection()`: computes the direction of heating a vortex at current point in radians.
 - `checkBase(expectedBase)`: checks if the current potion base is the given expected base. If not, this check produce an error.
-- `getCurrentVortexRadius()`: returns the radius of the current vortex.
-- `getTargetVortex(x, y)`: returns the coordinates and radius of the target vortex.
+- `getVortex(x, y)`: returns the coordinates and radius of the target vortex.
   - `x`, `y`: the rough coordinates of the target vortex (i.e. inside the vortex).
   - return: `{x:number, y:number, r:number}` be a object with `x`, `y`, `r` as keys. The center of the vortex and the radius of the vortex.
+  - `getVortexC()`: the same as `getVortex` but with coordinated inputs.
+  - `getVortexP()`: the same as `getVortex` but with plotter point(`import("@potionous/dataset").PlotPoint`) inputs.
 
 ### Complex subroutines.
 
@@ -258,13 +272,16 @@ Used to detection of certain entities.
     > 3. Last part of the ingredient.
     >    And there are geometric relations between the straighten direction and some other directions.
 
-### Other utilities
+### utilities
 
-- `unitV(v)`: calculate the unit vector of a 2D vector.
-  - `v`: the 2D vector.
-  - `unit(x,y)`: The coordinated version.
+#### getters and setters
+
 - `getTotalMoon()`: get the total amount of moon salt added so far _in this script_.
 - `getTotalSun()`: get the total amount of sun salt added so far _in this script_.
+- `setVirtual()`: enter virtual mode.
+- `unsetVirtual()`: exit virtual mode.
+- `getRecipeItems()`: get the current recipe items based on the current mode (actual or virtual).
+- `getPlot()`: get the current plot based on the current mode.
 - `setDisplay(display)`: set the display mode of the plotter.
   - `display`: `true` or `false`.
 - `setStirRounding(stirRounding)`: set the stir rounding mode of the plotter. This mode rounds most numbers to 3 digits after the decimal point, same as manual instructions on the online plotter.
@@ -273,10 +290,11 @@ Used to detection of certain entities.
 - `logSalt()`: log the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
   - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.
 
----
+#### Vector operations
 
-The following utilities are used for implementation and not exported:
-
+- `unitV(v)`: calculate the unit vector of a 2D vector.
+  - `v`: the 2D vector.
+  - `unit(x,y)`: The coordinated version.
 - `vMag(v)`: compute the magnitude of a vector.
 - `vSub(v1, v2)`: subtract two vectors.
 - `vAdd(v1, v2)`: add two vectors.
