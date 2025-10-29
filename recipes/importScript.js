@@ -62,6 +62,7 @@ import {
   vNeg,
   unitV,
   unit,
+  getCoord,
   getTotalMoon,
   getTotalSun,
   setVirtual,

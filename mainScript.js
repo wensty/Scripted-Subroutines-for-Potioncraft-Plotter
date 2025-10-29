@@ -66,7 +66,7 @@ let VirtualPlot;
 function setVirtual() {
   console.log("Virtual mode enabled.");
   Virtual = true;
-  VirtualRecipeItems = currentRecipeItems;
+  VirtualRecipeItems = [...currentRecipeItems]; // deep copy
   VirtualPlot = currentPlot;
 }
 
@@ -1552,6 +1552,7 @@ export {
   vRot270,
   unitV,
   unit,
+  getCoord,
   getTotalMoon,
   getTotalSun,
   setVirtual,
