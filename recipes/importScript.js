@@ -83,7 +83,7 @@ import {
   DeviationT3,
   DeviationT1,
   Entity,
-  Salt,
+  SaltType,
   Effects,
 } from "../mainScript";
 

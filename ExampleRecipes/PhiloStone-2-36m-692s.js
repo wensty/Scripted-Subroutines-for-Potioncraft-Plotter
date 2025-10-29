@@ -22,7 +22,7 @@ import {
   getTotalSun,
   setStirRounding,
 } from "../mainScript";
-import { DeviationT1, Salt, Effects } from "../mainScript";
+import { DeviationT1, SaltType, Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -63,9 +63,9 @@ function main() {
   logAddPourSolvent(Infinity);
   const delay = 103;
   const direction = 178;
-  straighten(degToRad(direction), Salt.Sun, { maxGrains: delay });
+  straighten(degToRad(direction), SaltType.Sun, { maxGrains: delay });
   logAddIngredient(Ingredients.GraveTruffle);
-  straighten(degToRad(direction), Salt.Sun, { maxGrains: 130 - delay }); // 501+130 sun
+  straighten(degToRad(direction), SaltType.Sun, { maxGrains: 130 - delay }); // 501+130 sun
   // Strength
   stirIntoVortex();
   console.log(radToDeg(getAngleEntity()) + 180);

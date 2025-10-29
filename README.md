@@ -185,6 +185,7 @@ Used to detection of certain entities.
 - `stirToConsume(consumeLength)`: stir to consume a specified length while in a vortex.
   - <em>Generally you can move the bottle fairly free with heating inside a vortex, so you can carefully stir and heating, so the bottle do not move as you stir. This process is called "consuming" path in a vortex. This function does a virtual consuming process using tp(to ensure the current point definitely do not move), so consider if it can be translated into a real path consuming process and the possily unavoidable solvent pouring.</em>
   - `length`: the length of stirring to consume.
+  - `oneStir`: The maximal length of a single stir before teleporting back to the starting point.
 
 ### Pouring subroutines.
 
@@ -287,7 +288,7 @@ Used to detection of certain entities.
 - `setStirRounding(stirRounding)`: set the stir rounding mode of the plotter. This mode rounds most numbers to 3 digits after the decimal point, same as manual instructions on the online plotter.
   - `stirRounding`: `true` or `false`.
   - some operations that potentially require high precision is not rounded. For example stirring to certain target effect.
-- `logSalt()`: log the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
+- `printSalt()`: print the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
   - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.
 
 #### Vector operations
@@ -314,7 +315,7 @@ Used to detection of certain entities.
 - `VortexRadiusLarge`, `VortexRadiusMedium`, `VortexRadiusSmall`: the radius of the vortex. The value is `2.39`, `1.99`, `1.74` respectively.
 - `DeviationT2`, `DeviationT3`, `DeviationT1`: the deviation of the vortex. The value is `600`, `100`, `2754` respectively.
 - `EntityVortex`, `EntityPotionEffect`, `EntityDangerZone`, `EntityStrongDangerZone`: Predefined arrays of related entity names.
-- `Salt.Moon`, `Salt.Sun`: Predefined salt names.
+- `SaltType.Moon`, `SaltType.Sun`: Predefined salt names.
 - `Effects`: Predefined objects of effect positions and angles.
   - For example, `Effects.Water.Healing` stores the position and angle of the healing effect in water base.
 

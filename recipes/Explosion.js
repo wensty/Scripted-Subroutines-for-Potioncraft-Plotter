@@ -16,7 +16,7 @@ import {
   getStirDirection,
   checkBase,
   straighten,
-  Salt,
+  SaltType,
 } from "../mainScript";
 import { Effects } from "../mainScript";
 

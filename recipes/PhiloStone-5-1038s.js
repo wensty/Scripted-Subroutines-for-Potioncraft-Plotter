@@ -16,7 +16,7 @@ import {
   checkBase,
   straighten,
 } from "../mainScript";
-import { DeviationT1, Entity, Salt, Effects } from "../mainScript";
+import { DeviationT1, Entity, SaltType, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -28,7 +28,7 @@ function beta() {
   logAddSunSalt(166);
   logSkirt();
   derotateToAngle(10.04, { toAngle: false });
-  straighten(degToRad(41.5), Salt.Sun, { preStir: 5.0, maxGrains: 187 });
+  straighten(degToRad(41.5), SaltType.Sun, { preStir: 5.0, maxGrains: 187 });
   logSkirt();
   stirToTier(Effects.Water.Mana, {
     preStir: 10.8,
@@ -37,7 +37,7 @@ function beta() {
   });
   console.log(radToDeg(Math.PI + getAngleEntity(Entity.PotionEffect)));
   logAddPourSolvent(Infinity);
-  straighten(degToRad(149), Salt.Sun, { preStir: 11.2, maxGrains: 184 });
+  straighten(degToRad(149), SaltType.Sun, { preStir: 11.2, maxGrains: 184 });
   stirIntoVortex(3.5);
   console.log(radToDeg(getAngleEntity()) + 180);
   heatAndPourToEdge(0.2, 14);
@@ -52,13 +52,13 @@ function beta() {
 
   // section 2
   stirToTurn({ preStirLength: 3.25, directionBuffer: 0.0 }); // Empirical
-  straighten(degToRad(-45), Salt.Sun, { maxStir: 0.85, maxGrains: 250 });
+  straighten(degToRad(-45), SaltType.Sun, { maxStir: 0.85, maxGrains: 250 });
   stirIntoVortex();
   logAddStirCauldron(0.13); // to not die.
   console.log(radToDeg(getAngleEntity()) - 180);
   logAddHeatVortex(5.8);
   stirToTurn({ preStirLength: 7.0 });
-  straighten(degToRad(-73), Salt.Sun, { maxGrains: 190 });
+  straighten(degToRad(-73), SaltType.Sun, { maxGrains: 190 });
   stirIntoVortex();
   console.log(radToDeg(getAngleEntity()) - 180);
   logAddHeatVortex(Infinity);

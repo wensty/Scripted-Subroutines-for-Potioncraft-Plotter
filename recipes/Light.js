@@ -17,7 +17,7 @@ import {
   straighten,
   getTotalSun,
 } from "../mainScript";
-import { Salt, Effects } from "../mainScript";
+import { SaltType, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -48,7 +48,7 @@ function s1() {
   logAddPourSolvent(1.268);
   logAddHeatVortex(3.69);
   console.log("a3:" + (radToDeg(getHeatDirection()) - 90));
-  straighten(degToRad(-51.25), Salt.Sun, { maxGrains: 210 - getTotalSun(), preStir: 4.5 });
+  straighten(degToRad(-51.25), SaltType.Sun, { maxGrains: 210 - getTotalSun(), preStir: 4.5 });
   stirIntoVortex(4.7);
   console.log("a4~>a3: " + (radToDeg(getAngleEntity()) - 180));
   derotateToAngle(31.7, { toAngle: false });

@@ -25,7 +25,7 @@ import {
   getTotalSun,
   setDisplay,
 } from "../mainScript";
-import { Salt, Effects } from "../mainScript";
+import { SaltType, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -48,9 +48,9 @@ const recipes = {
       const a1 = getAngleOrigin();
       console.log(getAngleOrigin());
       const adv = 106; // maybe 107.
-      straighten(a1, Salt.Sun, { maxGrains: 501 - adv - getTotalSun() });
+      straighten(a1, SaltType.Sun, { maxGrains: 501 - adv - getTotalSun() });
       logSkirt();
-      straighten(a1, Salt.Sun, { maxGrains: adv });
+      straighten(a1, SaltType.Sun, { maxGrains: adv });
       stirIntoVortex();
       console.log(getAngleEntity() - Math.PI);
       derotateToAngle(saltToDeg("sun", 191), { toAngle: false });
@@ -60,14 +60,14 @@ const recipes = {
       logAddHeatVortex(4.02);
       stirToTurn({ preStirLength: 5.5 });
       const a = -123;
-      straighten(degToRad(a), Salt.Sun, { maxGrains: 389 });
+      straighten(degToRad(a), SaltType.Sun, { maxGrains: 389 });
       const { x: x1, y: y1 } = currentPlot.pendingPoints[0];
       logAddStirCauldron(9.8);
       const { x: x2, y: y2 } = currentPlot.pendingPoints[0];
       console.log(getStirDirection());
       console.log(vecToDirCoord(x2 - x1, y2 - y1));
       console.log(degToRad(a));
-      straighten(degToRad(a), Salt.Sun, { maxGrains: 300, maxStir: 0.73 });
+      straighten(degToRad(a), SaltType.Sun, { maxGrains: 300, maxStir: 0.73 });
       logAddSunSalt(Math.ceil((currentPlot.pendingPoints[0].angle + 180.01) / 0.36));
       logAddSunSalt(0);
       logAddPourSolvent(0.9);
@@ -87,14 +87,14 @@ const recipes = {
       pourToVortexEdge();
       heatAndPourToEdge(1, 6);
       logAddHeatVortex(2.8);
-      straighten(degToRad(-115), Salt.Sun, { maxGrains: 130 });
+      straighten(degToRad(-115), SaltType.Sun, { maxGrains: 130 });
       stirIntoVortex(5);
       logAddStirCauldron(0.43);
       logAddHeatVortex(Infinity);
       logAddPourSolvent(0.776);
       logAddSunSalt(5);
       stirToTurn();
-      straighten(degToRad(-112), Salt.Sun, { maxStir: 2.5, maxGrains: 353 });
+      straighten(degToRad(-112), SaltType.Sun, { maxStir: 2.5, maxGrains: 353 });
       stirToDangerZoneExit();
       console.log(currentPlot.committedPoints[currentPlot.committedPoints.length - 3].health);
       logAddMoonSalt(13);

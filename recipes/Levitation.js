@@ -11,7 +11,7 @@ import {
   getTotalSun,
   setPreStir,
 } from "../mainScript";
-import { Salt } from "../mainScript";
+import { SaltType } from "../mainScript";
 
 const recipes = {
   r1: {
@@ -34,11 +34,11 @@ function s1() {
   logAddPourSolvent(Infinity);
   logAddSunSalt(20);
   setPreStir(3.1);
-  straighten(degToRad(36), Salt.Sun, { maxGrains: 142 });
+  straighten(degToRad(36), SaltType.Sun, { maxGrains: 142 });
   setPreStir(9.0);
-  straighten(degToRad(0), Salt.Sun, { maxGrains: 187 });
+  straighten(degToRad(0), SaltType.Sun, { maxGrains: 187 });
   setPreStir(8.0);
-  straighten(degToRad(-68.1), Salt.Sun, { maxGrains: 501 - getTotalSun() });
+  straighten(degToRad(-68.1), SaltType.Sun, { maxGrains: 501 - getTotalSun() });
   logAddPourSolvent(0.076);
   logAddSunSalt(14);
   stirToZone({ exitZone: true });

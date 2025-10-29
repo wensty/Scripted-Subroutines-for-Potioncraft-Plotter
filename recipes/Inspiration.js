@@ -13,7 +13,7 @@ import {
   straighten,
   getTotalSun,
 } from "../mainScript";
-import { Entity, Salt } from "../mainScript";
+import { Entity, SaltType } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
@@ -33,12 +33,12 @@ const recipes = {
       // logAddIngredient(Ingredients.FrostSapphire)
       logAddStirCauldron(1.5);
       logAddPourSolvent(Infinity);
-      straighten(degToRad(34.4), Salt.Sun, { preStir: 3.5, maxGrains: 166 });
+      straighten(degToRad(34.4), SaltType.Sun, { preStir: 3.5, maxGrains: 166 });
       const { x: x1, y: y1 } = currentPlot.pendingPoints[0];
       stirToTurn({ preStirLength: 9 });
       const { x: x2, y: y2 } = currentPlot.pendingPoints[0];
       console.log(radToDeg(vecToDirCoord(x2 - x1, y2 - y1)));
-      straighten(degToRad(-19.7), Salt.Sun, { maxGrains: 349 - getTotalSun() });
+      straighten(degToRad(-19.7), SaltType.Sun, { maxGrains: 349 - getTotalSun() });
       logAddStirCauldron(8.6);
       // along the skull near origin.
       for (let i = 0; i < 7; i++) {

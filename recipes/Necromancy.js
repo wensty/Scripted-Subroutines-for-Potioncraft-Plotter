@@ -17,7 +17,7 @@ import {
   getTotalSun,
   setPreStir,
 } from "../mainScript";
-import { Salt, Effects } from "../mainScript";
+import { SaltType, Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -75,11 +75,11 @@ function r2() {
     logAddPourSolvent(0.1);
     stirToZone();
   }
-  straighten(degToRad(-151.2), Salt.Sun, { maxGrains: 187 });
+  straighten(degToRad(-151.2), SaltType.Sun, { maxGrains: 187 });
   setPreStir(8.5);
-  straighten(degToRad(-171), Salt.Sun, { maxGrains: 222 });
+  straighten(degToRad(-171), SaltType.Sun, { maxGrains: 222 });
   logAddStirCauldron(3.045);
   logAddSunSalt(1);
-  console.log(stirToTarget(Effects.Wine.Necromancy).distance);
+  stirToTarget(Effects.Wine.Necromancy);
   logAddSunSalt(664 - getTotalSun());
 }
