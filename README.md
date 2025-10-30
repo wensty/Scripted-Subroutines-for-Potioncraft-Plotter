@@ -41,7 +41,7 @@ project
 
 ### LTS version
 
-- Copy the whole `main.js` file into the online script editor.
+- Copy the whole `mainScript.js` file into the online script editor.
 - Delete all the export statements. Add a `main();` statement calling the main script function.
 - Write your script recipe in the `main()` function. All the defined utility functions and subroutines can be used.
 - This produce a too long link to share. To share it you flatten it into a regular instruction recipe.
