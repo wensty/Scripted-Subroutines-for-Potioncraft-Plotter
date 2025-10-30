@@ -31,43 +31,43 @@ const recipes = {
     tier: 3,
     Ingredients: { RainbowCap: 1 },
     Salts: { MoonSalt: 103, SunSalt: 27 },
-    script: () => {
-      checkBase("water");
-      // setStirRounding(false)
-      logAddIngredient(Ingredients.RainbowCap, 1);
-      logAddStirCauldron(14.4);
-      logAddPourSolvent(100);
-      console.log("Current stir angle: " + radToDeg(getStirDirection()));
-      logAddStirCauldron(3.75);
-      let currentStirAngle = getStirDirection();
-      console.log("Current stir angle: " + radToDeg(currentStirAngle));
-      straighten(currentStirAngle, "moon", { maxStir: 10, maxGrains: 43 });
-      stirIntoVortex(3.5);
-      stirToConsume(8.2);
-      derotateToAngle(0);
-      logAddHeatVortex(3.7);
-      // logAddPourSolvent(1.2)
-      pourToZoneV2({ prePour: 1.0, maxPour: 0.5, overPour: true, exitZone: true });
-      logAddHeatVortex(1.2);
-      logAddPourSolvent(1.62);
-      logAddHeatVortex(2.97);
-      stirToVortexEdge();
-      for (let i = 0; i < 6; i++) {
-        stirToVortexEdge();
-        logAddHeatVortex(0.1);
-      }
-      logAddHeatVortex(1.062);
-      for (let i = 0; i < 18; i++) {
-        stirToVortexEdge();
-        logAddHeatVortex(0.1);
-      }
-      logAddHeatVortex(0.012);
-      stirToZone({ overStir: true, exitZone: true });
-      logAddMoonSalt(59);
-      logAddStirCauldron(1.306);
-      logAddMoonSalt(1);
-      stirToTarget(Effects.Water.Explosion, { preStir: 4.1, maxStir: 0.5 });
-      logAddSunSalt(27);
-    },
+    script: r1,
   },
 };
+
+function r1() {
+  checkBase("water");
+  logAddIngredient(Ingredients.RainbowCap, 1);
+  logAddStirCauldron(14.4);
+  logAddPourSolvent(100);
+  console.log("Current stir angle: " + radToDeg(getStirDirection()));
+  logAddStirCauldron(3.75);
+  let currentStirAngle = getStirDirection();
+  console.log("Current stir angle: " + radToDeg(currentStirAngle));
+  straighten(currentStirAngle, SaltType.Moon, { maxStir: 10, maxGrains: 43 });
+  stirIntoVortex(3.5);
+  stirToConsume(8.2);
+  derotateToAngle(0);
+  logAddHeatVortex(3.7);
+  pourToZoneV2({ prePour: 1.0, maxPour: 0.5, overPour: true, exitZone: true });
+  logAddHeatVortex(1.2);
+  logAddPourSolvent(1.62);
+  logAddHeatVortex(2.97);
+  stirToVortexEdge();
+  for (let i = 0; i < 6; i++) {
+    stirToVortexEdge();
+    logAddHeatVortex(0.1);
+  }
+  logAddHeatVortex(1.062);
+  for (let i = 0; i < 18; i++) {
+    stirToVortexEdge();
+    logAddHeatVortex(0.1);
+  }
+  logAddHeatVortex(0.012);
+  stirToZone({ overStir: true, exitZone: true });
+  logAddMoonSalt(59);
+  logAddStirCauldron(1.306);
+  logAddMoonSalt(1);
+  stirToTarget(Effects.Water.Explosion, { preStir: 4.1, maxStir: 0.5 });
+  logAddSunSalt(27);
+}
