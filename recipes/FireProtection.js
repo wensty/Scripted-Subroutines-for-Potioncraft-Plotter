@@ -5,21 +5,29 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
   stirIntoVortex,
+  stirToVortexEdge,
   stirToTurn,
+  stirToTarget,
+  pourToVortexEdge,
+  heatAndPourToEdge,
   pourToZoneV2,
+  derotateToAngle,
   degToRad,
   vecToDir,
   vecToDirCoord,
   getAngleOrigin,
   getAngleEntity,
   getStirDirection,
+  getHeatDirection,
   checkBase,
   straighten,
   vSub,
   getCoord,
   getTotalSun,
+  setVirtual,
+  unsetVirtual,
 } from "../mainScript";
-import { Entity, SaltType } from "../mainScript";
+import { Entity, SaltType, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -33,6 +41,16 @@ const recipes = {
     Ingredients: { PhantomSkirt: 1 },
     Salts: { SunSalt: 834 },
     script: r1,
+  },
+  r2: {
+    title: "FireProtection",
+    desc: "",
+    version: 3,
+    base: "water",
+    tier: 3,
+    Ingredients: { PhantomSkirt: 2 },
+    Salts: { SunSalt: 1002 },
+    script: r2,
   },
 };
 
@@ -89,4 +107,68 @@ function r1() {
     maxGrains: 834 - getTotalSun(),
   });
   logAddStirCauldron(Infinity);
+}
+
+function r2() {
+  checkBase("water");
+  logSkirt();
+  logAddStirCauldron(5.2);
+  logAddSunSalt(267);
+  stirToTurn({ preStir: 11.5 });
+  logAddHeatVortex(4);
+  stirToVortexEdge(0.6);
+  logAddHeatVortex(1.868);
+  logAddSunSalt(190);
+  console.log(stirIntoVortex(5.8));
+  logAddSunSalt(44);
+  derotateToAngle(100 * 0.36, { toAngle: false });
+  logAddHeatVortex(Infinity);
+  logAddStirCauldron(5);
+  const pre = -36.5;
+  derotateToAngle(pre);
+  logSkirt();
+  derotateToAngle(-36.3);
+  logAddHeatVortex(Infinity);
+  console.log(stirIntoVortex(6.4));
+  logAddHeatVortex(2.74);
+  console.log(stirIntoVortex(12));
+  derotateToAngle(0);
+  heatAndPourToEdge(3, 7);
+  logAddHeatVortex(3);
+  stirToVortexEdge();
+  logAddHeatVortex(2.5);
+  logAddSunSalt(153);
+  stirIntoVortex(0.7);
+  logAddHeatVortex(Infinity);
+  logAddSunSalt(205);
+  stirIntoVortex(0.9);
+  logAddSunSalt(1002 - getTotalSun());
+  derotateToAngle(21.5, { toAngle: false });
+  logAddHeatVortex(Infinity);
+  logAddPourSolvent(1.53);
+  console.log(getAngleOrigin());
+  const { x, y } = getCoord();
+  console.log(vecToDirCoord(43.02 - x, 22.83 - y) - Math.PI / 2);
+  console.log(stirIntoVortex(1.8));
+  console.log(getAngleEntity() + Math.PI / 2);
+  logAddHeatVortex(0.4);
+  pourToVortexEdge();
+  heatAndPourToEdge(0.3, 5);
+  logAddHeatVortex(4.9);
+  console.log(getAngleOrigin());
+  console.log(getHeatDirection() + Math.PI);
+  derotateToAngle(34.1, { toAngle: false });
+  logAddPourSolvent(5);
+  console.log(stirIntoVortex(6.2));
+  // for (let a = 50.645; a < 50.655; a += 0.001) {
+  //   setVirtual();
+  //   derotateToAngle(a, { toAngle: false });
+  //   logAddHeatVortex(Infinity);
+  //   console.log(a);
+  //   console.log(stirToTarget(Effects.Water.FireProtection, { preStir: 4.8 }));
+  // }
+  // unsetVirtual();
+  derotateToAngle(50.647, { toAngle: false });
+  logAddHeatVortex(Infinity);
+  console.log(stirToTarget(Effects.Water.FireProtection, { preStir: 5.1 }).distance);
 }
