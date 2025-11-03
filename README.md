@@ -290,6 +290,8 @@ Used to detection of certain entities.
   - some operations that potentially require high precision is not rounded. For example stirring to certain target effect.
 - `printSalt()`: print the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
   - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.
+- `drawStraightenLine(num_crystals?)`: draw straight directions using arcane crystals. Straighten directions are logged by `Straighten()` function when flag `logAuxLine` is set to `true`.
+  - `num_crystals`: the number of arcane crystals to draw at each position to control the length. Default to be `2`.
 
 #### Vector operations
 

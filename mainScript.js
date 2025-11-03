@@ -2,6 +2,7 @@ import { pointDistance } from "@potionous/common";
 
 import {
   addIngredient,
+  addVoidSalt,
   addMoonSalt,
   addSunSalt,
   addHeatVortex,
@@ -45,6 +46,33 @@ const Entity = {
 /** @type {{Moon: "moon", Sun: "sun"}} */
 const SaltType = { Moon: "moon", Sun: "sun" };
 let Display = false; // Macro to switch instruction display.
+/** @type {{point:{x: number, y: number}, direction:number}[]} */
+let StraightenLines = [];
+
+/**
+ * Draw the auxiliary line of straightening with paths of arcane crystals.
+ * @param {number} [num=2] - The number of arcane crystals to draw at each position.
+ */
+function drawAuxLine(num = 2) {
+  addVoidSalt(20000); // remove remaining path.
+  for (let i = 0; i < StraightenLines.length; i++) {
+    const { point, direction } = StraightenLines[i];
+    const rD = relDir(direction, Math.PI / 4); // Base direction of the straight arcane crystals.
+    logAddSetPosition(0, 0);
+    logAddPourSolvent(Infinity);
+    for (let j = 0; j < num; j++) {
+      logAddIngredient(Ingredients.ArcaneCrystal);
+    }
+    const { salt, grains } = radToSalt(rD);
+    const rem = grains % 1;
+    logAddRotationSalt(salt, 1);
+    derotateToAngle(degToRad(rem));
+    logAddRotationSalt(salt, Math.round(grains - rem));
+    logAddSetPosition(point.x, point.y);
+    logAddStirCauldron(Infinity);
+  }
+}
+
 let RoundStirring = true; // macro to control whether round stirrings.
 // Minimal stir unit of hand-added stirring instructions. Stirring instructions add by scripts can be infinitely precise, and inverse is used for float accuracy.
 let Step = 1;
@@ -64,8 +92,10 @@ let VirtualPlot;
  * To disable virtual mode, call unsetVirtual().
  */
 function setVirtual() {
-  console.log("Virtual mode enabled.");
-  Virtual = true;
+  if (!Virtual) {
+    console.log("Virtual mode enabled.");
+    Virtual = true;
+  }
   VirtualRecipeItems = [...currentRecipeItems]; // deep copy
   VirtualPlot = currentPlot;
 }
@@ -1362,6 +1392,7 @@ function getTotalMoon() {
  * @param {number} [options.maxStir=Infinity] The maximum distance to be stirred.
  * @param {number} [options.maxGrains=Infinity] The maximum amount of salt to be added.
  * @param {boolean} [options.ignoreReverse=true] If set to false, the function will terminate when a reversed direction is detected.
+ * @param {boolean} [options.logAuxLine=false] If set to true, the function logs the auxiliary line of straightening to draw.
  * @param {number} [options.segmentLength=1e-9] The minimal length of each segment of the potion path.
  */
 function straighten(direction, salt, options = {}) {
@@ -1374,8 +1405,10 @@ function straighten(direction, salt, options = {}) {
     maxStir = Infinity,
     maxGrains = Infinity,
     ignoreReverse = true,
+    logAuxLine: drawStraightenLine = false,
     segmentLength = 1e-9,
   } = options;
+  let _drawStraightenLine = drawStraightenLine;
   const _maxStir = maxStir;
   /** @type {import("@potionous/instructions").RecipeItem[]} */
   var instructions = [];
@@ -1433,6 +1466,10 @@ function straighten(direction, salt, options = {}) {
     if (grains > 0) {
       const instruction = logAddStirCauldron(nextStir + _preStir);
       _preStir = 0.0;
+      if (_drawStraightenLine) {
+        StraightenLines.push({ point: getCoord(), direction });
+        _drawStraightenLine = false;
+      }
       if (instruction.distance > 0) {
         stirredLength += nextStir;
         instructions.push(instruction);
@@ -1481,6 +1518,9 @@ function straighten(direction, salt, options = {}) {
 function main() {
   // Your Script here...
   printSalt();
+  if (StraightenLines.length > 0) {
+    drawAuxLine();
+  }
 }
 
 main();

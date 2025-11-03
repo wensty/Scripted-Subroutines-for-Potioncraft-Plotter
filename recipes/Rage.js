@@ -32,7 +32,7 @@ const recipes = {
     base: "wine",
     tier: 3,
     Ingredients: { PhantomSkirt: 1 },
-    Salts: { Moonsalt: 95, SunSalt: 288 },
+    Salts: { Moonsalt: 94, SunSalt: 289 },
     script: () => r1(),
   },
 };
