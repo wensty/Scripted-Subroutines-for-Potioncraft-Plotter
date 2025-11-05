@@ -82,7 +82,7 @@ function main() {
   // match the angle entering vortex.
   straighten(degToRad(-65.9), "sun", { maxGrains: saltToReverse });
   stirIntoVortex();
-  console.log(radToDeg(getAngleEntity(EntityVortex, false)));
+  console.log(radToDeg(getAngleEntity(EntityVortex)));
   logAddHeatVortex(4.6);
   pourToVortexEdge();
   heatAndPourToEdge(1, 9);
@@ -149,7 +149,7 @@ function beta() {
   // match the angle entering vortex.
   straighten(degToRad(-65.0), "sun", { maxGrains: saltToReverse });
   stirIntoVortex();
-  console.log(radToDeg(getAngleEntity(EntityVortex, false)));
+  console.log(radToDeg(getAngleEntity(EntityVortex)));
   logAddHeatVortex(4.6);
   pourToVortexEdge();
   heatAndPourToEdge(1, 9);

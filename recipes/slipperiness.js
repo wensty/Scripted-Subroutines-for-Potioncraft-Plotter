@@ -30,7 +30,7 @@ const recipes = {
       logSkirt();
       logAddSunSalt(117);
       logAddStirCauldron(4.55);
-      const a1 = getAngleOrigin(true);
+      const a1 = getAngleOrigin();
       const a2 = getStirDirection();
       console.log(a1);
       console.log(a2);

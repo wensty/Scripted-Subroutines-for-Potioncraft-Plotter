@@ -1234,18 +1234,13 @@ function vecToDirCoord(x, y, baseDirection = 0.0) {
 
 /**
  * Computes the direction angle of the current bottle position.
- * @param {boolean} [toBottle=true] - Calculates the direction to or from the bottle. Default to.
  * @returns {number} The direction angle in radians.
  */
-function getAngleOrigin(toBottle = true) {
+function getAngleOrigin() {
   let { x, y } = getCoord();
   if (x == 0.0 && y == 0.0) {
     logError("getting bottle polar angle", "bottle at origin.");
     throw Error();
-  }
-  if (!toBottle) {
-    x = -x;
-    y = -y;
   }
   return vecToDirCoord(x, y);
 }
@@ -1253,10 +1248,9 @@ function getAngleOrigin(toBottle = true) {
 /**
  * Computes the direction angle of the current bottle position relative to the given entity.
  * @param {string[]} expectedEntityTypes A list of entity types to be considered.
- * @param {boolean} [toBottle=true] Calculates the direction to or from the bottle. Default to.
  * @returns {number} The direction angle in radians.
  */
-function getAngleEntity(expectedEntityTypes = Entity.Vortex, toBottle = true) {
+function getAngleEntity(expectedEntityTypes = Entity.Vortex) {
   const point = getPlot().pendingPoints[0];
   const pC = getCoord(point);
   /** @type {{x: number, y: number}|undefined} */
@@ -1266,7 +1260,6 @@ function getAngleEntity(expectedEntityTypes = Entity.Vortex, toBottle = true) {
     throw Error();
   }
   let delta = vSub(pC, eC);
-  if (!toBottle) delta = vNeg(delta);
   return vecToDir(delta);
 }
 

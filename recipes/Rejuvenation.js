@@ -114,7 +114,7 @@ const recipes = {
       logSkirt();
       logAddSunSalt(117);
       logAddStirCauldron(4.55);
-      const a1 = getAngleOrigin(true);
+      const a1 = getAngleOrigin();
       const a2 = getStirDirection();
       console.log(a1);
       console.log(a2);
@@ -128,7 +128,7 @@ const recipes = {
       straighten(a1, SaltType.Sun, { maxGrains: 501 - getTotalSun() });
       const a4 = getStirDirection();
       console.log(a4);
-      // console.log(saltToDeg("moon",499-(a1-a4)/(Math.PI/500)))
+      console.log(saltToDeg("moon", 499 - (a1 - a4) / (Math.PI / 500)));
       pourUntilAngle(saltToDeg("moon", 499 - (a1 - a4) / (Math.PI / 500)));
       stirToTurn();
       pourToZoneV2({ exitZone: true, overPour: true });
