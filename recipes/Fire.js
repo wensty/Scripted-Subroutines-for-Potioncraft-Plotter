@@ -1,16 +1,24 @@
 import {
   logAddIngredient,
+  logSkirt,
   logAddSunSalt,
+  logAddHeatVortex,
   logAddStirCauldron,
   logAddPourSolvent,
+  stirIntoVortex,
+  stirToTurn,
+  stirToDangerZoneExit,
   stirToTarget,
+  heatAndPourToEdge,
+  derotateToAngle,
   degToRad,
   radToDeg,
   vecToDirCoord,
+  getAngleEntity,
   getStirDirection,
+  checkBase,
   straighten,
   getTotalSun,
-  checkBase,
 } from "../mainScript";
 import { SaltType, Effects } from "../mainScript";
 
@@ -44,6 +52,44 @@ const recipes = {
       logAddSunSalt(1);
       stirToTarget(Effects.Oil.Fire);
       logAddSunSalt(156 - getTotalSun());
+    },
+  },
+  r2: {
+    title: "Fire",
+    desc: "",
+    version: 3,
+    base: "water",
+    tier: 3,
+    Ingredients: { Phantomskirt: 1 },
+    Salts: { SunSalt: 117 },
+    script: () => {
+      checkBase("water");
+      logSkirt();
+      logAddStirCauldron(5.525);
+      logAddPourSolvent(Infinity);
+      console.log(radToDeg(getStirDirection()));
+      stirIntoVortex();
+      console.log(radToDeg(getAngleEntity()) - 90);
+      logAddHeatVortex(3);
+      logAddStirCauldron(4);
+      stirToTurn();
+      stirToTurn();
+      logAddPourSolvent(4);
+      heatAndPourToEdge(0.5, 6);
+      logAddHeatVortex(0.196);
+      for (let i = 0; i < 3; i++) {
+        stirToTurn();
+      }
+      straighten(getStirDirection(), SaltType.Sun, { maxStir: 0.8 });
+      stirToDangerZoneExit();
+      logAddSunSalt(117 - getTotalSun());
+      logAddStirCauldron(0.335);
+      // logAddHeatVortex(5)
+      derotateToAngle(0);
+      logAddHeatVortex(3.148);
+      logAddStirCauldron(0.83);
+      logAddHeatVortex(4.564);
+      stirToTarget(Effects.Water.Fire, { preStir: 4 });
     },
   },
 };
