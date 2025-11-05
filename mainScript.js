@@ -815,7 +815,7 @@ function stirToTier(target, options = {}) {
   }
   const tierRadius = (deviation - angleDeviation) / 1800.0;
   let i = 0;
-  let stir = 0.0;
+  let stir = preStir;
   while (true) {
     const { nextIndex: j, nextSegment, endPath } = getNextSegment(pps, i);
     if (endPath) {
