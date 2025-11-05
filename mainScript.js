@@ -23,15 +23,14 @@ import { currentPlot, computePlot, startingRecipeItems, currentRecipeItems } fro
 
 const LuckyInfinity = 1437;
 const SaltAngle = (2 * Math.PI) / 1000.0; // angle per salt in radian.
-// Pouring unit of current version of plotter. All pours are multiply of this.
-// Inverse is used for float accuracy.
 const pourUnitInv = 125.0;
 const StirUnitInv = 1000.0;
 const VortexRadiusLarge = 2.39;
 const VortexRadiusMedium = 1.99;
 const VortexRadiusSmall = 1.74;
-const EpsHigh = 2e-3; // precision for binary search of pouring length.
-const EpsLow = 1e-5;
+let Eps = 1e-9; // a small number.
+/** @type {(eps: number) => void} */
+const SetEps = (eps) => (Eps = eps);
 const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
 const DeviationT1 = 1.53 * 1800; // effect radius is 0.79, bottle radius is 0.74.
@@ -49,11 +48,14 @@ let Display = false; // Macro to switch instruction display.
 /** @type {{point:{x: number, y: number}, direction:number}[]} */
 let StraightenLines = [];
 
+let AuxLineLength = 2;
+/** @type {(num: number) => void} */
+const SetAuxLineLength = (num) => (AuxLineLength = num);
 /**
  * Draw the auxiliary line of straightening with paths of arcane crystals.
- * @param {number} [num=2] - The number of arcane crystals to draw at each position.
+ * @param {number} [num=AuxLineLength] - The number of arcane crystals to draw at each position.
  */
-function drawAuxLine(num = 2) {
+function drawAuxLine(num = AuxLineLength) {
   addVoidSalt(20000); // remove remaining path.
   for (let i = 0; i < StraightenLines.length; i++) {
     const { point, direction } = StraightenLines[i];
@@ -66,7 +68,7 @@ function drawAuxLine(num = 2) {
     const { salt, grains } = radToSalt(rD);
     const rem = grains % 1;
     logAddRotationSalt(salt, 1);
-    derotateToAngle(degToRad(rem));
+    derotateToAngle(saltToRad(salt, rem));
     logAddRotationSalt(salt, Math.round(grains - rem));
     logAddSetPosition(point.x, point.y);
     logAddStirCauldron(Infinity);
@@ -89,20 +91,20 @@ let VirtualPlot;
  * Enable virtual mode. All subsequent plotting and instruction addition will be done on a virtual plot, and will not affect the actual plot.
  * This allows you to test out and experiment with different plots without having to worry about overwriting the actual plot.
  * Can also be used to reset virtual mode.
- * To disable virtual mode, call unsetVirtual().
+ * To disable virtual mode, call `unsetVirtual()`.
  */
 function setVirtual() {
   if (!Virtual) {
     console.log("Virtual mode enabled.");
     Virtual = true;
   }
-  VirtualRecipeItems = [...currentRecipeItems]; // deep copy
+  VirtualRecipeItems = [...currentRecipeItems]; // shallow copy
   VirtualPlot = currentPlot;
 }
 
 /**
  * Disable virtual mode. All subsequent plotting and instruction addition will affect the actual plot.
- * To re-enable virtual mode, call setVirtual().
+ * To re-enable virtual mode, call `setVirtual()`.
  */
 function unsetVirtual() {
   console.log("Virtual mode disabled.");
@@ -236,6 +238,31 @@ function getEntityCoord(entity) {
 function getCoord(point = getPlot().pendingPoints[0]) {
   const { x, y } = point;
   return { x: x || 0.0, y: y || 0.0 };
+}
+
+/**
+ * Computes the next segment of a given potion path.
+ * @param {readonly import("@potionous/plot").PlotPoint[]} pps - The potion path.
+ * @param {number} i - The starting index of the segment.
+ * @param {number} [segment=MinSegment] - The minimal length of each segment.
+ * @returns {{nextIndex: number, nextSegment: number, endPath: boolean}} - The next index, next segment length, and whether the path has ended.
+ */
+function getNextSegment(pps, i, segment = Eps) {
+  let j = i;
+  let nextSegment = 0.0;
+  let endPath = false;
+  while (true) {
+    j += 1;
+    if (j >= pps.length) {
+      endPath = true;
+      break;
+    }
+    nextSegment += pointDistance(pps[j - 1], pps[j]);
+    if (nextSegment > segment) {
+      break;
+    }
+  }
+  return { nextIndex: j, nextSegment, endPath };
 }
 
 /**
@@ -618,8 +645,8 @@ function stirToVortexEdgeV2(options = {}) {
   }
   const current = getCoord(pendingPoints[i - 1]);
   const next = getCoord(pendingPoints[i]);
-  const iC = intersectCircleG(vortex, current, unit(next.x - current.x, next.y - current.y));
-  stir += iC.d2;
+  const ic = intersectCircleG(vortex, current, unit(next.x - current.x, next.y - current.y));
+  stir += ic.d2;
   return logAddStirCauldron(stir, { shift: -1 });
 }
 const stirToVortexEdge = (preStir = 0.0) => stirToVortexEdgeV2({ preStir });
@@ -630,39 +657,24 @@ const stirToVortexEdge = (preStir = 0.0) => stirToVortexEdgeV2({ preStir });
  * @param {object} [options] - Options for the stirring process allowed beyond the initial length before stopping.
  * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
  * @param {number} [options.directionBuffer=20 * SaltAngle] - The buffer angle used to determine the change in direction.
- * @param {number} [options.segmentLength=1e-9] - The minimal length of each segment of the potion path.
  */
 function stirToTurn(options = {}) {
-  const { preStir = 0.0, directionBuffer = 20 * SaltAngle, segmentLength = 1e-9 } = options;
-
+  const { preStir = 0.0, directionBuffer = 20 * SaltAngle } = options;
   const minCosine = Math.cos(directionBuffer);
-  let pendingPoints = getPlot().pendingPoints;
+  let pps = getPlot().pendingPoints;
   if (preStir > 0.0) {
-    pendingPoints = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
+    pps = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
   }
   let currentUnit = undefined;
   let i = 0;
-  let j;
   let stir = preStir;
-  let nextSegmentLength = 0.0;
   while (true) {
-    j = i;
-    while (true) {
-      j += 1;
-      if (j >= pendingPoints.length) {
-        return logAddStirCauldron(Infinity);
-      } // no turning point found before the end of path.
-      nextSegmentLength += pointDistance(pendingPoints[j - 1], pendingPoints[j]);
-      if (nextSegmentLength > segmentLength) {
-        break;
-      }
-    }
-    const nextUnit = unitV(vSub(pendingPoints[j], pendingPoints[i]));
+    const { nextIndex: j, nextSegment } = getNextSegment(pps, i);
+    const nextUnit = unitV(vSub(pps[j], pps[i]));
     if (currentUnit != undefined && vProd(currentUnit, nextUnit) < minCosine) {
       return logAddStirCauldron(stir);
     } else {
-      stir += nextSegmentLength;
-      nextSegmentLength = 0.0;
+      stir += nextSegment;
       i = j;
       currentUnit = nextUnit;
     }
@@ -721,55 +733,42 @@ const stirToDangerZoneExit = (preStir = 0.0) => {
  * @param {object} options - Options for the stirToNearestTarget function.
  * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
  * @param {number} [options.maxStir=Infinity] - The maximal stir length allowed in the optimization.
- * @param {number} [options.segmentLength=1e-9] - The minimal length of each segment in the optimization process.
  * @returns {{instruction: import("@potionous/instructions").RecipeItem, distance: number}} The added instruction and the optimal distance to the target.
  */
 function stirToTarget(target, options = {}) {
-  const { preStir = 0.0, maxStir = Infinity, segmentLength = 1e-9 } = options;
-  let pendingPoints = getPlot().pendingPoints;
+  const { preStir = 0.0, maxStir = Infinity } = options;
+  let pps = getPlot().pendingPoints;
   if (preStir > 0.0) {
-    pendingPoints = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
+    pps = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
   }
-  const initialPoint = getCoord(pendingPoints[0]);
+  const initialPoint = getCoord(pps[0]);
   const initialDistance = vMag(vSub(initialPoint, target));
   let isLastSegment = false;
   let currentStir = 0.0;
   let optimalStir = 0.0;
   let optimalDistance = initialDistance;
   let i = 0;
-  let j = i;
-  let nextSegmentLength = 0.0;
-  let currentPoint = initialPoint;
+  let cp = initialPoint;
   while (!isLastSegment) {
-    while (true) {
-      j += 1;
-      if (j == pendingPoints.length) {
-        isLastSegment = true;
-        break;
-      }
-      nextSegmentLength += pointDistance(pendingPoints[j - 1], pendingPoints[j]);
-      if (nextSegmentLength > segmentLength) {
-        break;
-      }
-    }
-    if (nextSegmentLength <= segmentLength) {
-      continue; // Last segment too short.
-    }
-    if (currentStir + nextSegmentLength > maxStir) {
+    const { nextIndex: j, nextSegment, endPath } = getNextSegment(pps, i);
+    if (endPath) {
       isLastSegment = true;
     }
-    const next = getCoord(pendingPoints[j]);
-    const nextUnit = unitV(vSub(next, currentPoint));
-    const lastStir = vProd(nextUnit, vSub(target, currentPoint));
-    if (lastStir > nextSegmentLength) {
+    if (currentStir + nextSegment > maxStir) {
+      isLastSegment = true;
+    }
+    const next = getCoord(pps[j]);
+    const nextUnit = unitV(vSub(next, cp));
+    const lastStir = vProd(nextUnit, vSub(target, cp));
+    if (lastStir > nextSegment) {
       const nextDistance = vMag(vSub(target, next));
       if (nextDistance < optimalDistance) {
-        optimalStir = currentStir + nextSegmentLength;
+        optimalStir = currentStir + nextSegment;
         optimalDistance = nextDistance;
       }
     } else {
       if (lastStir >= 0) {
-        const lastOptimalDistance = Math.abs(vProd(vRot90(nextUnit), vSub(target, currentPoint)));
+        const lastOptimalDistance = Math.abs(vProd(vRot90(nextUnit), vSub(target, cp)));
         if (lastOptimalDistance < optimalDistance) {
           optimalDistance = lastOptimalDistance;
           optimalStir = currentStir + lastStir;
@@ -777,11 +776,9 @@ function stirToTarget(target, options = {}) {
       }
     }
     i = j;
-    currentPoint = getCoord(pendingPoints[i]);
-    currentStir += nextSegmentLength;
-    nextSegmentLength = 0.0;
+    cp = getCoord(pps[i]);
+    currentStir += nextSegment;
   }
-  // console.log("Optimal distance: " + optimalDistance);
   const obj = {
     instruction: logAddStirCauldron(optimalStir + preStir, { shift: 0 }),
     distance: optimalDistance,
@@ -797,25 +794,18 @@ function stirToTarget(target, options = {}) {
  * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
  * @param {number} [options.deviation=DeviationT2] - The maximal allowable deviation from the target effect.
  * @param {boolean} [options.ignoreAngle=false] - Whether to ignore the angle deviation.
- * @param {number} [options.segmentLength=1e-9] - The minimal length of each segment in the stirring path.
  * @param {number} [options.afterStir=1e-5] - The added length to ensure entrance.
  */
 function stirToTier(target, options = {}) {
-  const {
-    preStir = 0.0,
-    deviation = DeviationT2,
-    ignoreAngle = false,
-    segmentLength = 1e-9,
-    afterStir = 1e-5,
-  } = options;
-  let pendingPoints = getPlot().pendingPoints;
+  const { preStir = 0.0, deviation = DeviationT2, ignoreAngle = false, afterStir = 1e-5 } = options;
+  let pps = getPlot().pendingPoints;
   if (preStir > 0.0) {
-    pendingPoints = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
+    pps = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
   }
-  let cP = pendingPoints[0];
+  let cp = pps[0];
   let angleDeviation = 0.0;
   if (!ignoreAngle) {
-    const currentAngle = -cP.angle || 0.0;
+    const currentAngle = -cp.angle || 0.0;
     const angleDelta = radToDeg(Math.abs(relDir(degToRad(currentAngle), degToRad(target.angle))));
     angleDeviation = angleDelta * (100.0 / 12.0);
     if (angleDeviation >= deviation) {
@@ -825,31 +815,26 @@ function stirToTier(target, options = {}) {
   }
   const tierRadius = (deviation - angleDeviation) / 1800.0;
   let i = 0;
-  let j;
   let stir = 0.0;
   while (true) {
-    for (j = i; j < pendingPoints.length; j++) {
-      if (pointDistance(pendingPoints[i], pendingPoints[j]) > segmentLength) {
-        break;
-      }
-    }
-    if (j == pendingPoints.length) {
+    const { nextIndex: j, nextSegment, endPath } = getNextSegment(pps, i);
+    if (endPath) {
       logError("stirring to tier", "cannot reach target tier.");
       throw Error();
     }
-    const nP = pendingPoints[j];
-    const iC = intersectCircle(
+    const np = pps[j];
+    const ic = intersectCircle(
       { x: target.x, y: target.y, r: tierRadius },
-      cP,
-      unitV(vSub(nP, cP))
+      cp,
+      unitV(vSub(np, cp))
     );
-    if (iC != undefined && iC.d1 >= 0.0 && iC.d1 < pointDistance(cP, nP)) {
-      stir += iC.d1;
+    if (ic != undefined && ic.d1 >= 0.0 && ic.d1 < pointDistance(cp, np)) {
+      stir += ic.d1;
       return logAddStirCauldron(stir + afterStir, { shift: 0 });
     }
-    stir += pointDistance(cP, nP);
+    stir += nextSegment;
     i = j;
-    cP = nP;
+    cp = np;
   }
 }
 
@@ -907,15 +892,15 @@ function pourToVortexEdge() {
 function pourIntoVortex(x, y) {
   const point = getPlot().pendingPoints[0];
   const vortex = getVortex(x, y);
-  const iC = intersectCircle(vortex, point, unitV(vNeg(point)));
-  if (iC === undefined || iC.d2 < 0.0) {
+  const ic = intersectCircle(vortex, point, unitV(vNeg(point)));
+  if (ic === undefined || ic.d2 < 0.0) {
     logError(
       "pouring into target vortex",
       "bottle polar angle deviates too much or not behind the target vortex."
     );
     throw Error();
   }
-  const pour = iC.d1;
+  const pour = ic.d1;
   return logAddPourSolvent(pour, { shift: 1 });
 }
 
@@ -1061,8 +1046,8 @@ function pourUntilAngle(targetAngle, options = {}) {
     const {
       minPour = 0.0,
       maxPour = Infinity,
-      epsHigh = EpsHigh,
-      epsLow = EpsLow,
+      epsHigh = 2e-3,
+      epsLow = 1e-5,
       buffer = 0.012,
       overPour = true,
     } = options;
@@ -1188,7 +1173,7 @@ function saltToRad(salt, grains) {
  */
 function unitV(v) {
   const mag = vMag(v);
-  if (mag < 1e-9) {
+  if (mag < Eps) {
     logError("getting unit", "zero vector given.");
     throw Error();
   }
@@ -1287,25 +1272,18 @@ function getAngleEntity(expectedEntityTypes = Entity.Vortex, toBottle = true) {
 
 /**
  * Compute the direction of stirring at current point.
- * @param {number} [segmentLength=1e-9] - The minimal length of each segment of the potion path.
  * @returns {number} The direction angle in radians.
  */
-function getStirDirection(segmentLength = 1e-9) {
-  const pendingPoints = getPlot().pendingPoints;
+function getStirDirection() {
+  const pps = getPlot().pendingPoints;
   /** the points have no coordinate at origin */
   const from = getCoord();
-  let i = 0;
-  while (i < pendingPoints.length) {
-    i += 1;
-    if (pointDistance(pendingPoints[0], pendingPoints[i]) > segmentLength) {
-      break;
-    }
-  }
+  const { nextIndex: i } = getNextSegment(pps, 0);
   if (i == currentPlot.pendingPoints.length) {
     logError("getting current stir direction", "no next node.");
     throw Error();
   }
-  const to = getCoord(pendingPoints[i]);
+  const to = getCoord(pps[i]);
   return vecToDir(vSub(to, from));
 }
 
@@ -1325,6 +1303,45 @@ function getHeatDirection() {
   const dist = vMag(vSub(vC, pC));
   const rot = Math.atan(c / dist);
   return vecToDir(vRot(vSub(pC, vC), -Math.PI / 2 - rot));
+}
+
+/**
+ * Compute a direction from the initial point that tangents to the potion path.
+ * @param {number} minStir - The minimum stir length before the tangent point.
+ * @returns {{stir: number, direction: number}} - The stir length and the direction.
+ */
+function getTangent(minStir) {
+  const p0 = getCoord();
+  const pps = computePlot(getRecipeItems().concat(createStirCauldron(minStir))).pendingPoints;
+  let i = 0;
+  let stir = minStir;
+  let rd;
+  let initilized = false;
+  while (true) {
+    const { nextIndex: j, nextSegment, endPath } = getNextSegment(pps, i);
+    if (endPath) {
+      logError("getTangent", "No tangent found.");
+      throw Error();
+    }
+    stir += nextSegment;
+    let pi = getCoord(pps[i]);
+    let pj = getCoord(pps[j]);
+    if (!initilized) {
+      initilized = true;
+      const d = vecToDir(vSub(pi, p0));
+      const ds = vecToDir(vSub(pj, pi));
+      rd = relDir(ds, d);
+    } else {
+      const _d = vecToDir(vSub(pi, p0));
+      const _ds = vecToDir(vSub(pj, pi));
+      const _rd = relDir(_ds, _d);
+      if (rd * _rd <= 0) {
+        return { stir: stir, direction: _d };
+      }
+      rd = _rd;
+    }
+    i = j;
+  }
 }
 
 /**
@@ -1393,7 +1410,6 @@ function getTotalMoon() {
  * @param {number} [options.maxGrains=Infinity] The maximum amount of salt to be added.
  * @param {boolean} [options.ignoreReverse=true] If set to false, the function will terminate when a reversed direction is detected.
  * @param {boolean} [options.logAuxLine=false] If set to true, the function logs the auxiliary line of straightening to draw.
- * @param {number} [options.segmentLength=1e-9] The minimal length of each segment of the potion path.
  */
 function straighten(direction, salt, options = {}) {
   if (salt != "moon" && salt != "sun") {
@@ -1405,42 +1421,30 @@ function straighten(direction, salt, options = {}) {
     maxStir = Infinity,
     maxGrains = Infinity,
     ignoreReverse = true,
-    logAuxLine: drawStraightenLine = false,
-    segmentLength = 1e-9,
+    logAuxLine = false,
   } = options;
-  let _drawStraightenLine = drawStraightenLine;
+  let _logAuxLine = logAuxLine;
   const _maxStir = maxStir;
   /** @type {import("@potionous/instructions").RecipeItem[]} */
   var instructions = [];
   let stirredLength = 0.0;
   let nextStir = 0.0;
-  let nextSegmentLength = 0.0;
   let totalGrains = 0;
-  let pendingPoints = getPlot().pendingPoints;
+  let pps = getPlot().pendingPoints;
   if (preStir) {
-    pendingPoints = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
+    pps = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
   }
   let _preStir = preStir;
   let lastSegment = false;
   let i = 0;
   while (!lastSegment) {
-    const current = getCoord(pendingPoints[i]);
-    let j = i;
-    while (true) {
-      j += 1;
-      if (j >= pendingPoints.length) {
-        lastSegment = true;
-        break;
-      }
-      nextSegmentLength += pointDistance(pendingPoints[j - 1], pendingPoints[j]);
-      if (nextSegmentLength > segmentLength) {
-        break;
-      }
+    const cp = getCoord(pps[i]);
+    const { nextIndex: j, nextSegment, endPath } = getNextSegment(pps, i);
+    if (endPath) {
+      lastSegment = true;
+      break;
     }
-    if (nextSegmentLength <= segmentLength) {
-      continue;
-    }
-    const nextDirection = vecToDir(vSub(pendingPoints[j], current), direction);
+    const nextDirection = vecToDir(vSub(pps[j], cp), direction);
     let grains;
     if (salt == "moon") {
       if (nextDirection < -SaltAngle / 2) {
@@ -1466,16 +1470,15 @@ function straighten(direction, salt, options = {}) {
     if (grains > 0) {
       const instruction = logAddStirCauldron(nextStir + _preStir);
       _preStir = 0.0;
-      if (_drawStraightenLine) {
+      if (_logAuxLine) {
         StraightenLines.push({ point: getCoord(), direction });
-        _drawStraightenLine = false;
+        _logAuxLine = false;
       }
       if (instruction.distance > 0) {
         stirredLength += nextStir;
         instructions.push(instruction);
       }
       i = 0;
-      nextSegmentLength = 0.0;
       nextStir = 0.0;
       if (totalGrains + grains >= maxGrains) {
         // capped grains
@@ -1488,11 +1491,10 @@ function straighten(direction, salt, options = {}) {
         totalGrains += grains;
         instructions.push(logAddRotationSalt(salt, grains));
         // recalculate the new plotter after stir and salt.
-        pendingPoints = getPlot().pendingPoints;
+        pps = getPlot().pendingPoints;
       }
     } else {
-      nextStir += nextSegmentLength;
-      nextSegmentLength = 0.0;
+      nextStir += nextSegment;
       if (nextStir + stirredLength >= _maxStir) {
         // capped stir length.
         nextStir = _maxStir - stirredLength;

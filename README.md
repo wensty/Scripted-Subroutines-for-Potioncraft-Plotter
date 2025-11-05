@@ -259,11 +259,12 @@ Used to detection of certain entities.
 
 - `straighten(direction, salt, {maxStirLength?, maxGrains?, ignoreReverse?,preStirLength?, leastSegmentLength?})`: straighten the potion path with rotation salts, i.e. automatically adding proper number of rotation salt while stirring to make the potion path straight.
   - `direction`: the direction to be stirred in radian.
-  - `salt`: the type of salt to be added, it must be "moon" or "sun".
+  - `salt`: the type of salt to be added. It must be "moon" or "sun".
   - `maxStir`, `maxGrains`: stopping conditions of the straightening process. Default to be `Infinity`, i.e. stopping condition not set.
   - `preStir`: the amount of stirring to be added before the straightening process. Default to be `0`.
   - `ignoreReverse`: Controls the behavior when reversed direction(i.e. should add another rotation salt to bend it to the given direction) is detected. If set, no salt will be added and the process continues. If not set, the function terminate when a reversed direction is detected.
     - Default to be `true`, i.e. not set the reversed direction terminate condition.
+  - `logAuxLine`: If set to true, the function logs the auxiliary line of straightening to draw.
   - **Generally you should set at least one of the 3 terminate condition.**
   - Straightening is important for many high-salt recipes with brute-force bended path.
     > Under some assumption, we can prove that that the optimal path is:.
@@ -290,8 +291,8 @@ Used to detection of certain entities.
   - some operations that potentially require high precision is not rounded. For example stirring to certain target effect.
 - `printSalt()`: print the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
   - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.
-- `drawStraightenLine(num_crystals?)`: draw straight directions using arcane crystals. Straighten directions are logged by `Straighten()` function when flag `logAuxLine` is set to `true`.
-  - `num_crystals`: the number of arcane crystals to draw at each position to control the length. Default to be `2`.
+- `drawStraightenLine(num?)`: draw straight directions using arcane crystals. Straighten directions are logged by `Straighten()` function when flag `logAuxLine` is set to `true`.
+  - `num`: the number of arcane crystals to draw at each position to control the length. Default to be `2`.
 
 #### Vector operations
 
