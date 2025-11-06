@@ -18,14 +18,19 @@ project
 |   │   someRecipe.js
 |   │   anotherRecipe.js
 |
+└───test
+|   |   someTest.js
+|
+|
 └───recipes
     │   someRecipe.js
 ```
 
 - `main.js` : the main scripting file.
 - `public-types.ts` : containing signatures of all the APIs provided by the plotter tool. Since plotter tool itself is not fully open-source, this allows you to scripting offline with intellisense support.
-- `exampleRecipes` : Example recipes, containing some scripts finally made online.
-- `exampleRecipes/ImportScript.js` : Containing all the exported functions. Make it easier to import functions offline when storing scripts.
+- `exampleRecipes` : <del>Example recipes, containing some scripts finally made online.</del> Deprecated. Being fixed and transferred to general recipe dataset.
+- `test`: containing some test scripts for certain sub-processes. Also as usage examples.
+- `recipes/ImportScript.js` : Containing all the exported functions. Make it easier to import functions offline when storing scripts.
 - `recipes/*.js` : Script recipe dataset. May not get updated when main file is updated.
 
 ---
@@ -276,13 +281,7 @@ Used to detection of certain entities.
     - Default to be `true`, i.e. not set the reversed direction terminate condition.
   - `logAuxLine`: If set to true, the function logs the auxiliary line of straightening to draw.
   - **Generally you should set at least one of the 3 terminate condition.**
-  - Straightening is important for many high-salt recipes with brute-force bended path.
-    > Under some assumption, we can prove that that the optimal path is:.
-    >
-    > 1. A part of the ingredient.
-    > 2. A straightened part.
-    > 3. Last part of the ingredient.
-    >    And there are geometric relations between the straighten direction and some other directions.
+  - See Straightening theorem, which explains the importance of this sub-process.
 
 ### utilities
 
