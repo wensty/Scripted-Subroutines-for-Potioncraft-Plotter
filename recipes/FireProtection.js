@@ -27,7 +27,7 @@ import {
   setVirtual,
   unsetVirtual,
 } from "../mainScript";
-import { Entity, SaltType, Effects } from "../mainScript";
+import { Entity, SaltNames, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -62,7 +62,7 @@ function r1() {
   console.log(a1);
   console.log(getStirDirection());
   logAddPourSolvent(1.85);
-  straighten(a1 - Math.PI / 2, SaltType.Sun, { maxGrains: 129 });
+  straighten(a1 - Math.PI / 2, SaltNames.Sun, { maxGrains: 129 });
   const d1 =
     vecToDirCoord(3.88 - currentPlot.pendingPoints[0].x, 4.15 - currentPlot.pendingPoints[0].y) +
     Math.PI / 2;
@@ -75,7 +75,7 @@ function r1() {
   logAddSunSalt(264);
   stirToTurn({ preStir: 8.3 });
   const p2 = getCoord();
-  straighten(vecToDir(vSub(p2, p1)), SaltType.Sun, { maxGrains: 501 - getTotalSun() });
+  straighten(vecToDir(vSub(p2, p1)), SaltNames.Sun, { maxGrains: 501 - getTotalSun() });
   console.log(stirToTurn({ preStir: 0.5 }));
   const a2 = getAngleOrigin();
   console.log("a2: " + a2);
@@ -103,7 +103,7 @@ function r1() {
   const d = vecToDir(vSub(p4, p3));
   console.log("a3: " + d);
   console.log("~a3: " + getStirDirection());
-  straighten(d - degToRad(0), SaltType.Sun, {
+  straighten(d - degToRad(0), SaltNames.Sun, {
     maxGrains: 834 - getTotalSun(),
   });
   logAddStirCauldron(Infinity);

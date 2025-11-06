@@ -25,7 +25,7 @@ import {
   getTotalSun,
   setStirRounding,
 } from "../mainScript";
-import { SaltType, Effects } from "../mainScript";
+import { SaltNames, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -58,9 +58,9 @@ function r1() {
   console.log(getAngleOrigin());
   console.log(getStirDirection());
   const direction = getAngleOrigin();
-  straighten(direction, SaltType.Sun, { maxGrains: delay - getTotalSun() });
+  straighten(direction, SaltNames.Sun, { maxGrains: delay - getTotalSun() });
   logSkirt();
-  straighten(direction, SaltType.Sun, { maxGrains: 501 - getTotalSun() }); // first part: 501 sun
+  straighten(direction, SaltNames.Sun, { maxGrains: 501 - getTotalSun() }); // first part: 501 sun
   stirToTurn({ preStir: 11 });
   logAddHeatVortex(2.5);
   heatAndPourToEdge(1, 10);
@@ -94,20 +94,20 @@ function r1() {
   logAddHeatVortex(Infinity);
   console.log(Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36) + returnSalt);
   // predict 2nd part of sun salt
-  straighten(degToRad(48.9), SaltType.Sun, { maxGrains: 104 });
+  straighten(degToRad(48.9), SaltNames.Sun, { maxGrains: 104 });
   // pass the skeleton
   const saltToReverse = Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36);
   // match the angle entering vortex.
-  straighten(degToRad(-65.7), SaltType.Sun, { preStir: 10.9, maxGrains: saltToReverse });
+  straighten(degToRad(-65.7), SaltNames.Sun, { preStir: 10.9, maxGrains: saltToReverse });
   stirIntoVortex();
   console.log(radToDeg(getAngleEntity()) - 180);
   logAddHeatVortex(4.6);
   pourToVortexEdge();
   heatAndPourToEdge(1, 5);
   logAddHeatVortex(5.14);
-  derotateToAngle(saltToDeg(SaltType.Moon, 100) - 11.99); // last part: expanding the path.
+  derotateToAngle(saltToDeg(SaltNames.Moon, 100) - 11.99); // last part: expanding the path.
   logAddStirCauldron(9.5);
-  straighten(degToRad(14), SaltType.Sun, { maxGrains: 99 });
+  straighten(degToRad(14), SaltNames.Sun, { maxGrains: 99 });
   logAddStirCauldron(1.358);
   logAddSunSalt(1);
   console.log(stirToTarget(Effects.Water.Levitation, { preStir: 3.6 }));

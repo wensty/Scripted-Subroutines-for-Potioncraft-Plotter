@@ -45,7 +45,9 @@ const Entity = {
   Swamp: ["SwampZonePart"],
 };
 /** @type {{Moon: "moon", Sun: "sun"}} */
-const SaltType = { Moon: "moon", Sun: "sun" };
+const SaltNames = { Moon: "moon", Sun: "sun" };
+/** @type {{Water: "water", Oil: "oil", Wine: "wine"}} */
+const BaseNames = { Water: "water", Oil: "oil", Wine: "wine" };
 let Display = false; // Macro to switch instruction display.
 /** @type {{point:{x: number, y: number}, direction:number}[]} */
 let StraightenLines = [];
@@ -724,9 +726,8 @@ function stirToZone(options = {}) {
   }
   return logAddStirCauldron(stir, { shift: 2 * overStir - 1 });
 }
-const stirToDangerZoneExit = (preStir = 0.0) => {
+const stirToDangerZoneExit = (preStir = 0.0) =>
   stirToZone({ preStir, zone: Entity.DangerZone, exitZone: true, overStir: true });
-};
 
 /**
  * Stirs the potion towards the nearest point to the given target coordinates.
@@ -783,11 +784,10 @@ function stirToTarget(target, options = {}) {
     cp = getCoord(pps[i]);
     currentStir += nextSegment;
   }
-  const obj = {
+  return {
     instruction: logAddStirCauldron(optimalStir + preStir, { shift: 0 }),
     distance: optimalDistance,
   };
-  return obj;
 }
 
 /**
@@ -872,9 +872,8 @@ function stirToConsume(length, oneStir = Infinity) {
 // Subroutines related to pouring solvent.
 
 /**
- * Pours solvent to the edge of the current vortex.
+ * Pours solvent to move the bottle to the edge of the current vortex.
  */
-
 function pourToVortexEdge() {
   const p = getPlot().pendingPoints[0];
   const vortex = getVortexC(p);
@@ -888,7 +887,7 @@ function pourToVortexEdge() {
 }
 
 /**
- * Pours solvent into the target vortex.
+ * Pours solvent to move the bottle into the target vortex.
  *
  * @param {number} x - The x-coordinate of the target vortex.
  * @param {number} y - The y-coordinate of the target vortex.
@@ -909,7 +908,7 @@ function pourIntoVortex(x, y) {
 }
 
 /**
- * Heats and pours to the edge of the current vortex.
+ * Repeat heats and pours to move the bottle along the edge of the current vortex.
  * @param {number} maxHeat - The maximum length to heat.
  * @param {number} repeats - The number of times to repeat the heating and pouring process.
  */
@@ -1212,7 +1211,6 @@ function relDir(direction, baseDirection) {
 
 /**
  * Computes the direction angle of a 2D vector relative to a base direction.
- *
  * @param {{x: number, y: number}} v The 2D vector
  * @param {number} [baseDirection=0.0] The base direction angle in radians from which
  *   the vector's direction is calculated
@@ -1228,9 +1226,7 @@ function vecToDir(v, baseDirection = 0.0) {
   return angle;
 }
 /** @type {(x: number, y: number, baseDirection?: number) => number} */
-function vecToDirCoord(x, y, baseDirection = 0.0) {
-  return vecToDir({ x, y }, baseDirection);
-}
+const vecToDirCoord = (x, y, baseDirection = 0.0) => vecToDir({ x, y }, baseDirection);
 
 /**
  * Utilities to retrieve useful information.
@@ -1251,14 +1247,14 @@ function getAngleOrigin() {
 
 /**
  * Computes the direction angle of the current bottle position relative to the given entity.
- * @param {string[]} expectedEntityTypes A list of entity types to be considered.
+ * @param {string[]} entityTypes A list of entity types to be considered.
  * @returns {number} The direction angle in radians.
  */
-function getAngleEntity(expectedEntityTypes = Entity.Vortex) {
+function getAngleEntity(entityTypes = Entity.Vortex) {
   const point = getPlot().pendingPoints[0];
   const pC = getCoord(point);
   /** @type {{x: number, y: number}|undefined} */
-  const eC = getEntityCoord(point.bottleCollisions.find(isEntityType(expectedEntityTypes)));
+  const eC = getEntityCoord(point.bottleCollisions.find(isEntityType(entityTypes)));
   if (eC === undefined) {
     logError("getting bottle polar angle by entity", "given entity not found.");
     throw Error();
@@ -1266,6 +1262,8 @@ function getAngleEntity(expectedEntityTypes = Entity.Vortex) {
   let delta = vSub(pC, eC);
   return vecToDir(delta);
 }
+const getAngleVortex = () => getAngleEntity();
+const getAngleEffect = () => getAngleEntity(Entity.PotionEffect);
 
 /**
  * Compute the direction of stirring at current point.
@@ -1573,14 +1571,18 @@ export {
   // Angle and direction extractions.
   getAngleOrigin,
   getAngleEntity,
+  getAngleVortex,
+  getAngleEffect,
   getStirDirection,
   getHeatDirection,
+  getTangent,
   // Extraction of other informations.
   checkBase,
   getVortex,
   // Complex subroutines.
   straighten,
   // Utilities.
+  intersectCircleG,
   vMag,
   vAdd,
   vSub,
@@ -1612,6 +1614,7 @@ export {
   DeviationT3,
   DeviationT1,
   Entity,
-  SaltType,
+  SaltNames,
+  BaseNames,
   Effects,
 };

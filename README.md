@@ -136,6 +136,17 @@ A `PlotPoint` item is a point on the map with the following information:
   - The only exceptions are `derotateToAngle()` and `pourUntilAngle()`.They use **degree** input, this is because `.angle` of points is in degrees.
 - For the full details of the usages, see the JS Documentation of the functions in the main script.
 
+> **Straightening theorem**: Assume that salt can be added continuously (i.e. fractional salts and distributional salts are valid). Assume **some given salt** is added to alter the path to move the bottle into a circle (i.e. vortexes or effects) with least path used. Then the following is true:
+>
+> - All the points where sun salt is added are on a straight line.
+> - All the points where moon salt is added are on a straight line.
+> - Both lines are parallel to the line passing the point entering the circle and the center of the circle.
+> - The path from the start point to the point entering the circle, lies completely in one side of either straight lines(relative to either sun or moon salt).
+>
+> Actual salt pattern is an integer approximation of the salt pattern decided by the theorem. By setting property `logAuxLine` to `true` in `straighten()` calls, the script draws the mentioned line after finishing all the instructions.
+>
+> **This is derived by applying minimal alter to the pattern and analyze the difference. Using the same technique some more geometric properties can be derived.**
+
 ### logged instruction
 
 - `logAddIngredient` and similar: logged version of the instruction APIs. It print an information to console and add the instruction.
@@ -244,6 +255,7 @@ Used to detection of certain entities.
 - `getAngleEntity(expectedEntityTypes, toBottle?)`: computes the direction angle of the current bottle position _relative to the center_ of the given entity touching the current bottle.
   - Renamed to include potion effect angle calculation.
   - `expectedEntityTypes`: an array of entity type names, default to be `EntityVortex=["Vortex"]`. Some constants have been defined for this.
+  - `getAngleVortex`,`getAngleEffect`: `getAngleEntity` with pre-defined `expectedEntityTypes`
 - `getStirDirection()`: computes the direction of stirring at current point in radians.
 - `getHeatDirection()`: computes the direction of heating a vortex at current point in radians.
 - `checkBase(expectedBase)`: checks if the current potion base is the given expected base. If not, this check produce an error.
@@ -316,7 +328,8 @@ Used to detection of certain entities.
 - `VortexRadiusLarge`, `VortexRadiusMedium`, `VortexRadiusSmall`: the radius of the vortex. The value is `2.39`, `1.99`, `1.74` respectively.
 - `DeviationT2`, `DeviationT3`, `DeviationT1`: the deviation of the vortex. The value is `600`, `100`, `2754` respectively.
 - `EntityVortex`, `EntityPotionEffect`, `EntityDangerZone`, `EntityStrongDangerZone`: Predefined arrays of related entity names.
-- `SaltType.Moon`, `SaltType.Sun`: Predefined salt names.
+- `SaltNames.Moon`, `SaltNames.Sun`: Predefined salt names.
+- `BaseNames.Water`, `BaseNames.Oil`, `BaseNames.Wine`: Predefined base names.
 - `Effects`: Predefined objects of effect positions and angles.
   - For example, `Effects.Water.Healing` stores the position and angle of the healing effect in water base.
 

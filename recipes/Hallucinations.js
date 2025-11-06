@@ -16,7 +16,7 @@ import {
   getCoord,
   getTotalSun,
 } from "../mainScript";
-import { SaltType, Effects } from "../mainScript";
+import { SaltNames, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -39,13 +39,13 @@ function r1() {
   logSkirt();
   derotateToAngle(saltToDeg("sun", 53 - 0.9));
   const direction = degToRad(28.4);
-  straighten(direction, SaltType.Sun, { maxGrains: 167 });
+  straighten(direction, SaltNames.Sun, { maxGrains: 167 });
   const p1 = getCoord();
   stirToTurn({ preStir: 7 });
   const p2 = getCoord();
   console.log("Direction of concave part: " + radToDeg(vecToDir(vSub(p2, p1))));
   const s1 = Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36);
-  straighten(direction, SaltType.Sun, { maxGrains: s1 });
+  straighten(direction, SaltNames.Sun, { maxGrains: s1 });
   logAddStirCauldron(0.7);
   logAddPourSolvent(6.34);
   const s2 = Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36);
@@ -54,7 +54,7 @@ function r1() {
     "Final salt after last pouring: " +
       (getTotalSun() + Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36))
   );
-  straighten(degToRad(48.5), SaltType.Sun, {
+  straighten(degToRad(48.5), SaltNames.Sun, {
     preStir: 9.7,
     maxStir: 1.3,
     maxGrains: 825 - getTotalSun(),

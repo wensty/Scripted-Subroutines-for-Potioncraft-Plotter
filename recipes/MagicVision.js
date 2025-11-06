@@ -11,7 +11,7 @@ import {
   checkBase,
   straighten,
 } from "../mainScript";
-import { Entity, SaltType, Effects } from "../mainScript";
+import { Entity, SaltNames, Effects } from "../mainScript";
 
 const recipes = {
   r1: {
@@ -26,10 +26,10 @@ const recipes = {
       checkBase("wine");
       logSkirt(0.84);
       logAddStirCauldron(4.7);
-      straighten(degToRad(85), SaltType.Sun, { maxGrains: 328 });
+      straighten(degToRad(85), SaltNames.Sun, { maxGrains: 328 });
       stirToZone({ zone: Entity.DangerZone, preStir: 3, overStir: false });
       logAddSunSalt(20);
-      straighten(degToRad(40), SaltType.Sun, { preStir: 5, maxGrains: 145 });
+      straighten(degToRad(40), SaltNames.Sun, { preStir: 5, maxGrains: 145 });
       logAddStirCauldron(6.833);
       logAddPourSolvent(0.7);
       logAddMoonSalt(53);

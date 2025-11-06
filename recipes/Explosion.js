@@ -16,7 +16,7 @@ import {
   getStirDirection,
   checkBase,
   straighten,
-  SaltType,
+  SaltNames,
 } from "../mainScript";
 import { Effects } from "../mainScript";
 
@@ -44,7 +44,7 @@ function r1() {
   logAddStirCauldron(3.75);
   let currentStirAngle = getStirDirection();
   console.log("Current stir angle: " + radToDeg(currentStirAngle));
-  straighten(currentStirAngle, SaltType.Moon, { maxStir: 10, maxGrains: 43 });
+  straighten(currentStirAngle, SaltNames.Moon, { maxStir: 10, maxGrains: 43 });
   stirIntoVortex(3.5);
   stirToConsume(8.2);
   derotateToAngle(0);

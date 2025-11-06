@@ -27,7 +27,7 @@ import {
   setDisplay,
   unsetVirtual,
 } from "../mainScript";
-import { SaltType, Effects } from "../mainScript";
+import { SaltNames, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
@@ -62,7 +62,7 @@ const recipes = {
       derotateToAngle(0);
       logAddHeatVortex(Infinity);
       logAddSunSalt(49);
-      straighten(degToRad(120), SaltType.Sun, { preStir: 9.0, maxGrains: 72 });
+      straighten(degToRad(120), SaltNames.Sun, { preStir: 9.0, maxGrains: 72 });
       stirToDangerZoneExit(3.3);
       pourToVortexEdge();
       heatAndPourToEdge(0.2, 7);
@@ -119,13 +119,13 @@ const recipes = {
       console.log(a1);
       console.log(a2);
       const pre = 154;
-      straighten(a1, SaltType.Sun, { maxGrains: pre - getTotalSun() });
+      straighten(a1, SaltNames.Sun, { maxGrains: pre - getTotalSun() });
       logSkirt();
-      straighten(a1, SaltType.Sun, { maxGrains: 453 - getTotalSun() });
+      straighten(a1, SaltNames.Sun, { maxGrains: 453 - getTotalSun() });
       stirToTurn({ preStirLength: 9.5 });
       const a3 = getAngleOrigin();
       console.log(a3);
-      straighten(a1, SaltType.Sun, { maxGrains: 501 - getTotalSun() });
+      straighten(a1, SaltNames.Sun, { maxGrains: 501 - getTotalSun() });
       const a4 = getStirDirection();
       console.log(a4);
       console.log(saltToDeg("moon", 499 - (a1 - a4) / (Math.PI / 500)));
@@ -133,7 +133,7 @@ const recipes = {
       stirToTurn();
       pourToZoneV2({ exitZone: true, overPour: true });
       logAddPourSolvent(0.2);
-      straighten(a1, SaltType.Sun, { maxGrains: 47 });
+      straighten(a1, SaltNames.Sun, { maxGrains: 47 });
       logAddStirCauldron(10.4);
       logAddHeatVortex(2.5);
       pourToVortexEdge();
@@ -150,7 +150,7 @@ const recipes = {
       logAddSunSalt(pre);
       stirToZone({ preStir: 1.4, exitZone: true, overStir: true });
       // logAddSunSalt(47)
-      straighten(degToRad(-177.2), SaltType.Sun, {
+      straighten(degToRad(-177.2), SaltNames.Sun, {
         preStir: 2.8,
         maxGrains: Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36),
       });
@@ -165,7 +165,7 @@ const recipes = {
       const las = 113;
       derotateToAngle(saltToDeg("moon", las - 0.1) - 12);
       logAddHeatVortex(5.04);
-      straighten(degToRad(153), SaltType.Sun, { preStir: 4, maxGrains: las - 1 });
+      straighten(degToRad(153), SaltNames.Sun, { preStir: 4, maxGrains: las - 1 });
       logAddStirCauldron(1.31); // centering. Empirical.
       logAddSunSalt(1);
       setDisplay(true);

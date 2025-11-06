@@ -20,7 +20,7 @@ import {
   straighten,
   getTotalSun,
 } from "../mainScript";
-import { SaltType, Effects } from "../mainScript";
+import { SaltNames, Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 import { currentPlot } from "@potionous/plot";
@@ -46,7 +46,7 @@ const recipes = {
       console.log(a1);
       console.log(a2);
       console.log(radToDeg(a2));
-      straighten(degToRad(-101), SaltType.Sun, { maxGrains: 99 });
+      straighten(degToRad(-101), SaltNames.Sun, { maxGrains: 99 });
       logAddSunSalt(5);
       logAddStirCauldron(0.154);
       logAddSunSalt(1);
@@ -80,7 +80,7 @@ const recipes = {
       for (let i = 0; i < 3; i++) {
         stirToTurn();
       }
-      straighten(getStirDirection(), SaltType.Sun, { maxStir: 0.8 });
+      straighten(getStirDirection(), SaltNames.Sun, { maxStir: 0.8 });
       stirToDangerZoneExit();
       logAddSunSalt(117 - getTotalSun());
       logAddStirCauldron(0.335);

@@ -14,7 +14,7 @@ import {
   checkBase,
   straighten,
 } from "../mainScript";
-import { SaltType } from "../mainScript";
+import { SaltNames } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -36,7 +36,7 @@ function test_derotate() {
 
 /**
  * Pour solvent until the bottle is at the given angle.
- * This process causes real move towards origin.
+ * This process adds real pour instructions and causes move towards origin.
  */
 function test_pour_until_angle() {
   checkBase("water");
@@ -48,15 +48,13 @@ function test_pour_until_angle() {
 /**
  * Straighten the path by automatically add the assigned salt.
  * Use radian direction.
- * `Salt` is a pre-defiend object for name of rotation salts.
+ * `SaltNames` is a pre-defiend object for name of rotation salts.
  * The process terminates if maximum length reached, maximum grains reached,
  * reversed straighten direction(i.e. another salt is required to straighten the path),
  * or the path is completely consumed.
- *
- * Straightened path can be proven to be optimal in some cases.
  */
 function test_straighten() {
   checkBase("water");
   logAddIngredient(Ingredients.Goldthorn);
-  straighten(degToRad(-80), SaltType.Sun, { maxStir: 8.0, maxGrains: 500, ignoreReverse: false });
+  straighten(degToRad(-80), SaltNames.Sun, { maxStir: 8.0, maxGrains: 500, ignoreReverse: false });
 }

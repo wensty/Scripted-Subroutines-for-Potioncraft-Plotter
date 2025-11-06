@@ -22,7 +22,7 @@ import {
   getTotalSun,
   setDisplay,
 } from "../mainScript";
-import { SaltType, Effects } from "../mainScript";
+import { SaltNames, Effects } from "../mainScript";
 
 const recipes = {
   r1: {
@@ -54,7 +54,7 @@ function r1() {
   const p2 = getCoord();
   const d3 = vecToDir(vSub(p2, p1));
   console.log("d3: " + d3);
-  straighten(d3, SaltType.Sun, { maxGrains: 289 - getTotalSun() });
+  straighten(d3, SaltNames.Sun, { maxGrains: 289 - getTotalSun() });
   stirIntoVortex(3);
   console.log(getAngleEntity() - Math.PI);
   derotateToAngle(80 * 0.36 + 12.26);

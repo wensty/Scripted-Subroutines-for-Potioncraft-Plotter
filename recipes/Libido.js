@@ -12,7 +12,7 @@ import {
   straighten,
   getTotalSun,
 } from "../mainScript";
-import { Entity, SaltType, Effects } from "../mainScript";
+import { Entity, SaltNames, Effects } from "../mainScript";
 
 const recipes = {
   r1: {
@@ -36,7 +36,7 @@ function s1() {
   logAddStirCauldron(9.8);
   pourUntilAngle(-(20 - 11.99 + 15 * 0.36));
   stirToZone({ zone: Entity.HealZone, exitZone: true });
-  straighten(degToRad(-103), SaltType.Sun, { maxStir: 0.76 });
+  straighten(degToRad(-103), SaltNames.Sun, { maxStir: 0.76 });
   logAddSunSalt(179 - getTotalSun());
   logAddStirCauldron(0.411);
   logAddSunSalt(1);

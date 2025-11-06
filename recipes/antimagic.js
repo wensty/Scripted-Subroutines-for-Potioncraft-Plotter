@@ -84,7 +84,7 @@ import {
   DeviationT3,
   DeviationT1,
   Entity,
-  SaltType,
+  SaltNames,
   Effects,
 } from "../mainScript";
 
@@ -110,10 +110,10 @@ function r1() {
   logAddSunSalt(26);
   logAddSunSalt(141);
   logSkirt();
-  derotateToAngle(saltToDeg(SaltType.Sun, 26));
+  derotateToAngle(saltToDeg(SaltNames.Sun, 26));
   stirIntoVortex();
   logAddHeatVortex(Infinity);
-  straighten(degToRad(17.6), SaltType.Sun, { maxStir: 3 }); // Distance specified straightening.
+  straighten(degToRad(17.6), SaltNames.Sun, { maxStir: 3 }); // Distance specified straightening.
   logAddStirCauldron(6.2);
   logAddSunSalt(52);
   logAddStirCauldron(0.7);
@@ -123,15 +123,15 @@ function r1() {
   const p2 = getCoord();
   let direction = vecToDir(vSub(p2, p1));
   console.log(direction);
-  straighten(direction, SaltType.Sun, { maxGrains: 371, ignoreReverse: false });
-  straighten(direction, SaltType.Moon, { maxGrains: 8 });
+  straighten(direction, SaltNames.Sun, { maxGrains: 371, ignoreReverse: false });
+  straighten(direction, SaltNames.Moon, { maxGrains: 8 });
   stirIntoVortex();
   console.log(getAngleEntity() + Math.PI);
   heatAndPourToEdge(0.1, 30);
   logAddHeatVortex(2.64);
   console.log(degToSalt(currentPlot.pendingPoints[0].angle));
   derotateToAngle(saltToDeg("moon", 207) - 11.99);
-  straighten(degToRad(11), SaltType.Sun, { maxStir: 4, maxGrains: 206 });
+  straighten(degToRad(11), SaltNames.Sun, { maxStir: 4, maxGrains: 206 });
   for (let d = 0.94; d < 0.97; d += 0.001) {
     setVirtual();
     logAddStirCauldron(d);
