@@ -15,15 +15,19 @@ import { Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
+const StrongWildGrowth = { WildGrowth: 3 };
+const WildGrowth = { WildGrowth: 2 };
+const WeakWildGrowth = { WildGrowth: 1 };
+
 const recipes = {
   r1: {
-    title: "WildGrowth-47m-93s",
+    title: "TruffleWildGrowth",
     desc: "",
     version: 3,
     base: "water",
-    tier: 3,
     Ingredients: { GraveTruffle: 1 },
     Salts: { MoonSalt: 47, SunSalt: 93 },
+    Effects: StrongWildGrowth,
     script: () => {
       checkBase("water");
       logAddIngredient(Ingredients.GraveTruffle);

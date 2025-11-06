@@ -29,20 +29,20 @@ import { SaltType, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
-const EffectInvisLevitation = {
+const MST2 = {
   Invisibility: 2,
   Levitation: 3,
 };
 
 const recipes = {
   r1: {
-    title: "InvisLevitation",
+    title: "Invisitation(MST2)",
     desc: "501+597+100=1198",
     version: 3,
     base: "water",
     Ingredients: { PhantomSkirt: 2 },
     Salts: { MoonSalt: 60, SunSalt: 1198 },
-    Effects: EffectInvisLevitation,
+    Effects: MST2,
     script: () => r1(),
   },
 };

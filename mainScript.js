@@ -30,7 +30,9 @@ const VortexRadiusMedium = 1.99;
 const VortexRadiusSmall = 1.74;
 let Eps = 1e-9; // a small number.
 /** @type {(eps: number) => void} */
-const SetEps = (eps) => (Eps = eps);
+const SetEps = (eps) => {
+  Eps = eps;
+};
 const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
 const DeviationT1 = 1.53 * 1800; // effect radius is 0.79, bottle radius is 0.74.
@@ -50,7 +52,9 @@ let StraightenLines = [];
 
 let AuxLineLength = 2;
 /** @type {(num: number) => void} */
-const SetAuxLineLength = (num) => (AuxLineLength = num);
+const SetAuxLineLength = (num) => {
+  AuxLineLength = num;
+};
 /**
  * Draw the auxiliary line of straightening with paths of arcane crystals.
  * @param {number} [num=AuxLineLength] - The number of arcane crystals to draw at each position.
