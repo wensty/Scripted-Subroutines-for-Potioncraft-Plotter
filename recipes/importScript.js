@@ -69,6 +69,7 @@ import {
   getCoord,
   getTotalMoon,
   getTotalSun,
+  getDeviation,
   setVirtual,
   unsetVirtual,
   getRecipeItems,

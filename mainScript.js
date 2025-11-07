@@ -732,9 +732,7 @@ const stirToDangerZoneExit = (preStir = 0.0) =>
 /**
  * Stirs the potion towards the nearest point to the given target coordinates.
  * This stir is not rounded for precision.
- * @param {object} target - The target effect.
- * @param {number} target.x - The x-coordinate of the target effect.
- * @param {number} target.y - The y-coordinate of the target effect.
+ * @param {{x: number, y: number}} target - The coordinate of target effect.
  * @param {object} options - Options for the stirToNearestTarget function.
  * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
  * @param {number} [options.maxStir=Infinity] - The maximal stir length allowed in the optimization.
@@ -798,10 +796,15 @@ function stirToTarget(target, options = {}) {
  * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
  * @param {number} [options.deviation=DeviationT2] - The maximal allowable deviation from the target effect.
  * @param {boolean} [options.ignoreAngle=false] - Whether to ignore the angle deviation.
- * @param {number} [options.afterStir=1e-5] - The added length to ensure entrance.
+ * @param {number} [options.afterStir=1e-13] - The added length to ensure entrance.
  */
 function stirToTier(target, options = {}) {
-  const { preStir = 0.0, deviation = DeviationT2, ignoreAngle = false, afterStir = 1e-5 } = options;
+  const {
+    preStir = 0.0,
+    deviation = DeviationT2,
+    ignoreAngle = false,
+    afterStir = 1e-13,
+  } = options;
   let pps = getPlot().pendingPoints;
   if (preStir > 0.0) {
     pps = computePlot(getRecipeItems().concat(createStirCauldron(preStir))).pendingPoints;
@@ -1392,6 +1395,19 @@ function getTotalMoon() {
 }
 
 /**
+ * Computes the deviation from the target position and angle.
+ * @param {{x: number, y: number, angle: number}} target - target position and angle.
+ * @returns {{distance: number, angle: number, total: number}} An object containing the deviation from the target position and angle.
+ */
+function getDeviation(target) {
+  const p = getCoord();
+  const a = -getPlot().pendingPoints[0].angle;
+  const distance = vMag(vSub(p, target)) * 1800.0;
+  const angle = Math.abs(a - target.angle) / 12.0;
+  return { distance, angle, total: distance + angle };
+}
+
+/**
  * Complex subroutines: straighten the potion path.
  */
 
@@ -1596,6 +1612,7 @@ export {
   getCoord,
   getTotalMoon,
   getTotalSun,
+  getDeviation,
   setVirtual,
   unsetVirtual,
   getRecipeItems,
