@@ -12,13 +12,7 @@ import {
   logAddStirCauldron,
   logAddPourSolvent,
   logAddSetPosition,
-  createAddIngredient,
-  createAddMoonSalt,
-  createAddSunSalt,
-  createPourSolvent,
-  createHeatVortex,
-  createStirCauldron,
-  createSetPosition,
+  logAddSetRotation,
   isVortex,
   stirIntoVortexV2,
   stirIntoVortex,
@@ -74,7 +68,8 @@ import {
   unsetVirtual,
   getRecipeItems,
   getPlot,
-  setPreStir,
+  setEps,
+  setAuxLineLength,
   setDisplay,
   setStirRounding,
   logError,
@@ -93,6 +88,16 @@ import {
   BaseNames,
   Effects,
 } from "../mainScript";
+import {
+  createAddIngredient,
+  createAddMoonSalt,
+  createAddSunSalt,
+  createPourSolvent,
+  createHeatVortex,
+  createStirCauldron,
+  createSetPosition,
+  createSetRotation,
+} from "@potionous/instructions";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";
 import { currentPlot, computePlot, currentRecipeItems } from "@potionous/plot";

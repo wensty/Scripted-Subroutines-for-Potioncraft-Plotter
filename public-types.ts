@@ -236,6 +236,18 @@ declare module "@potionous/instructions" {
    */
   export function createSetPosition(x: number, y: number): RecipeItem;
 
+  /** Adds an instruction for the specified set rotation.
+   * @param angle the angle to set in degrees。
+   */
+  export function addSetRotation(angle: number): void;
+
+  /** Creates an add set rotation instruction.
+   *
+   * This does not add the instruction to the recipe.  Instead, it returns the instruction.
+   * @param angle the angle to set in degrees
+   */
+  export function createSetRotation(angle: number): RecipeItem;
+
   /** Adds an instruction for the specified stir cauldron.
    * @param distance The distance to add in PotionCraft units
    */
