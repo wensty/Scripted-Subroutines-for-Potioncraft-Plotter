@@ -562,12 +562,12 @@ function logAddSetRotation(angle) {
   if (!Virtual) {
     displayStep("Set rotation to " + -angle + " degrees.");
     Step += 1;
-    addSetRotation(angle);
+    addSetRotation(-angle);
   } else {
-    VirtualRecipeItems.push(createSetRotation(angle));
+    VirtualRecipeItems.push(createSetRotation(-angle));
     updateVirtualPlot();
   }
-  return createSetRotation(angle);
+  return createSetRotation(-angle);
 }
 
 /**
@@ -991,13 +991,11 @@ const pourToZone = (maxPour = Infinity) => pourToZoneV2({ maxPour });
  * @param {number} targetAngle - The target angle in degrees.
  * @param {Object} [options] - Optional parameters for derotating.
  * @param {boolean} [options.toAngle=true] - Whether to derotate to the target angle or by the target angle.
- * @param {boolean} [options.overPour=false] - Whether pour slightly more (to derorate more).
  */
 function derotateToAngle(targetAngle, options = {}) {
-  const { toAngle = true, overPour = false } = options;
-  var _targetAngle = targetAngle;
+  const { toAngle = true } = options;
+  let _targetAngle = targetAngle;
   /** @type {import("@potionous/instructions").RecipeItem[]} */
-  let instructions = [];
   const initialPoint = getPlot().pendingPoints[0];
   const { x, y } = getCoord(initialPoint);
   const currentAngle = -initialPoint.angle;
@@ -1014,11 +1012,8 @@ function derotateToAngle(targetAngle, options = {}) {
     if (result == undefined) {
       throw errorMsg("derotating", "Cannot derotate outside vortex.");
     }
-    instructions.push(logAddSetPosition(0, 0));
   }
-  instructions.concat(pourUntilAngle(_targetAngle, { overPour }));
-  if (!atOrigin) instructions.push(logAddSetPosition(x, y));
-  return instructions;
+  return logAddSetRotation(_targetAngle);
 }
 
 /**
