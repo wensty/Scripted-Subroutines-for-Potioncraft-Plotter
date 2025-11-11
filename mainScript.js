@@ -30,7 +30,7 @@ const StirUnitInv = 1000.0;
 const VortexRadiusLarge = 2.39;
 const VortexRadiusMedium = 1.99;
 const VortexRadiusSmall = 1.74;
-let Eps = 1e-9; // a small number.
+let Eps = 1e-9;
 let PourRoundBuffer = 1e-4;
 const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
@@ -268,6 +268,11 @@ const setEps = (eps) => {
 const setAuxLineLength = (num) => {
   AuxLineLength = num;
 };
+/** @type {(num: number) => void} */
+const setPourRoundBuffer = (num) => {
+  PourRoundBuffer = num;
+};
+
 /**
  * Draw the auxiliary line of straightening with paths of arcane crystals.
  * @param {number} [num=AuxLineLength] - The number of arcane crystals to draw at each position.
@@ -1516,6 +1521,7 @@ export {
   // Stirring subroutines.
   stirIntoVortexV2,
   stirIntoVortex,
+  stirToVortexEdgeV2,
   stirToVortexEdge,
   stirToTurn,
   stirToZone,
@@ -1553,9 +1559,12 @@ export {
   // Extraction of other informations.
   checkBase,
   getVortex,
+  getDeviation,
+  getCurrentPoint,
+  getCoord,
   // Complex subroutines.
   straighten,
-  // Utilities.
+  // vector utilities.
   intersectCircleG,
   vMag,
   vAdd,
@@ -1567,19 +1576,18 @@ export {
   vRot270,
   unitV,
   unit,
-  getCoord,
+  // getters and setters.
   getTotalMoon,
   getTotalSun,
-  getDeviation,
   setVirtual,
   unsetVirtual,
   getRecipeItems,
   getPlot,
   setEps,
+  setPourRoundBuffer,
   setAuxLineLength,
   setDisplay,
   setStirRounding,
-  printSalt,
 };
 
 export {

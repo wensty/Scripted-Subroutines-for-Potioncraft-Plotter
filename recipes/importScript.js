@@ -8,14 +8,18 @@ import {
   logAddMoonSalt,
   logAddSunSalt,
   logAddRotationSalt,
+  // Wrapped operation instructions.
   logAddHeatVortex,
   logAddStirCauldron,
   logAddPourSolvent,
   logAddSetPosition,
   logAddSetRotation,
+  // Zone detections.
   isVortex,
+  // Stirring subroutines.
   stirIntoVortexV2,
   stirIntoVortex,
+  stirToVortexEdgeV2,
   stirToVortexEdge,
   stirToTurn,
   stirToZone,
@@ -23,6 +27,7 @@ import {
   stirToTarget,
   stirToTier,
   stirToConsume,
+  // Pouring subroutines.
   pourToVortexEdge,
   heatAndPourToEdge,
   pourToZoneV2,
@@ -30,6 +35,7 @@ import {
   pourIntoVortex,
   derotateToAngle,
   pourUntilAngle,
+  // Conversions between angles, 2D vectors and directions.
   degToRad,
   radToDeg,
   degToSalt,
@@ -40,6 +46,7 @@ import {
   vecToDirCoord,
   dirToVec,
   relDir,
+  // Angle and direction extractions.
   getAngleOrigin,
   getAngleEntity,
   getAngleVortex,
@@ -47,9 +54,12 @@ import {
   getStirDirection,
   getHeatDirection,
   getTangent,
+  // Extraction of other informations.
   checkBase,
   getVortex,
+  // Complex subroutines.
   straighten,
+  // vector utilities.
   intersectCircleG,
   vMag,
   vAdd,
@@ -58,9 +68,10 @@ import {
   vRot,
   vRot90,
   vNeg,
+  vRot270,
   unitV,
   unit,
-  getCoord,
+  // getters and setters.
   getTotalMoon,
   getTotalSun,
   getDeviation,
@@ -68,12 +79,13 @@ import {
   unsetVirtual,
   getRecipeItems,
   getPlot,
+  getCurrentPoint,
+  getCoord,
   setEps,
+  setPourRoundBuffer,
   setAuxLineLength,
   setDisplay,
   setStirRounding,
-  logError,
-  printSalt,
 } from "../mainScript";
 import {
   SaltAngle,

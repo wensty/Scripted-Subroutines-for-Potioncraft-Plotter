@@ -181,7 +181,7 @@ Used to detection of certain entities.
   - `options.preStir`: the stir length before stirring to zone. To accelerate the script.
   - `options.overStir`: Set to stir a bit more to ensure entrance or exit.
   - `options.exitZone`: Set to exit the given zone.
-- `StirIntoDangerZoneExit()`: special case of last function to stir to the nearest point outside of the nearest danger zone.
+  - `StirIntoDangerZoneExit()`: special case to stir to the nearest point outside of the nearest danger zone.
 - `stirToTarget(target, options?)`: stir to the nearest point to the target position within the given maximum stir length.
   - `target`: the target effect. An object with `x` and `y` properties.
     - Can be one of the pre-defined `Effects` constant.
@@ -254,7 +254,15 @@ Used to detection of certain entities.
 - `relDir(direction, baseDirection?)` : computes the relative direction between two direction angles.
   - This is dedicated to compute the relative direction. So the base direction must be provided.
 
-### Extraction of information.
+### Angle and Direction Extractions
+
+  <!--getAngleOrigin,
+  getAngleEntity,
+  getAngleVortex,
+  getAngleEffect,
+  getStirDirection,
+  getHeatDirection,
+  getTangent,-->
 
 - `getAngleOrigin(toBottle?)`: computes the direction angle of the current bottle position.
 - `getAngleEntity(expectedEntityTypes, toBottle?)`: computes the direction angle of the current bottle position _relative to the center_ of the given entity touching the current bottle.
@@ -263,16 +271,29 @@ Used to detection of certain entities.
   - `getAngleVortex`,`getAngleEffect`: `getAngleEntity` with pre-defined `expectedEntityTypes`
 - `getStirDirection()`: computes the direction of stirring at current point in radians.
 - `getHeatDirection()`: computes the direction of heating a vortex at current point in radians.
+
+### Other information Extractions
+
+  <!-- checkBase,
+  getVortex,
+  getDeviation,
+  getCurrentPoint,
+  getCoord, -->
+
 - `checkBase(expectedBase)`: checks if the current potion base is the given expected base. If not, this check produce an error.
 - `getVortex(x, y)`: returns the coordinates and radius of the target vortex.
   - `x`, `y`: the rough coordinates of the target vortex (i.e. inside the vortex).
   - return: `{x:number, y:number, r:number}` be a object with `x`, `y`, `r` as keys. The center of the vortex and the radius of the vortex.
   - `getVortexC()`: the same as `getVortex` but with coordinated inputs.
   - `getVortexP()`: the same as `getVortex` but with plotter point(`import("@potionous/dataset").PlotPoint`) inputs.
+- `getDeviation()`: get the current deviation (distance, angle, total).
+- `getCurrentPoint()`: get the current plotter point based on the current mode.
+- `getCoord()`: get the current plotter coordinates based on the current mode.
 
 ### Complex subroutines.
 
 - `straighten(direction, salt, {maxStirLength?, maxGrains?, ignoreReverse?,preStirLength?, leastSegmentLength?})`: straighten the potion path with rotation salts, i.e. automatically adding proper number of rotation salt while stirring to make the potion path straight.
+  - **Generally you should set at least one of the 3 terminate condition.**
   - `direction`: the direction to be stirred in radian.
   - `salt`: the type of salt to be added. It must be "moon" or "sun".
   - `maxStir`, `maxGrains`: stopping conditions of the straightening process. Default to be `Infinity`, i.e. stopping condition not set.
@@ -280,12 +301,23 @@ Used to detection of certain entities.
   - `ignoreReverse`: Controls the behavior when reversed direction(i.e. should add another rotation salt to bend it to the given direction) is detected. If set, no salt will be added and the process continues. If not set, the function terminate when a reversed direction is detected.
     - Default to be `true`, i.e. not set the reversed direction terminate condition.
   - `logAuxLine`: If set to true, the function logs the auxiliary line of straightening to draw.
-  - **Generally you should set at least one of the 3 terminate condition.**
-  - See Straightening theorem, which explains the importance of this sub-process.
+    - The auxiliary lines will be drawn after the main script finishes, since it disrupts the remaining path.
 
 ### utilities
 
 #### getters and setters
+
+<!-- getTotalMoon,
+  getTotalSun,
+  setVirtual,
+  unsetVirtual,
+  getRecipeItems,
+  getPlot,
+  setEps,
+  setPourRoundBuffer,
+  setAuxLineLength,
+  setDisplay,
+  setStirRounding, -->
 
 - `getTotalMoon()`: get the total amount of moon salt added so far _in this script_.
 - `getTotalSun()`: get the total amount of sun salt added so far _in this script_.
@@ -293,15 +325,16 @@ Used to detection of certain entities.
 - `unsetVirtual()`: exit virtual mode.
 - `getRecipeItems()`: get the current recipe items based on the current mode (actual or virtual).
 - `getPlot()`: get the current plot based on the current mode.
+- `SetEps(eps)`: set the epsilon of the script.
+- `setPourRoundBuffer(pourRoundBuffer)`: set the pour round buffer of the plotter.
+  - The unit of pouring is approximately `0.008` but not accurately. This makes rounding of pours a bit conservative to assure correctness (enter or not enter, leave or not leave).
+- `setAuxLineLength(num?)`: draw straight directions using arcane crystals. Straighten directions are logged by `Straighten()` function when flag `logAuxLine` is set to `true`.
+  - `num`: the number of arcane crystals to draw at each position to control the length.
 - `setDisplay(display)`: set the display mode of the plotter.
   - `display`: `true` or `false`.
 - `setStirRounding(stirRounding)`: set the stir rounding mode of the plotter. This mode rounds most numbers to 3 digits after the decimal point, same as manual instructions on the online plotter.
   - `stirRounding`: `true` or `false`.
   - some operations that potentially require high precision is not rounded. For example stirring to certain target effect.
-- `printSalt()`: print the current moon salt and sun salt used, since plotter scripting do not calculate it automatically.
-  - All functions related to salt usage have grains as return value. This can be used to manually calculate the salt usage.
-- `drawStraightenLine(num?)`: draw straight directions using arcane crystals. Straighten directions are logged by `Straighten()` function when flag `logAuxLine` is set to `true`.
-  - `num`: the number of arcane crystals to draw at each position to control the length. Default to be `2`.
 
 #### Vector operations
 
