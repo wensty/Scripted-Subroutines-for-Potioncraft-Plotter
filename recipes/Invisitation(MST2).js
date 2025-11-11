@@ -81,7 +81,7 @@ function r1() {
   heatAndPourToEdge(1, 9);
   logAddHeatVortex(1.75); // Empirical
   stirToTier(Effects.Water.Invisibility, { preStir: 7.1 }); // roughly
-  logAddPourSolvent(5.34); // Empirical
+  logAddPourSolvent(5.33); // Empirical
   let returnSalt = 280; // Empirical. Add less is not necessarily better.
   logAddSunSalt(returnSalt);
   stirToDangerZoneExit(1.0);
@@ -108,7 +108,7 @@ function r1() {
   derotateToAngle(saltToDeg(SaltNames.Moon, 100) - 11.99); // last part: expanding the path.
   logAddStirCauldron(9.5);
   straighten(degToRad(14), SaltNames.Sun, { maxGrains: 99 });
-  logAddStirCauldron(1.358);
+  logAddStirCauldron(0.682);
   logAddSunSalt(1);
-  console.log(stirToTarget(Effects.Water.Levitation, { preStir: 3.6 }));
+  console.log(stirToTarget(Effects.Water.Levitation, { preStir: 4.3 }).distance);
 }
