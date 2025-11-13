@@ -503,7 +503,7 @@ function logAddHeatVortex(length, shift = 0) {
  * Logs the addition of a stir cauldron instruction and adds it to the current plot.
  * @param {number} length The amount of stirring to add in PotionCraft units.
  * @param {Object} [options] Additional options.
- * @param {number} [options.shift] 1 if shifting up, -1 if shifting down, 0 if not shifting. Default to be 1.
+ * @param {number} [options.shift] 1 if shifting up, -1 if shifting down, 0 if not shifting. Default to be 0, other functions using this have their own specifcation.
  * @param {number} [options.buffer=1e-5] The shifted buffer to use whenthe stir length is not rounded.
  */
 function logAddStirCauldron(length, options = {}) {
@@ -726,7 +726,7 @@ function stirToZone(options = {}) {
     }
     stir += pointDistance(cp, pps[j]);
     const result = pps[j].bottleCollisions.find(isEntityType(zone));
-    if (!result) {
+    if (result) {
       if (!exitZone) {
         break;
       }

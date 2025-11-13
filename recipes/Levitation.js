@@ -10,8 +10,13 @@ import {
   straighten,
   getTotalSun,
   setPreStir,
+  Effects,
 } from "../mainScript";
 import { SaltNames } from "../mainScript";
+
+const StrongLevitation = { Levitation: 3 };
+const Levitation = { Levitation: 2 };
+const WeakLevitation = { Levitation: 1 };
 
 const recipes = {
   r1: {
@@ -19,9 +24,9 @@ const recipes = {
     desc: "Levitation",
     version: 3,
     base: "wine",
-    tier: 3,
     Ingredients: { PhantomSkirt: 1 },
     Salts: { SunSalt: 515 },
+    Effects: StrongLevitation,
     script: () => s1(),
   },
 };
@@ -33,15 +38,13 @@ function s1() {
   logAddStirCauldron(d1);
   logAddPourSolvent(Infinity);
   logAddSunSalt(20);
-  setPreStir(3.1);
-  straighten(degToRad(36), SaltNames.Sun, { maxGrains: 142 });
-  setPreStir(9.0);
-  straighten(degToRad(0), SaltNames.Sun, { maxGrains: 187 });
-  setPreStir(8.0);
-  straighten(degToRad(-68.1), SaltNames.Sun, { maxGrains: 501 - getTotalSun() });
+  straighten(degToRad(36), SaltNames.Sun, { preStir: 3.1, maxGrains: 142 });
+  straighten(degToRad(0), SaltNames.Sun, { preStir: 9.0, maxGrains: 187 });
+  straighten(degToRad(-68.1), SaltNames.Sun, { preStir: 8.0, maxGrains: 501 - getTotalSun() });
   logAddPourSolvent(0.076);
   logAddSunSalt(14);
-  stirToZone({ exitZone: true });
+  stirToZone({ exitZone: true, overStir: true });
+  pourToZoneV2();
   for (let i = 0; i < 52; i++) {
     logAddStirCauldron(0.005);
     pourToZoneV2();
