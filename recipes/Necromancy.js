@@ -69,15 +69,13 @@ function r2() {
   logAddStirCauldron(2.7);
   logAddPourSolvent(Infinity);
   console.log(radToDeg(getStirDirection()));
-  setPreStir(8.4);
-  stirToZone();
+  stirToZone({ preStir: 8.4 });
   for (let i = 0; i < 13; i++) {
     logAddPourSolvent(0.1);
     stirToZone();
   }
   straighten(degToRad(-151.2), SaltNames.Sun, { maxGrains: 187 });
-  setPreStir(8.5);
-  straighten(degToRad(-171), SaltNames.Sun, { maxGrains: 222 });
+  straighten(degToRad(-171), SaltNames.Sun, { preStir: 8.5, maxGrains: 222 });
   logAddStirCauldron(3.045);
   logAddSunSalt(1);
   stirToTarget(Effects.Wine.Necromancy);
