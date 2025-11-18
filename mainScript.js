@@ -70,8 +70,8 @@ let TotalStir = 0;
 let RemainingPath = 0;
 /** Virtual Mode Structures */
 let Virtual = false;
-/** @type {import("@potionous/instructions").RecipeItem[]} */
-let VRecipeItems;
+/** @type {readonly import("@potionous/instructions").RecipeItem[]} */
+let VRecipeItems; // immutable.
 /** @type {import("@potionous/plot").PlotResult} */
 let VPlot;
 let VTotalSun = 0;
@@ -430,7 +430,7 @@ function logAddIngredient(ingredientId, grindPercent = 1.0) {
     addIngredient(ingredientId, grindPercent);
   } else {
     VRemainingPath += Ingredients.get(ingredientId).computeLength(grindPercent);
-    VRecipeItems.push(createAddIngredient(ingredientId, grindPercent));
+    VRecipeItems = VRecipeItems.concat(createAddIngredient(ingredientId, grindPercent));
     updateVirtualPlot();
   }
   return createAddIngredient(ingredientId, grindPercent);
@@ -450,7 +450,7 @@ function logAddSunSalt(grains) {
     addSunSalt(grains);
   } else {
     VTotalSun += grains;
-    VRecipeItems.push(createAddSunSalt(grains));
+    VRecipeItems = VRecipeItems.concat(createAddSunSalt(grains));
     updateVirtualPlot();
   }
   return createAddSunSalt(grains);
@@ -469,7 +469,7 @@ function logAddMoonSalt(grains) {
     addMoonSalt(grains);
   } else {
     VTotalMoon += grains;
-    VRecipeItems.push(createAddMoonSalt(grains));
+    VRecipeItems = VRecipeItems.concat(createAddMoonSalt(grains));
     updateVirtualPlot();
   }
   return createAddMoonSalt(grains);
@@ -508,7 +508,7 @@ function logAddHeatVortex(length, shift = 0) {
     Step += 1;
     addHeatVortex(Math.min(_length, LuckyInfinity));
   } else {
-    VRecipeItems.push(createHeatVortex(Math.min(_length, LuckyInfinity)));
+    VRecipeItems = VRecipeItems.concat(createHeatVortex(Math.min(_length, LuckyInfinity)));
     updateVirtualPlot();
   }
   return createHeatVortex(Math.min(_length, LuckyInfinity));
@@ -545,7 +545,7 @@ function logAddStirCauldron(length, options = {}) {
     const stir = Math.min(_length, VRemainingPath);
     VTotalStir += stir;
     VRemainingPath -= stir;
-    VRecipeItems.push(createStirCauldron(Math.min(_length, LuckyInfinity)));
+    VRecipeItems = VRecipeItems.concat(createStirCauldron(Math.min(_length, LuckyInfinity)));
     updateVirtualPlot();
   }
   return createStirCauldron(Math.min(_length, LuckyInfinity));
@@ -573,7 +573,7 @@ function logAddPourSolvent(length, options = {}) {
     Step += 1;
     addPourSolvent(Math.min(_length, LuckyInfinity));
   } else {
-    VRecipeItems.push(createPourSolvent(Math.min(_length, LuckyInfinity)));
+    VRecipeItems = VRecipeItems.concat(createPourSolvent(Math.min(_length, LuckyInfinity)));
     updateVirtualPlot();
   }
   return createPourSolvent(Math.min(_length, LuckyInfinity));
@@ -590,7 +590,7 @@ function logAddSetPosition(x, y) {
     Step += 1;
     addSetPosition(x, y);
   } else {
-    VRecipeItems.push(createSetPosition(x, y));
+    VRecipeItems = VRecipeItems.concat(createSetPosition(x, y));
     updateVirtualPlot();
   }
   return createSetPosition(x, y);
@@ -606,7 +606,7 @@ function logAddSetRotation(angle) {
     Step += 1;
     addSetRotation(-angle);
   } else {
-    VRecipeItems.push(createSetRotation(-angle));
+    VRecipeItems = VRecipeItems.concat(createSetRotation(-angle));
     updateVirtualPlot();
   }
   return createSetRotation(-angle);
@@ -1364,6 +1364,30 @@ const getVortexP = (point = getCurrentPoint()) => getVortexC(getCoord(point));
 const getTotalSun = () => (Virtual ? VTotalSun : TotalSun);
 const getTotalMoon = () => (Virtual ? VTotalMoon : TotalMoon);
 const getTotalStir = () => (Virtual ? VTotalStir : TotalStir);
+/**
+ * Computes the total length of all stir-cauldron instructions in the given recipe items
+ * @param {readonly import("@potionous/instructions").RecipeItem[]} recipeItems - the recipe items to compute the total stir length from
+ * @returns {number} the total length of all stir-cauldron instructions in the given recipe items
+ */
+function getTotalStirR(recipeItems = getRecipeItems()) {
+  let remainingPath = 0.0;
+  let totalStir = 0.0;
+  for (const item of recipeItems) {
+    if (item.type == "add-ingredient") {
+      /** @type {{grindPercent: number, ingredientId: import("@potionous/dataset").IngredientId}} */
+      const { grindPercent, ingredientId } = item;
+      remainingPath += Ingredients.get(ingredientId).computeLength(grindPercent);
+    }
+    if (item.type == "stir-cauldron") {
+      /** @type {{distance: number}} */
+      const { distance } = item;
+      const stir = Math.min(distance, remainingPath);
+      remainingPath -= stir;
+      totalStir += stir;
+    }
+  }
+  return totalStir;
+}
 
 /**
  * Computes the deviation from the target position and angle.
