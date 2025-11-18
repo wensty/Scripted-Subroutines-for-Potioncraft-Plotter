@@ -62,15 +62,22 @@ let Display = false; // Macro to switch instruction display.
 let StraightenLines = [];
 let AuxLineLength = 2;
 let RoundStirring = true; // macro to control whether round stirrings.
+/** Global Varibales */
 let Step = 1;
 let TotalSun = 0;
 let TotalMoon = 0;
-/** Virtual mode structure */
+let TotalStir = 0;
+let RemainingPath = 0;
+/** Virtual Mode Structures */
 let Virtual = false;
 /** @type {import("@potionous/instructions").RecipeItem[]} */
-let VirtualRecipeItems;
+let VRecipeItems;
 /** @type {import("@potionous/plot").PlotResult} */
-let VirtualPlot;
+let VPlot;
+let VTotalSun = 0;
+let VTotalMoon = 0;
+let VTotalStir = 0;
+let VRemainingPath = 0;
 
 /**
  * Enable virtual mode. All subsequent plotting and instruction addition will be done on a virtual plot, and will not affect the actual plot.
@@ -83,8 +90,12 @@ function setVirtual() {
     console.log("Virtual mode enabled.");
     Virtual = true;
   }
-  VirtualRecipeItems = [...currentRecipeItems]; // shallow copy. Mutable.
-  VirtualPlot = currentPlot;
+  VRecipeItems = [...currentRecipeItems]; // shallow copy. Mutable.
+  VPlot = currentPlot;
+  VTotalSun = TotalSun;
+  VTotalMoon = TotalMoon;
+  VTotalStir = TotalStir;
+  VRemainingPath = RemainingPath;
 }
 
 /**
@@ -95,13 +106,13 @@ function unsetVirtual() {
   console.log("Virtual mode disabled.");
   Virtual = false;
 }
-const getRecipeItems = () => (Virtual ? VirtualRecipeItems : currentRecipeItems);
-const getPlot = () => (Virtual ? VirtualPlot : currentPlot);
+const getRecipeItems = () => (Virtual ? VRecipeItems : currentRecipeItems);
+const getPlot = () => (Virtual ? VPlot : currentPlot);
 /** @type {(preStir: number) => import("@potionous/plot").PlotResult} */
 const getPSPlot = (preStir) =>
   preStir > 0.0 ? computePlot(getRecipeItems().concat(createStirCauldron(preStir))) : getPlot();
 function updateVirtualPlot() {
-  VirtualPlot = computePlot(VirtualRecipeItems);
+  VPlot = computePlot(VRecipeItems);
 }
 
 const Effects = {
@@ -408,16 +419,18 @@ function printSalt() {
 
 /**
  * Logs the addition of an ingredient and adds it to the current plot.
- * @param {string} ingredientId The ID of the ingredient to add.
+ * @param {import("@potionous/dataset").IngredientId} ingredientId The ID of the ingredient to add.
  * @param {number} [grindPercent=1.0] The percentage of the ingredient to grind as a decimal (0-1).
  */
 function logAddIngredient(ingredientId, grindPercent = 1.0) {
   if (!Virtual) {
     displayStep("Adding " + grindPercent * 100 + "% of " + ingredientId);
     Step += 1;
+    RemainingPath += Ingredients.get(ingredientId).computeLength(grindPercent);
     addIngredient(ingredientId, grindPercent);
   } else {
-    VirtualRecipeItems.push(createAddIngredient(ingredientId, grindPercent));
+    VRemainingPath += Ingredients.get(ingredientId).computeLength(grindPercent);
+    VRecipeItems.push(createAddIngredient(ingredientId, grindPercent));
     updateVirtualPlot();
   }
   return createAddIngredient(ingredientId, grindPercent);
@@ -436,7 +449,8 @@ function logAddSunSalt(grains) {
     TotalSun += grains;
     addSunSalt(grains);
   } else {
-    VirtualRecipeItems.push(createAddSunSalt(grains));
+    VTotalSun += grains;
+    VRecipeItems.push(createAddSunSalt(grains));
     updateVirtualPlot();
   }
   return createAddSunSalt(grains);
@@ -454,7 +468,8 @@ function logAddMoonSalt(grains) {
     TotalMoon += grains;
     addMoonSalt(grains);
   } else {
-    VirtualRecipeItems.push(createAddMoonSalt(grains));
+    VTotalMoon += grains;
+    VRecipeItems.push(createAddMoonSalt(grains));
     updateVirtualPlot();
   }
   return createAddMoonSalt(grains);
@@ -493,7 +508,7 @@ function logAddHeatVortex(length, shift = 0) {
     Step += 1;
     addHeatVortex(Math.min(_length, LuckyInfinity));
   } else {
-    VirtualRecipeItems.push(createHeatVortex(Math.min(_length, LuckyInfinity)));
+    VRecipeItems.push(createHeatVortex(Math.min(_length, LuckyInfinity)));
     updateVirtualPlot();
   }
   return createHeatVortex(Math.min(_length, LuckyInfinity));
@@ -522,9 +537,15 @@ function logAddStirCauldron(length, options = {}) {
   if (!Virtual) {
     displayStep("Stir the cauldron by " + _length + " distance.");
     Step += 1;
+    const stir = Math.min(_length, RemainingPath);
+    TotalStir += stir;
+    RemainingPath -= stir;
     addStirCauldron(Math.min(_length, LuckyInfinity));
   } else {
-    VirtualRecipeItems.push(createStirCauldron(Math.min(_length, LuckyInfinity)));
+    const stir = Math.min(_length, VRemainingPath);
+    VTotalStir += stir;
+    VRemainingPath -= stir;
+    VRecipeItems.push(createStirCauldron(Math.min(_length, LuckyInfinity)));
     updateVirtualPlot();
   }
   return createStirCauldron(Math.min(_length, LuckyInfinity));
@@ -552,7 +573,7 @@ function logAddPourSolvent(length, options = {}) {
     Step += 1;
     addPourSolvent(Math.min(_length, LuckyInfinity));
   } else {
-    VirtualRecipeItems.push(createPourSolvent(Math.min(_length, LuckyInfinity)));
+    VRecipeItems.push(createPourSolvent(Math.min(_length, LuckyInfinity)));
     updateVirtualPlot();
   }
   return createPourSolvent(Math.min(_length, LuckyInfinity));
@@ -569,7 +590,7 @@ function logAddSetPosition(x, y) {
     Step += 1;
     addSetPosition(x, y);
   } else {
-    VirtualRecipeItems.push(createSetPosition(x, y));
+    VRecipeItems.push(createSetPosition(x, y));
     updateVirtualPlot();
   }
   return createSetPosition(x, y);
@@ -585,7 +606,7 @@ function logAddSetRotation(angle) {
     Step += 1;
     addSetRotation(-angle);
   } else {
-    VirtualRecipeItems.push(createSetRotation(-angle));
+    VRecipeItems.push(createSetRotation(-angle));
     updateVirtualPlot();
   }
   return createSetRotation(-angle);
@@ -1340,21 +1361,9 @@ const getVortexP = (point = getCurrentPoint()) => getVortexC(getCoord(point));
  * Utilities to get the variable salt counter outside this file.
  */
 
-/**
- * Returns the total amount of Sun Salt added so far.
- * @returns {number} The total amount of Sun Salt.
- */
-function getTotalSun() {
-  return TotalSun;
-}
-
-/**
- * Returns the total amount of Moon Salt added so far.
- * @returns {number} The total amount of Moon Salt.
- */
-function getTotalMoon() {
-  return TotalMoon;
-}
+const getTotalSun = () => (Virtual ? VTotalSun : TotalSun);
+const getTotalMoon = () => (Virtual ? VTotalMoon : TotalMoon);
+const getTotalStir = () => (Virtual ? VTotalStir : TotalStir);
 
 /**
  * Computes the deviation from the target position and angle.
