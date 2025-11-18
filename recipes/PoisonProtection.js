@@ -14,7 +14,7 @@ import {
   getStirDirection,
   straighten,
   vSub,
-  getTotalSun,
+  getSun,
   getCurrentPoint,
   getCoord,
   setDisplay,
@@ -43,7 +43,7 @@ function r1() {
   logAddSunSalt(154);
   logAddStirCauldron(4.6);
   const d1 = getAngleOrigin();
-  straighten(d1, SaltNames.Sun, { maxGrains: 501 - getTotalSun() });
+  straighten(d1, SaltNames.Sun, { maxGrains: 501 - getSun() });
   console.log(d1);
   setDisplay();
   for (let i = 0; i < 2; i++) {
@@ -58,7 +58,7 @@ function r1() {
   const c1 = getCoord();
   console.log(stirToTurn({ preStir: 2.5 }));
   const c2 = getCoord();
-  straighten(vecToDir(vSub(c2, c1)), SaltNames.Sun, { maxGrains: 747 - getTotalSun() });
+  straighten(vecToDir(vSub(c2, c1)), SaltNames.Sun, { maxGrains: 747 - getSun() });
   console.log(stirIntoVortex(10.9));
   console.log(vecToDir(vSub(c1, c2)));
   console.log(getAngleEntity());

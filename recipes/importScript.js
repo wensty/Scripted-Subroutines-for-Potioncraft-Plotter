@@ -72,8 +72,10 @@ import {
   unitV,
   unit,
   // getters and setters.
-  getTotalMoon,
-  getTotalSun,
+  getMoon,
+  getSun,
+  getStir,
+  getRecipeStir,
   getDeviation,
   setVirtual,
   unsetVirtual,

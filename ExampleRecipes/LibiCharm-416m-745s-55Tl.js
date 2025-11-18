@@ -9,8 +9,8 @@ import {
   degToRad,
   checkBase,
   straighten,
-  getTotalMoon,
-  getTotalSun,
+  getMoon,
+  getSun,
 } from "../mainScript";
 import { Effects } from "../mainScript";
 
@@ -22,7 +22,7 @@ function main() {
   logAddSunSalt(195);
   stirToTurn();
   straighten(degToRad(-81), "moon", { maxGrains: 298 });
-  logAddMoonSalt(415 - getTotalMoon());
+  logAddMoonSalt(415 - getMoon());
   logAddStirCauldron(1.09);
   logAddMoonSalt(1);
   logAddStirCauldron(3.7);
@@ -34,6 +34,6 @@ function main() {
   stirToTurn();
   stirToTurn();
   stirToTurn();
-  logAddSunSalt(745 - getTotalSun());
+  logAddSunSalt(745 - getSun());
   logAddStirCauldron(Infinity);
 }

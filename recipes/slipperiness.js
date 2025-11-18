@@ -12,7 +12,7 @@ import {
   getStirDirection,
   checkBase,
   straighten,
-  getTotalSun,
+  getSun,
 } from "../mainScript";
 import { SaltNames } from "../mainScript";
 
@@ -38,7 +38,7 @@ const recipes = {
       stirToTurn({ preStirLength: 9.5 });
       const a3 = getAngleOrigin();
       console.log(a3);
-      straighten(a1, SaltNames.Sun, { maxGrains: 501 - getTotalSun() });
+      straighten(a1, SaltNames.Sun, { maxGrains: 501 - getSun() });
       const a4 = getStirDirection();
       console.log(a4);
       // console.log(saltToDeg("moon", 499 - (a1 - a4) / (Math.PI / 500)));

@@ -15,7 +15,7 @@ import {
   vecToDirCoord,
   checkBase,
   straighten,
-  getTotalSun,
+  getSun,
   setStirRounding,
 } from "../mainScript";
 import { DeviationT1, Effects } from "../mainScript";
@@ -32,7 +32,7 @@ function bete() {
   logAddSunSalt(263 - 40);
   stirIntoVortex();
   stirToTurn();
-  logAddSunSalt(501 - getTotalSun());
+  logAddSunSalt(501 - getSun());
   heatAndPourToEdge(3, 5); // 3 empirical instruction.
   logAddHeatVortex(5.76);
   derotateToAngle(-95.5);

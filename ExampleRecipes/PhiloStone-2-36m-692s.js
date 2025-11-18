@@ -19,7 +19,7 @@ import {
   getAngleEntity,
   checkBase,
   straighten,
-  getTotalSun,
+  getSun,
   setStirRounding,
 } from "../mainScript";
 import { DeviationT1, SaltNames, Effects } from "../mainScript";
@@ -34,7 +34,7 @@ function main() {
   logAddSunSalt(263);
   stirIntoVortex();
   stirToTurn();
-  logAddSunSalt(501 - getTotalSun());
+  logAddSunSalt(501 - getSun());
   heatAndPourToEdge(3, 5); // 3 empirical instruction.
   logAddHeatVortex(3.76);
   derotateToAngle(-154.5);

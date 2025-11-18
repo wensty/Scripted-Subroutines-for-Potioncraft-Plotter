@@ -10,7 +10,7 @@ import {
   degToRad,
   checkBase,
   straighten,
-  getTotalSun,
+  getSun,
 } from "../mainScript";
 import { Entity, SaltNames, Effects } from "../mainScript";
 
@@ -37,7 +37,7 @@ function s1() {
   pourUntilAngle(-(20 - 11.99 + 15 * 0.36));
   stirToZone({ zone: Entity.HealZone, exitZone: true });
   straighten(degToRad(-103), SaltNames.Sun, { maxStir: 0.76 });
-  logAddSunSalt(179 - getTotalSun());
+  logAddSunSalt(179 - getSun());
   logAddStirCauldron(0.411);
   logAddSunSalt(1);
   console.log(stirToTarget(Effects.Wine.Libido, { preStir: 9.6, maxStir: 1.0 }));

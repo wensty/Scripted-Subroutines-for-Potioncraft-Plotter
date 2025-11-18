@@ -22,7 +22,7 @@ import {
   getStirDirection,
   checkBase,
   straighten,
-  getTotalSun,
+  getSun,
   setDisplay,
 } from "../mainScript";
 import { SaltNames, Effects } from "../mainScript";
@@ -48,7 +48,7 @@ const recipes = {
       const a1 = getAngleOrigin();
       console.log(getAngleOrigin());
       const adv = 106; // maybe 107.
-      straighten(a1, SaltNames.Sun, { maxGrains: 501 - adv - getTotalSun() });
+      straighten(a1, SaltNames.Sun, { maxGrains: 501 - adv - getSun() });
       logSkirt();
       straighten(a1, SaltNames.Sun, { maxGrains: adv });
       stirIntoVortex();

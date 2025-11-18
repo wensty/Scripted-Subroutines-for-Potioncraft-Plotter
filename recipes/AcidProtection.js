@@ -72,8 +72,8 @@ import {
   unitV,
   unit,
   // getters and setters.
-  getTotalMoon,
-  getTotalSun,
+  getMoon,
+  getSun,
   getDeviation,
   setVirtual,
   unsetVirtual,
@@ -121,7 +121,7 @@ function r1() {
   const s1 = 62;
   logAddSunSalt(s1);
   logSkirt();
-  logAddSunSalt(117 - getTotalSun());
+  logAddSunSalt(117 - getSun());
   logAddStirCauldron(4.55);
   const a1 = getAngleOrigin();
   const a2 = getStirDirection();
@@ -131,7 +131,7 @@ function r1() {
   stirToTurn({ preStir: 9.5 });
   const a3 = getAngleOrigin();
   console.log("a3: " + a3);
-  straighten(a1, SaltNames.Sun, { maxGrains: 501 - getTotalSun() });
+  straighten(a1, SaltNames.Sun, { maxGrains: 501 - getSun() });
   const a4 = getStirDirection();
   console.log("~a3: " + a4);
   pourUntilAngle(saltToDeg(SaltNames.Moon, 499 - (a1 - a4) / (Math.PI / 500)));
@@ -155,7 +155,7 @@ function r1() {
   const d2 = vecToDirCoord(23.57 - 12.1, -30.32 + 23.43);
   console.log("d1: " + d1);
   console.log("~d1: " + d2);
-  const s2 = 681 - getTotalSun();
+  const s2 = 681 - getSun();
   derotateToAngle(-11.99 - s2 * 0.36); // perfect center is possible.
   straighten(d2, SaltNames.Sun, { preStir: 10.2, maxGrains: s2 - 1 });
   logAddStirCauldron(1.713);

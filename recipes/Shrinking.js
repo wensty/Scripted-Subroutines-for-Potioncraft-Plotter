@@ -24,7 +24,7 @@ import {
   // Complex subroutines.
   straighten,
   vSub,
-  getTotalSun,
+  getSun,
   getCurrentPoint,
   getCoord,
 } from "../mainScript";
@@ -78,7 +78,7 @@ function r1() {
   const s = Math.ceil((180.01 + getCurrentPoint().angle) / 0.36);
   straighten(d3, SaltNames.Sun, { maxGrains: s });
   const total = 967;
-  console.log(pourUntilAngle(saltToDeg(SaltNames.Moon, total - getTotalSun()) - 11.99));
+  console.log(pourUntilAngle(saltToDeg(SaltNames.Moon, total - getSun()) - 11.99));
   stirToTurn({ preStir: 0.5 });
   straighten(degToRad(110.8), SaltNames.Sun, { maxGrains: 190 });
   const c4 = getCoord();
@@ -93,7 +93,7 @@ function r1() {
   const d6 = vecToDir(vSub(c7, c6));
   console.log("d8: " + d6);
   console.log("d9~d8: " + getStirDirection());
-  straighten(d6, SaltNames.Sun, { maxGrains: total - getTotalSun() - 4 });
+  straighten(d6, SaltNames.Sun, { maxGrains: total - getSun() - 4 });
   logAddStirCauldron(1.082);
   logAddSunSalt(1);
   console.log(stirToTarget(Effects.Oil.Shrinking));

@@ -23,7 +23,7 @@ import {
   getStirDirection,
   checkBase,
   straighten,
-  getTotalSun,
+  getSun,
   setDisplay,
   unsetVirtual,
 } from "../mainScript";
@@ -51,7 +51,7 @@ const recipes = {
       logAddStirCauldron(6);
       logAddHeatVortex(Infinity);
       stirToTurn({ preStir: 5.3 });
-      logAddSunSalt(501 - getTotalSun());
+      logAddSunSalt(501 - getSun());
       const a1 = 37;
       derotateToAngle(-a1, { toAngle: true });
       logSkirt();
@@ -119,13 +119,13 @@ const recipes = {
       console.log(a1);
       console.log(a2);
       const pre = 154;
-      straighten(a1, SaltNames.Sun, { maxGrains: pre - getTotalSun() });
+      straighten(a1, SaltNames.Sun, { maxGrains: pre - getSun() });
       logSkirt();
-      straighten(a1, SaltNames.Sun, { maxGrains: 453 - getTotalSun() });
+      straighten(a1, SaltNames.Sun, { maxGrains: 453 - getSun() });
       stirToTurn({ preStirLength: 9.5 });
       const a3 = getAngleOrigin();
       console.log(a3);
-      straighten(a1, SaltNames.Sun, { maxGrains: 501 - getTotalSun() });
+      straighten(a1, SaltNames.Sun, { maxGrains: 501 - getSun() });
       const a4 = getStirDirection();
       console.log(a4);
       console.log(saltToDeg("moon", 499 - (a1 - a4) / (Math.PI / 500)));

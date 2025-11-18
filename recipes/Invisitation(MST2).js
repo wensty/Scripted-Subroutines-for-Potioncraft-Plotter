@@ -22,7 +22,7 @@ import {
   getStirDirection,
   checkBase,
   straighten,
-  getTotalSun,
+  getSun,
   setStirRounding,
 } from "../mainScript";
 import { SaltNames, Effects } from "../mainScript";
@@ -58,9 +58,9 @@ function r1() {
   console.log(getAngleOrigin());
   console.log(getStirDirection());
   const direction = getAngleOrigin();
-  straighten(direction, SaltNames.Sun, { maxGrains: delay - getTotalSun() });
+  straighten(direction, SaltNames.Sun, { maxGrains: delay - getSun() });
   logSkirt();
-  straighten(direction, SaltNames.Sun, { maxGrains: 501 - getTotalSun() }); // first part: 501 sun
+  straighten(direction, SaltNames.Sun, { maxGrains: 501 - getSun() }); // first part: 501 sun
   stirToTurn({ preStir: 11 });
   logAddHeatVortex(2.5);
   heatAndPourToEdge(1, 10);

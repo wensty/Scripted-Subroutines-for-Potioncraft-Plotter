@@ -15,7 +15,7 @@ import {
   getHeatDirection,
   checkBase,
   straighten,
-  getTotalSun,
+  getSun,
 } from "../mainScript";
 import { SaltNames, Effects } from "../mainScript";
 
@@ -48,7 +48,7 @@ function s1() {
   logAddPourSolvent(1.268);
   logAddHeatVortex(3.69);
   console.log("a3:" + (radToDeg(getHeatDirection()) - 90));
-  straighten(degToRad(-51.25), SaltNames.Sun, { maxGrains: 210 - getTotalSun(), preStir: 4.5 });
+  straighten(degToRad(-51.25), SaltNames.Sun, { maxGrains: 210 - getSun(), preStir: 4.5 });
   stirIntoVortex(4.7);
   console.log("a4~>a3: " + (radToDeg(getAngleEntity()) - 180));
   derotateToAngle(31.7, { toAngle: false });

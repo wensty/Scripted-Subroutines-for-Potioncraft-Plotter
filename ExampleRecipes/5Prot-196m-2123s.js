@@ -23,7 +23,7 @@ import {
   getStirDirection,
   checkBase,
   straighten,
-  getTotalSun,
+  getSun,
   setDisplay,
   setStirRounding,
 } from "../mainScript";
@@ -51,7 +51,7 @@ function beta() {
   logAddSunSalt(73);
   straighten(getStirDirection(), "sun", {
     maxStir: 1,
-    maxGrains: 780 - getTotalSun(),
+    maxGrains: 780 - getSun(),
   });
   // 780 sun into vortex.
   stirIntoVortex();

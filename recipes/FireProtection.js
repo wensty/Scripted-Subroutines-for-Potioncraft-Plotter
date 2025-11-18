@@ -23,7 +23,7 @@ import {
   straighten,
   vSub,
   getCoord,
-  getTotalSun,
+  getSun,
   setVirtual,
   unsetVirtual,
 } from "../mainScript";
@@ -75,7 +75,7 @@ function r1() {
   logAddSunSalt(264);
   stirToTurn({ preStir: 8.3 });
   const p2 = getCoord();
-  straighten(vecToDir(vSub(p2, p1)), SaltNames.Sun, { maxGrains: 501 - getTotalSun() });
+  straighten(vecToDir(vSub(p2, p1)), SaltNames.Sun, { maxGrains: 501 - getSun() });
   console.log(stirToTurn({ preStir: 0.5 }));
   const a2 = getAngleOrigin();
   console.log("a2: " + a2);
@@ -104,7 +104,7 @@ function r1() {
   console.log("a3: " + d);
   console.log("~a3: " + getStirDirection());
   straighten(d - degToRad(0), SaltNames.Sun, {
-    maxGrains: 834 - getTotalSun(),
+    maxGrains: 834 - getSun(),
   });
   logAddStirCauldron(Infinity);
 }
@@ -142,7 +142,7 @@ function r2() {
   logAddHeatVortex(Infinity);
   logAddSunSalt(205);
   stirIntoVortex(0.9);
-  logAddSunSalt(1002 - getTotalSun());
+  logAddSunSalt(1002 - getSun());
   derotateToAngle(21.5, { toAngle: false });
   logAddHeatVortex(Infinity);
   logAddPourSolvent(1.53);

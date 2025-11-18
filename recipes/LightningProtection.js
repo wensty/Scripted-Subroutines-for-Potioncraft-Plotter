@@ -24,8 +24,8 @@ import {
   getStirDirection,
   checkBase,
   straighten,
-  getTotalMoon,
-  getTotalSun,
+  getMoon,
+  getSun,
 } from "../mainScript";
 import { SaltNames, Effects } from "../mainScript";
 
@@ -75,11 +75,11 @@ const recipes = {
       });
       const m2 = 86; // unrolling.
       // logAddMoonSalt(m1 + m2 - getTotalMoon());
-      straighten(degToRad(170), SaltNames.Moon, { maxGrains: m1 + m2 - getTotalMoon() });
+      straighten(degToRad(170), SaltNames.Moon, { maxGrains: m1 + m2 - getMoon() });
       stirToDangerZoneExit();
       stirToZone({ overStir: false });
       straighten(degToRad(156.9), SaltNames.Sun, {
-        maxGrains: 1000 + m2 + 33 - 1 - getTotalSun(),
+        maxGrains: 1000 + m2 + 33 - 1 - getSun(),
       });
       stirToDangerZoneExit();
       logAddStirCauldron(0);
@@ -117,7 +117,7 @@ const recipes = {
       logAddHeatVortex(Infinity);
       straighten(degToRad(150), SaltNames.Sun, { preStir: 9.6, maxGrains: 39 });
       stirIntoVortex(4.6);
-      logAddSunSalt(501 - getTotalSun());
+      logAddSunSalt(501 - getSun());
       derotateToAngle(189 * 0.36, { toAngle: false });
       logAddHeatVortex(Infinity);
       straighten(degToRad(-141.5), SaltNames.Sun, { preStir: 5.522, ignoreReverse: false });

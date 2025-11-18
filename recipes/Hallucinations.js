@@ -14,7 +14,7 @@ import {
   straighten,
   vSub,
   getCoord,
-  getTotalSun,
+  getSun,
 } from "../mainScript";
 import { SaltNames, Effects } from "../mainScript";
 
@@ -49,15 +49,15 @@ function r1() {
   logAddStirCauldron(0.7);
   logAddPourSolvent(6.34);
   const s2 = Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36);
-  console.log("Final salt after main pouring: " + (getTotalSun() + s2));
+  console.log("Final salt after main pouring: " + (getSun() + s2));
   console.log(
     "Final salt after last pouring: " +
-      (getTotalSun() + Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36))
+      (getSun() + Math.ceil((currentPlot.pendingPoints[0].angle - 12) / 0.36))
   );
   straighten(degToRad(48.5), SaltNames.Sun, {
     preStir: 9.7,
     maxStir: 1.3,
-    maxGrains: 825 - getTotalSun(),
+    maxGrains: 825 - getSun(),
   });
   // for(var x=0.77;x<0.79;x+=0.001){
   //   setVirtual();

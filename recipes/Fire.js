@@ -18,7 +18,7 @@ import {
   getStirDirection,
   checkBase,
   straighten,
-  getTotalSun,
+  getSun,
 } from "../mainScript";
 import { SaltNames, Effects } from "../mainScript";
 
@@ -51,7 +51,7 @@ const recipes = {
       logAddStirCauldron(0.154);
       logAddSunSalt(1);
       stirToTarget(Effects.Oil.Fire);
-      logAddSunSalt(156 - getTotalSun());
+      logAddSunSalt(156 - getSun());
     },
   },
   r2: {
@@ -82,7 +82,7 @@ const recipes = {
       }
       straighten(getStirDirection(), SaltNames.Sun, { maxStir: 0.8 });
       stirToDangerZoneExit();
-      logAddSunSalt(117 - getTotalSun());
+      logAddSunSalt(117 - getSun());
       logAddStirCauldron(0.335);
       // logAddHeatVortex(5)
       derotateToAngle(0);

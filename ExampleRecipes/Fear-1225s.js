@@ -13,7 +13,7 @@ import {
   getStirDirection,
   checkBase,
   straighten,
-  getTotalSun,
+  getSun,
 } from "../mainScript";
 import { SaltAngle, Effects } from "../mainScript";
 
@@ -49,7 +49,7 @@ function main() {
     stirToTurn({ directionBuffer: 0.1 * SaltAngle });
     pourToZone(1);
   }
-  logAddSunSalt(1225 - getTotalSun());
+  logAddSunSalt(1225 - getSun());
   for (let i = 0; i < 38; i++) {
     stirToTurn({ directionBuffer: 0.1 * SaltAngle });
     pourToZone(1);
@@ -90,7 +90,7 @@ function beta_1226s() {
     stirToTurn({ maxStirLength: 0.0, directionBuffer: 0 });
     pourToZone(0.4);
   }
-  logAddSunSalt(1225 - getTotalSun());
+  logAddSunSalt(1225 - getSun());
   for (let i = 0; i < 62; i++) {
     stirToTurn({ maxStirLength: 0.0, directionBuffer: 0 });
     pourToZone(0.15);

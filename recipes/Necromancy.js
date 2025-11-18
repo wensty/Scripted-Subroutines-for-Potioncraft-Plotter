@@ -13,8 +13,8 @@ import {
   getStirDirection,
   checkBase,
   straighten,
-  getTotalMoon,
-  getTotalSun,
+  getMoon,
+  getSun,
   setPreStir,
 } from "../mainScript";
 import { SaltNames, Effects } from "../mainScript";
@@ -56,7 +56,7 @@ function r1() {
   logAddStirCauldron(0.4);
   logAddMoonSalt(1);
   logAddStirCauldron(0.452);
-  logAddMoonSalt(467 - getTotalMoon());
+  logAddMoonSalt(467 - getMoon());
   stirToTarget(Effects.Wine.Necromancy, { preStir: 9 });
 }
 
@@ -79,5 +79,5 @@ function r2() {
   logAddStirCauldron(3.045);
   logAddSunSalt(1);
   stirToTarget(Effects.Wine.Necromancy);
-  logAddSunSalt(664 - getTotalSun());
+  logAddSunSalt(664 - getSun());
 }

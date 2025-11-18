@@ -10,7 +10,7 @@ import {
   pourToZone,
   derotateToAngle,
   checkBase,
-  getTotalMoon,
+  getMoon,
   getDeviation,
 } from "../mainScript";
 import { Effects } from "../mainScript";
@@ -56,7 +56,7 @@ function r1() {
   stirToTier(Effects.Wine.Swiftness, { preStir: 1.4, deviation: 100.0 - sd, ignoreAngle: true });
   logAddMoonSalt(Math.round((45 - currentPlot.pendingPoints[0].angle) / 0.36));
   logAddStirCauldron(1e-13, { shift: 0 });
-  logAddMoonSalt(219 - getTotalMoon());
+  logAddMoonSalt(219 - getMoon());
   logAddStirCauldron(5.419);
   logAddSunSalt(21);
   stirToTurn({ preStir: 4.2 });

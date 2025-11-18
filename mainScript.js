@@ -1361,15 +1361,15 @@ const getVortexP = (point = getCurrentPoint()) => getVortexC(getCoord(point));
  * Utilities to get the variable salt counter outside this file.
  */
 
-const getTotalSun = () => (Virtual ? VTotalSun : TotalSun);
-const getTotalMoon = () => (Virtual ? VTotalMoon : TotalMoon);
-const getTotalStir = () => (Virtual ? VTotalStir : TotalStir);
+const getSun = () => (Virtual ? VTotalSun : TotalSun);
+const getMoon = () => (Virtual ? VTotalMoon : TotalMoon);
+const getStir = () => (Virtual ? VTotalStir : TotalStir);
 /**
  * Computes the total length of all stir-cauldron instructions in the given recipe items
  * @param {readonly import("@potionous/instructions").RecipeItem[]} recipeItems - the recipe items to compute the total stir length from
  * @returns {number} the total length of all stir-cauldron instructions in the given recipe items
  */
-function getTotalStirR(recipeItems = getRecipeItems()) {
+function getRecipeStir(recipeItems = getRecipeItems()) {
   let remainingPath = 0.0;
   let totalStir = 0.0;
   for (const item of recipeItems) {
@@ -1610,8 +1610,10 @@ export {
   unitV,
   unit,
   // getters and setters.
-  getTotalMoon,
-  getTotalSun,
+  getMoon,
+  getSun,
+  getStir,
+  getRecipeStir,
   setVirtual,
   unsetVirtual,
   getRecipeItems,

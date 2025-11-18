@@ -307,8 +307,8 @@ Used to detection of certain entities.
 
 #### getters and setters
 
-<!-- getTotalMoon,
-  getTotalSun,
+<!-- getMoon,
+  getSun,
   setVirtual,
   unsetVirtual,
   getRecipeItems,
@@ -319,8 +319,10 @@ Used to detection of certain entities.
   setDisplay,
   setStirRounding, -->
 
-- `getTotalMoon()`: get the total amount of moon salt added so far _in this script_.
-- `getTotalSun()`: get the total amount of sun salt added so far _in this script_.
+- `getMoon()`: get the total amount of moon salt added so far _in this script_.
+- `getSun()`: get the total amount of sun salt added so far _in this script_.
+- `getStir()`: get the total amount of stirring added so far _in this script_.
+- `getRecipeStir()`: get the total amount of stirring added so far _in the given `recipeItems[]`_.
 - `setVirtual()`: enter virtual mode.
 - `unsetVirtual()`: exit virtual mode.
 - `getRecipeItems()`: get the current recipe items based on the current mode (actual or virtual).
