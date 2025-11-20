@@ -90,7 +90,7 @@ function setVirtual() {
     console.log("Virtual mode enabled.");
     Virtual = true;
   }
-  VRecipeItems = [...currentRecipeItems]; // shallow copy. Mutable.
+  VRecipeItems = currentRecipeItems;
   VPlot = currentPlot;
   VTotalSun = TotalSun;
   VTotalMoon = TotalMoon;

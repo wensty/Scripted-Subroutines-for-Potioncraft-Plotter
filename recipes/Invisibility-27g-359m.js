@@ -9,11 +9,28 @@ import {
   checkBase,
   straighten,
 } from "../mainScript";
-import { SaltNames, Effects } from "../mainScript";
+import { SaltNames, BaseNames, Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
-function beta() {
+const StrongInvisibility = { Invisibility: 3 };
+const Invisibility = { Invisibility: 2 };
+const WeakInvisibility = { Invisibility: 1 };
+
+const recipes = {
+  r1: {
+    title: "Invisibility",
+    desc: "27g+359moon",
+    Version: 3,
+    base: BaseNames.Oil,
+    Ingredients: { Lifeleaf: 2, Goodberry: 1 },
+    Salts: { MoonSalt: 359 },
+    Effect: StrongInvisibility,
+    script: () => r1,
+  },
+};
+
+function r1() {
   checkBase("oil");
   logAddIngredient(Ingredients.Lifeleaf);
   logAddIngredient(Ingredients.Goodberry);

@@ -15,11 +15,14 @@ import {
   straighten,
   getMoon,
   getSun,
-  setPreStir,
 } from "../mainScript";
 import { SaltNames, Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
+
+const StrongNecromancy = { Necromancy: 3 };
+const Necromancy = { Necromancy: 2 };
+const WeakNecromancy = { Necromancy: 1 };
 
 const recipes = {
   r1: {
@@ -27,9 +30,9 @@ const recipes = {
     desc: "467m-46s",
     version: 3,
     base: "wine",
-    tier: 3,
     Ingredients: { GraveTruffle: 1 },
     Salts: { MoonSalt: 467, SunSalt: 46, LifeSalt: 19 },
+    Effects: StrongNecromancy,
     script: r1(),
   },
   r2: {
@@ -40,6 +43,7 @@ const recipes = {
     tier: 3,
     Ingredients: { PhantomSkirt: 1 },
     Salts: { SunSalt: 664 },
+    Effects: StrongNecromancy,
     script: r2(),
   },
 };
