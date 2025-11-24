@@ -15,6 +15,10 @@ import {
   straighten,
   getMoon,
   getSun,
+  getStir,
+  setVirtual,
+  unsetVirtual,
+  getCurrentPoint,
 } from "../mainScript";
 import { SaltNames, Effects } from "../mainScript";
 
@@ -74,13 +78,22 @@ function r2() {
   logAddPourSolvent(Infinity);
   console.log(radToDeg(getStirDirection()));
   stirToZone({ preStir: 8.4 });
-  for (let i = 0; i < 13; i++) {
-    logAddPourSolvent(0.1);
+  for (let i = 0; i < 26; i++) {
+    logAddPourSolvent(0.05);
     stirToZone();
   }
-  straighten(degToRad(-151.2), SaltNames.Sun, { maxGrains: 187 });
-  straighten(degToRad(-171), SaltNames.Sun, { preStir: 8.5, maxGrains: 222 });
-  logAddStirCauldron(3.045);
+  console.log("Total stir: " + getStir());
+  logAddPourSolvent(0.01);
+  stirToZone();
+  straighten(degToRad(-142.4), SaltNames.Sun, { maxGrains: 185 });
+  straighten(degToRad(-157.6), SaltNames.Sun, { preStir: 8.5, maxGrains: 224 });
+
+  setVirtual();
+  stirToZone({ exitZone: true, overStir: false });
+  console.log(getCurrentPoint().health);
+  unsetVirtual();
+
+  logAddStirCauldron(3.953);
   logAddSunSalt(1);
   stirToTarget(Effects.Wine.Necromancy);
   logAddSunSalt(664 - getSun());

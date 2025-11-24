@@ -1,9 +1,11 @@
 import {
+  logAddIngredient,
   logSkirt,
   logAddMoonSalt,
   logAddSunSalt,
   logAddStirCauldron,
   logAddPourSolvent,
+  stirToTurn,
   stirToZone,
   stirToTarget,
   pourUntilAngle,
@@ -11,24 +13,41 @@ import {
   checkBase,
   straighten,
   getSun,
+  setDisplay,
 } from "../mainScript";
-import { Entity, SaltNames, Effects } from "../mainScript";
+import { Entity, SaltNames, BaseNames, Effects } from "../mainScript";
+
+import { Ingredients } from "@potionous/dataset";
+
+const StrongLibido = { Libido: 3 };
+const Libido = { Libido: 2 };
+const WeakLibido = { Libido: 1 };
 
 const recipes = {
   r1: {
     title: "Libido",
     desc: "Libido",
-    version: 3,
-    base: "wine",
-    tier: 3,
+    version: "V3",
+    base: BaseNames.Wine,
     Ingredients: { PhantomSkirt: 1 },
     Salts: { MoonSalt: 210, SunSalt: 180 },
-    script: () => s1(),
+    Effects: StrongLibido,
+    script: () => r1(),
+  },
+  r2: {
+    title: "Libido",
+    desc: "GraspingRoot Ver.",
+    version: "betaV3",
+    base: BaseNames.Wine,
+    Ingredients: { GraspingRoot: 3 },
+    Salts: { Moonsalt: 23, SunSalt: 64 },
+    Effects: StrongLibido,
+    script: () => r2(),
   },
 };
 
-function s1() {
-  checkBase("wine");
+function r1() {
+  checkBase(BaseNames.Wine);
   logSkirt();
   logAddStirCauldron(5.8);
   logAddPourSolvent(Infinity);
@@ -42,4 +61,20 @@ function s1() {
   logAddSunSalt(1);
   console.log(stirToTarget(Effects.Wine.Libido, { preStir: 9.6, maxStir: 1.0 }));
   logAddMoonSalt(165);
+}
+
+function r2() {
+  setDisplay();
+  logAddIngredient(Ingredients.GraspingRoot, 0.095);
+  logAddSunSalt(64);
+  logAddIngredient(Ingredients.GraspingRoot, 0.318);
+  logAddIngredient(Ingredients.GraspingRoot);
+  logAddPourSolvent(Infinity);
+  stirToTurn({ preStir: 4 });
+  logAddMoonSalt(2);
+  logAddStirCauldron(7.64);
+  logAddMoonSalt(20);
+  logAddStirCauldron(0.184);
+  logAddMoonSalt(1);
+  stirToTarget(Effects.Wine.Libido, { preStir: 6.8, maxStir: 0.6 });
 }
