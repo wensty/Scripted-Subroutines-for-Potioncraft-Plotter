@@ -602,7 +602,7 @@ function logAddSetPosition(x, y) {
  */
 function logAddSetRotation(angle) {
   if (!Virtual) {
-    displayStep("Rotate by " + -angle + " degrees.");
+    displayStep("Set rotation to " + -angle + " degrees.");
     Step += 1;
     addSetRotation(-angle);
   } else {
