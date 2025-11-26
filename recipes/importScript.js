@@ -53,6 +53,7 @@ import {
   getAngleEffect,
   getStirDirection,
   getHeatDirection,
+  getDerotateRate,
   getTangent,
   // Extraction of other informations.
   checkBase,
@@ -81,7 +82,7 @@ import {
   unsetVirtual,
   getRecipeItems,
   getPlot,
-  getCurrentPoint,
+  getPoint,
   getCoord,
   setEps,
   setPourRoundBuffer,

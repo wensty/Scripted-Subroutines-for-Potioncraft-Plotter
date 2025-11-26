@@ -5,21 +5,18 @@ import {
   logAddPourSolvent,
   stirIntoVortex,
   stirToTurn,
-  derotateToAngle,
-  pourUntilAngle,
+  degToRad,
   radToDeg,
-  vecToDir,
   getAngleOrigin,
   getAngleEntity,
-  getStirDirection,
   straighten,
-  vSub,
+  vMag,
   getSun,
-  getCurrentPoint,
   getCoord,
-  setDisplay,
 } from "../mainScript";
 import { SaltNames, BaseNames } from "../mainScript";
+
+import { currentPlot } from "@potionous/plot";
 
 const StrongPoisonProtection = { PoisonProtection: 3 };
 const PoisonProtection = { PoisonProtection: 2 };
@@ -32,37 +29,31 @@ const recipes = {
     version: 3,
     base: BaseNames.Oil,
     Ingredients: { PhantomSkirt: 1 },
-    Salts: { SunSalt: 747 },
+    Salts: { SunSalt: 739 },
     Effects: StrongPoisonProtection,
-    script: () => r1(),
+    script: r1,
   },
 };
 
 function r1() {
   logSkirt();
-  logAddSunSalt(154);
+  logAddSunSalt(157);
   logAddStirCauldron(4.6);
   const d1 = getAngleOrigin();
-  straighten(d1, SaltNames.Sun, { maxGrains: 501 - getSun() });
-  console.log(d1);
-  setDisplay();
-  for (let i = 0; i < 2; i++) {
-    pourUntilAngle(-getCurrentPoint().angle + radToDeg(d1 - getStirDirection()));
-    stirToTurn({ directionBuffer: 0 });
-  }
-  logAddPourSolvent(0.028);
-  logAddStirCauldron(5.432);
-  logAddSunSalt(36);
-  logAddStirCauldron(1.127);
-  logAddSunSalt(30);
-  const c1 = getCoord();
-  console.log(stirToTurn({ preStir: 2.5 }));
-  const c2 = getCoord();
-  straighten(vecToDir(vSub(c2, c1)), SaltNames.Sun, { maxGrains: 747 - getSun() });
-  console.log(stirIntoVortex(10.9));
-  console.log(vecToDir(vSub(c1, c2)));
-  console.log(getAngleEntity());
-  derotateToAngle(0);
-  logAddStirCauldron(4.47);
-  logAddPourSolvent(1.012);
+  straighten(d1, SaltNames.Sun, { maxGrains: 520 - getSun() });
+  logAddStirCauldron(4.67);
+  console.log("d1: " + radToDeg(d1));
+  console.log("~d1 " + radToDeg(getAngleOrigin()));
+  logAddSunSalt(39);
+  logAddStirCauldron(1.1);
+  logAddSunSalt(18);
+  stirToTurn({ preStir: 3.4 });
+  logAddSunSalt(32);
+  const s = Math.floor((currentPlot.committedPoints.at(-1).angle - vMag(getCoord()) * 9.0) / 0.36);
+  console.log("s>0: " + s);
+  stirToTurn();
+  logAddPourSolvent(1.412);
+  straighten(degToRad(-168), SaltNames.Sun, { maxGrains: 739 - getSun() });
+  stirIntoVortex(10.6);
+  console.log(radToDeg(getAngleEntity()) - 180);
 }

@@ -25,7 +25,7 @@ import {
   straighten,
   vSub,
   getSun,
-  getCurrentPoint,
+  getPoint,
   getCoord,
 } from "../mainScript";
 import { SaltNames, BaseNames, Effects } from "../mainScript";
@@ -75,7 +75,7 @@ function r1() {
   stirToTurn({ preStir: 9.0 });
   const c3 = getCoord();
   console.log("d5~d3: " + vecToDir(vSub(c3, c1)));
-  const s = Math.ceil((180.01 + getCurrentPoint().angle) / 0.36);
+  const s = Math.ceil((180.01 + getPoint().angle) / 0.36);
   straighten(d3, SaltNames.Sun, { maxGrains: s });
   const total = 967;
   console.log(pourUntilAngle(saltToDeg(SaltNames.Moon, total - getSun()) - 11.99));

@@ -79,7 +79,7 @@ import {
   unsetVirtual,
   getRecipeItems,
   getPlot,
-  getCurrentPoint,
+  getPoint,
   getCoord,
   setEps,
   setPourRoundBuffer,

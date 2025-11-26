@@ -262,6 +262,7 @@ Used to detection of certain entities.
   getAngleEffect,
   getStirDirection,
   getHeatDirection,
+  getDerotateRate,
   getTangent,-->
 
 - `getAngleOrigin(toBottle?)`: computes the direction angle of the current bottle position.
@@ -271,6 +272,8 @@ Used to detection of certain entities.
   - `getAngleVortex`,`getAngleEffect`: `getAngleEntity` with pre-defined `expectedEntityTypes`
 - `getStirDirection()`: computes the direction of stirring at current point in radians.
 - `getHeatDirection()`: computes the direction of heating a vortex at current point in radians.
+- `getDerotateRate()`: computes the derotation rate at current point. The value is degree per distance.
+- `getTangent(minStir)`: computes a direction from the initial point that tangents to the potion path.
 
 ### Other information Extractions
 

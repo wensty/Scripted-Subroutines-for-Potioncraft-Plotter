@@ -228,7 +228,7 @@ function getEntityCoord(entity) {
  * @param {import("@potionous/plot").PlotResult} plot - The plot to get the current point from.
  * @returns {import("@potionous/plot").PlotPoint} - The current point in the plot.
  */
-function getCurrentPoint(plot = getPlot()) {
+function getPoint(plot = getPlot()) {
   return plot.committedPoints.at(-1) || Origin;
 }
 
@@ -237,12 +237,11 @@ function getCurrentPoint(plot = getPlot()) {
  * @param {import("@potionous/plot").PlotPoint} point - The plot point to extract coordinates from.
  * @returns {{x: number, y: number}} - The extracted coordinates with defaults applied.
  */
-function getCoord(point = getCurrentPoint()) {
+function getCoord(point = getPoint()) {
   const { x, y } = point;
   return { x: x || 0.0, y: y || 0.0 };
 }
 /** @type {(plot: import("@potionous/plot").PlotResult) => {x: number, y: number}} */
-const getCurrentCoord = (plot) => getCoord(getCurrentPoint(plot));
 
 /**
  * Computes the next segment of a given potion path.
@@ -637,7 +636,7 @@ function stirIntoVortexV2(options = {}) {
   const { preStir = 0.0 } = options;
   const plot = getPSPlot(preStir);
   const pps = plot.pendingPoints;
-  let cp = getCurrentPoint(plot);
+  let cp = getPoint(plot);
   const vc1 = getEntityCoord(cp.bottleCollisions.find(isVortex));
   let stir = 0.0;
   let j = 0;
@@ -668,9 +667,9 @@ const stirIntoVortex = (preStir = 0.0) => stirIntoVortexV2({ preStir });
 function stirToVortexEdgeV2(options = {}) {
   const { preStir = 0.0 } = options;
   const plot = getPSPlot(preStir);
-  let cp = getCurrentPoint(plot);
+  let cp = getPoint(plot);
   const pps = plot.pendingPoints;
-  const vortex = getVortexP(getCurrentPoint());
+  const vortex = getVortexP(getPoint());
   let stir = preStir;
   let j = 0;
   while (true) {
@@ -705,7 +704,7 @@ function stirToTurn(options = {}) {
   const { preStir = 0.0, directionBuffer = 20 * SaltAngle } = options;
   const minCosine = Math.cos(directionBuffer);
   const plot = getPSPlot(preStir);
-  let cp = getCurrentPoint(plot);
+  let cp = getPoint(plot);
   const pps = plot.pendingPoints;
   let currentUnit = undefined;
   let i = 0;
@@ -736,7 +735,7 @@ function stirToTurn(options = {}) {
 function stirToZone(options = {}) {
   const { preStir = 0.0, zone = Entity.DangerZone, overStir = false, exitZone = false } = options;
   const plot = getPSPlot(preStir);
-  let cp = getCurrentPoint(plot);
+  let cp = getPoint(plot);
   const pps = plot.pendingPoints;
   let j = 0;
   let inZone = false;
@@ -777,7 +776,7 @@ const stirToDangerZoneExit = (preStir = 0.0) =>
 function stirToTarget(target, options = {}) {
   const { preStir = 0.0, maxStir = Infinity } = options;
   const plot = getPSPlot(preStir);
-  let cp = getCurrentPoint(plot);
+  let cp = getPoint(plot);
   const pps = plot.pendingPoints;
   let isLastSegment = false;
   let currentStir = 0.0;
@@ -839,7 +838,7 @@ function stirToTier(target, options = {}) {
     afterStir = 1e-13,
   } = options;
   const plot = getPSPlot(preStir);
-  let cp = getCurrentPoint(plot);
+  let cp = getPoint(plot);
   const pps = plot.pendingPoints;
   let angleDeviation = 0.0;
   if (!ignoreAngle) {
@@ -881,7 +880,7 @@ function stirToTier(target, options = {}) {
  * @param {number} [oneStir=Infinity] - The length of a single stir.
  */
 function stirToConsume(length, oneStir = Infinity) {
-  const point = getCurrentPoint();
+  const point = getPoint();
   const { x, y } = getCoord(point);
   const result = point.bottleCollisions.find(isVortex);
   if (result == undefined) {
@@ -906,7 +905,7 @@ function stirToConsume(length, oneStir = Infinity) {
  * Pours solvent to move the bottle to the edge of the current vortex.
  */
 function pourToVortexEdge() {
-  const p = getCurrentPoint();
+  const p = getPoint();
   const vortex = getVortexC(p);
   if (vortex === undefined) {
     throw errorMsg("pouring to edge", "bottle not in a vortex.");
@@ -923,7 +922,7 @@ function pourToVortexEdge() {
  * @param {number} y - The y-coordinate of the target vortex.
  */
 function pourIntoVortex(x, y) {
-  const point = getCurrentPoint();
+  const point = getPoint();
   const vortex = getVortex(x, y);
   const ic = intersectCircle(vortex, point, unitV(vNeg(point)));
   if (ic === undefined) {
@@ -944,7 +943,7 @@ function pourIntoVortex(x, y) {
 function heatAndPourToEdge(maxHeat, repeats) {
   /** @type {import("@potionous/instructions").RecipeItem[]} */
   let instructions = [];
-  const vC = getEntityCoord(getCurrentPoint().bottleCollisions.find(isVortex));
+  const vC = getEntityCoord(getPoint().bottleCollisions.find(isVortex));
   if (vC === undefined) {
     throw errorMsg("pouring to edge", "bottle not in a vortex.");
   }
@@ -1030,7 +1029,7 @@ const pourToZone = (maxPour = Infinity) => pourToZoneV2({ maxPour });
 function derotateToAngle(targetAngle, options = {}) {
   const { toAngle = true } = options;
   let _targetAngle = targetAngle;
-  const initialPoint = getCurrentPoint();
+  const initialPoint = getPoint();
   const { x, y } = getCoord(initialPoint);
   const currentAngle = -initialPoint.angle || 0.0;
   if (toAngle) {
@@ -1062,7 +1061,7 @@ function derotateToAngle(targetAngle, options = {}) {
  * @param {boolean} [options.overPour=true] - Decides whether to slightly over pour.
  */
 function pourUntilAngle(targetAngle, options = {}) {
-  const point = getCurrentPoint();
+  const point = getPoint();
   const currentAngle = -point.angle || 0.0;
   if (targetAngle * (targetAngle - currentAngle) <= 0) {
     const {
@@ -1077,7 +1076,7 @@ function pourUntilAngle(targetAngle, options = {}) {
     const dist = vMag(getCoord(point));
     let toOrigin = false;
     const _angleAtOrigin =
-      -getCurrentPoint(computePlot(getRecipeItems().concat(createPourSolvent(dist)))).angle || 0.0;
+      -getPoint(computePlot(getRecipeItems().concat(createPourSolvent(dist)))).angle || 0.0;
     /** @type {number} */ var l;
     /** @type {number} */ var r;
     /** @type {number} */ var e;
@@ -1099,7 +1098,7 @@ function pourUntilAngle(targetAngle, options = {}) {
     while (r - l > e) {
       const m = l + (r - l) / 2;
       const plot = computePlot(getRecipeItems().concat(createPourSolvent(m)));
-      const testAngle = -getCurrentPoint(plot).angle || 0.0;
+      const testAngle = -getPoint(plot).angle || 0.0;
       if (targetAngle * (targetAngle - testAngle) <= 0) {
         l = m;
       } else {
@@ -1241,7 +1240,7 @@ function getAngleOrigin() {
  * @returns {number} The direction angle in radians.
  */
 function getAngleEntity(entityTypes = Entity.Vortex) {
-  const point = getCurrentPoint();
+  const point = getPoint();
   const pC = getCoord(point);
   /** @type {{x: number, y: number}|undefined} */
   const eC = getEntityCoord(point.bottleCollisions.find(isEntityType(entityTypes)));
@@ -1259,7 +1258,7 @@ const getAngleEffect = () => getAngleEntity(Entity.PotionEffect);
  * @returns {number} The direction angle in radians.
  */
 function getStirDirection() {
-  const cp = getCurrentPoint();
+  const cp = getPoint();
   const pps = getPlot().pendingPoints;
   const { nextIndex: j, endPath } = getNextSegment(cp, pps, 0);
   if (endPath) {
@@ -1273,7 +1272,7 @@ function getStirDirection() {
  * @returns {number} The direction angle in radians.
  */
 function getHeatDirection() {
-  const point = getCurrentPoint();
+  const point = getPoint();
   const vC = getEntityCoord(point.bottleCollisions.find(isVortex));
   if (vC == undefined) {
     throw errorMsg("getting current heat direction", "no vortex at current position.");
@@ -1286,6 +1285,17 @@ function getHeatDirection() {
 }
 
 /**
+ * Computes the derotation rate of the current bottle position.
+ * It is the rate of rotation of the bottle in degree per unit length.
+ * @returns {number} The derotation rate in degree per unit length.
+ */
+function getDerotateRate() {
+  const a = Math.abs(getPoint().angle || 0.0);
+  const dist = vMag(getCoord());
+  return a > 0 ? Math.min(a / dist, 9.0) : 0.0;
+}
+
+/**
  * Compute a direction from the initial point that tangents to the potion path.
  * @param {number} minStir - The minimum stir length before the tangent point.
  * @returns {{stir: number, direction: number}} - The stir length and the direction.
@@ -1294,7 +1304,7 @@ function getTangent(minStir) {
   const pc0 = getCoord();
   const plot = computePlot(getRecipeItems().concat(createStirCauldron(minStir)));
   const pps = plot.pendingPoints;
-  let cp = getCurrentPoint(plot);
+  let cp = getPoint(plot);
   let i = 0;
   let stir = minStir;
   let rd;
@@ -1335,18 +1345,18 @@ function getTangent(minStir) {
  */
 function getVortex(x, y) {
   const vortex = getEntityCoord(
-    getCurrentPoint(computePlot([createSetPosition(x, y)])).bottleCollisions.find(isVortex)
+    getPoint(computePlot([createSetPosition(x, y)])).bottleCollisions.find(isVortex)
   );
   if (vortex == undefined) {
     throw errorMsg("getting target vortex radius", "no vortex at target position.");
   }
-  let small = getCurrentPoint(
+  let small = getPoint(
     computePlot([createSetPosition(vortex.x + 1.8, vortex.y)])
   ).bottleCollisions.find(isVortex);
   if (small === undefined || small.x != vortex.x || small.y != vortex.y) {
     return { x: vortex.x, y: vortex.y, r: VortexRadiusSmall };
   }
-  let medium = getCurrentPoint(
+  let medium = getPoint(
     computePlot([createSetPosition(vortex.x + 2.2, vortex.y)])
   ).bottleCollisions.find(isVortex);
   if (medium === undefined || medium.x != vortex.x || medium.y != vortex.y) {
@@ -1355,7 +1365,7 @@ function getVortex(x, y) {
   return { x: vortex.x, y: vortex.y, r: VortexRadiusLarge };
 }
 const getVortexC = (point = getCoord()) => getVortex(point.x, point.y);
-const getVortexP = (point = getCurrentPoint()) => getVortexC(getCoord(point));
+const getVortexP = (point = getPoint()) => getVortexC(getCoord(point));
 
 /**
  * Utilities to get the variable salt counter outside this file.
@@ -1396,7 +1406,7 @@ function getRecipeStir(recipeItems = getRecipeItems()) {
  */
 function getDeviation(target) {
   const p = getCoord();
-  const a = -getCurrentPoint().angle || 0.0;
+  const a = -getPoint().angle || 0.0;
   const distance = vMag(vSub(p, target)) * 1800.0;
   const angle = Math.abs(a - target.angle) / 12.0;
   return { distance, angle, total: distance + angle };
@@ -1435,7 +1445,7 @@ function straighten(direction, salt, options = {}) {
   let nextStir = 0.0;
   let totalGrains = 0;
   let plot = getPSPlot(preStir);
-  let cp = getCurrentPoint(plot);
+  let cp = getPoint(plot);
   let _preStir = preStir; // apply preStir once.
   let i = 0;
   while (true) {
@@ -1496,7 +1506,7 @@ function straighten(direction, salt, options = {}) {
         instructions.push(logAddRotationSalt(salt, grains));
         // recalculate the new plotter after stir and salt.
         plot = getPlot();
-        cp = getCurrentPoint();
+        cp = getPoint();
         i = 0;
       }
     } else {
@@ -1588,12 +1598,13 @@ export {
   getAngleEffect,
   getStirDirection,
   getHeatDirection,
+  getDerotateRate,
   getTangent,
   // Extraction of other informations.
   checkBase,
   getVortex,
   getDeviation,
-  getCurrentPoint,
+  getPoint,
   getCoord,
   // Complex subroutines.
   straighten,

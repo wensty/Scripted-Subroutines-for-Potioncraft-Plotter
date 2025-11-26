@@ -18,7 +18,7 @@ import {
   getStir,
   setVirtual,
   unsetVirtual,
-  getCurrentPoint,
+  getPoint,
 } from "../mainScript";
 import { SaltNames, Effects } from "../mainScript";
 
@@ -90,7 +90,7 @@ function r2() {
 
   setVirtual();
   stirToZone({ exitZone: true, overStir: false });
-  console.log(getCurrentPoint().health);
+  console.log(getPoint().health);
   unsetVirtual();
 
   logAddStirCauldron(3.953);
