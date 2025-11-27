@@ -231,18 +231,8 @@ function getEntityCoord(entity) {
 function getPoint(plot = getPlot()) {
   return plot.committedPoints.at(-1) || Origin;
 }
-
-/**
- * Extracts the x and y coordinates from a given plot point, defaulting to the current point.
- * @param {import("@potionous/plot").PlotPoint} point - The plot point to extract coordinates from.
- * @returns {{x: number, y: number}} - The extracted coordinates with defaults applied.
- */
-function getCoord(point = getPoint()) {
-  const { x, y } = point;
-  return { x: x || 0.0, y: y || 0.0 };
-}
-/** @type {(plot: import("@potionous/plot").PlotResult) => {x: number, y: number}} */
-
+const getCoord = (point = getPoint()) => ({ x: point.x || 0.0, y: point.y || 0.0 });
+const getAngle = (point = getPoint()) => -point.angle || 0.0;
 /**
  * Computes the next segment of a given potion path.
  * @param {import("@potionous/plot").PlotPoint} cp - The current point.
@@ -646,9 +636,9 @@ function stirIntoVortexV2(options = {}) {
     }
     const vc2 = getEntityCoord(pps[j].bottleCollisions.find(isVortex));
     if (vc2 && (!vc1 || vc2.x != vc1.x || vc2.y != vc1.y)) {
-      const pc1 = getCoord(cp);
-      const pc2 = getCoord(pps[j]);
-      stir += intersectCircleG(getVortexC(vc2), pc1, unitV(vSub(pc2, pc1))).d1;
+      const c1 = getCoord(cp);
+      const c2 = getCoord(pps[j]);
+      stir += intersectCircleG(getVortexC(vc2), c1, unitV(vSub(c2, c1))).d1;
       stir += preStir;
       return logAddStirCauldron(stir, { shift: 1 });
     }
@@ -842,8 +832,8 @@ function stirToTier(target, options = {}) {
   const pps = plot.pendingPoints;
   let angleDeviation = 0.0;
   if (!ignoreAngle) {
-    const currentAngle = -cp.angle || 0.0;
-    const angleDelta = radToDeg(Math.abs(relDir(degToRad(currentAngle), degToRad(target.angle))));
+    const ca = getAngle(cp);
+    const angleDelta = radToDeg(Math.abs(relDir(degToRad(ca), degToRad(target.angle))));
     angleDeviation = (angleDelta * 100.0) / 12.0;
     if (angleDeviation >= deviation) {
       throw errorMsg("stir to tier", "too much angle deviation.");
@@ -1029,19 +1019,19 @@ const pourToZone = (maxPour = Infinity) => pourToZoneV2({ maxPour });
 function derotateToAngle(targetAngle, options = {}) {
   const { toAngle = true } = options;
   let _targetAngle = targetAngle;
-  const initialPoint = getPoint();
-  const { x, y } = getCoord(initialPoint);
-  const currentAngle = -initialPoint.angle || 0.0;
+  const p0 = getPoint();
+  const { x, y } = getCoord(p0);
+  const a0 = getAngle(p0);
   if (toAngle) {
-    if (targetAngle * (targetAngle - currentAngle) > 0) {
+    if (targetAngle * (targetAngle - a0) > 0) {
       throw errorMsg("derotating", "Cannot derotate to larger or reversed angle.");
     }
   } else {
-    _targetAngle = currentAngle - (currentAngle > 0 ? 1 : -1) * targetAngle;
+    _targetAngle = a0 - (a0 > 0 ? 1 : -1) * Math.min(Math.abs(targetAngle), Math.abs(a0));
   }
   const atOrigin = x == 0.0 && y == 0.0;
   if (!atOrigin) {
-    const result = initialPoint.bottleCollisions.find(isVortex);
+    const result = p0.bottleCollisions.find(isVortex);
     if (result == undefined) {
       throw errorMsg("derotating", "Cannot derotate outside vortex.");
     }
@@ -1055,57 +1045,56 @@ function derotateToAngle(targetAngle, options = {}) {
  * @param {Object} [options] - Optional parameters for the pouring process.
  * @param {number} [options.minPour=0.0] - The optional minimum pour length.
  * @param {number} [options.maxPour=Infinity] - The optional maximum pour length.
- * @param {number} [options.epsHigh=EpsHigh] - The precision for high range binary search.
- * @param {number} [options.epsLow=EpsLow] - The precision for low range binary search.
- * @param {number} [options.buffer=0.012] - Buffer value for adjusting the binary search range.
+ * @param {number} [options.eps1=2e-3] - Low precision for binary search.
+ * @param {number} [options.eps2=1e-5] - High precision for binary search.
+ * @param {number} [options.buffer=0.03] - Buffer value for adjusting the binary search range.
  * @param {boolean} [options.overPour=true] - Decides whether to slightly over pour.
  */
 function pourUntilAngle(targetAngle, options = {}) {
-  const point = getPoint();
-  const currentAngle = -point.angle || 0.0;
-  if (targetAngle * (targetAngle - currentAngle) <= 0) {
+  const cp = getPoint();
+  const ca = getAngle(cp);
+  if (targetAngle * (targetAngle - ca) <= 0) {
     const {
       minPour = 0.0,
       maxPour = Infinity,
-      epsHigh = 2e-3,
-      epsLow = 1e-5,
+      eps1 = 4e-3,
+      eps2 = 1e-5,
       buffer = 0.03,
       overPour = true,
     } = options;
-    const round = overPour ? 1 : -1;
-    const dist = vMag(getCoord(point));
+    const dist = vMag(getCoord(cp));
     let toOrigin = false;
-    const _angleAtOrigin =
-      -getPoint(computePlot(getRecipeItems().concat(createPourSolvent(dist)))).angle || 0.0;
+    const _angleAtOrigin = getAngle(
+      getPoint(computePlot(getRecipeItems().concat(createPourSolvent(dist))))
+    );
     /** @type {number} */ var l;
     /** @type {number} */ var r;
-    /** @type {number} */ var e;
+    /** @type {number} */ var eps;
     if (targetAngle * (targetAngle - _angleAtOrigin) <= 0) {
-      // instructions.push(logAddPourSolvent(dist));
       l = dist + Math.abs(targetAngle - _angleAtOrigin) / 9.0 - buffer;
       r = dist + Math.abs(targetAngle - _angleAtOrigin) / 9.0 + buffer;
-      e = epsHigh;
+      eps = eps2;
       toOrigin = true;
     } else {
       l = minPour;
       r = maxPour;
-      e = epsLow;
+      eps = eps1;
       // assert range.
       if (r > dist) r = dist;
       if (l > r) l = r;
       if (l < 0) l = 0;
     }
-    while (r - l > e) {
+    while (r - l > eps) {
       const m = l + (r - l) / 2;
       const plot = computePlot(getRecipeItems().concat(createPourSolvent(m)));
-      const testAngle = -getPoint(plot).angle || 0.0;
+      const testAngle = getAngle(getPoint(plot));
       if (targetAngle * (targetAngle - testAngle) <= 0) {
         l = m;
       } else {
         r = m;
       }
     }
-    return logAddPourSolvent(r, { shift: toOrigin ? 0 : round });
+    return logAddPourSolvent(r, { shift: toOrigin ? 0 : overPour ? 1 : -1 });
   }
   throw errorMsg("pourUntilAngle", "Cannot pour to larger or reversed angle.");
 }
@@ -1241,13 +1230,13 @@ function getAngleOrigin() {
  */
 function getAngleEntity(entityTypes = Entity.Vortex) {
   const point = getPoint();
-  const pC = getCoord(point);
+  const c0 = getCoord(point);
   /** @type {{x: number, y: number}|undefined} */
-  const eC = getEntityCoord(point.bottleCollisions.find(isEntityType(entityTypes)));
-  if (eC === undefined) {
+  const c1 = getEntityCoord(point.bottleCollisions.find(isEntityType(entityTypes)));
+  if (c1 === undefined) {
     throw errorMsg("getting bottle polar angle by entity", "given entity not found.");
   }
-  let delta = vSub(pC, eC);
+  let delta = vSub(c0, c1);
   return vecToDir(delta);
 }
 const getAngleVortex = () => getAngleEntity();
@@ -1290,7 +1279,7 @@ function getHeatDirection() {
  * @returns {number} The derotation rate in degree per unit length.
  */
 function getDerotateRate() {
-  const a = Math.abs(getPoint().angle || 0.0);
+  const a = Math.abs(getAngle());
   const dist = vMag(getCoord());
   return a > 0 ? Math.min(a / dist, 9.0) : 0.0;
 }
@@ -1301,7 +1290,7 @@ function getDerotateRate() {
  * @returns {{stir: number, direction: number}} - The stir length and the direction.
  */
 function getTangent(minStir) {
-  const pc0 = getCoord();
+  const c0 = getCoord();
   const plot = computePlot(getRecipeItems().concat(createStirCauldron(minStir)));
   const pps = plot.pendingPoints;
   let cp = getPoint(plot);
@@ -1315,16 +1304,16 @@ function getTangent(minStir) {
       throw errorMsg("getTangent", "No tangent found.");
     }
     stir += nextSegment;
-    let pc1 = getCoord(cp);
-    let pc2 = getCoord(pps[j]);
+    let c1 = getCoord(cp);
+    let c2 = getCoord(pps[j]);
     if (!initilized) {
       initilized = true;
-      const d = vecToDir(vSub(pc1, pc0));
-      const ds = vecToDir(vSub(pc2, pc1));
+      const d = vecToDir(vSub(c1, c0));
+      const ds = vecToDir(vSub(c2, c1));
       rd = relDir(ds, d);
     } else {
-      const _d = vecToDir(vSub(pc1, pc0));
-      const _ds = vecToDir(vSub(pc2, pc1));
+      const _d = vecToDir(vSub(c1, c0));
+      const _ds = vecToDir(vSub(c2, c1));
       const _rd = relDir(_ds, _d);
       if (rd * _rd <= 0) {
         return { stir, direction: _d };
@@ -1405,9 +1394,9 @@ function getRecipeStir(recipeItems = getRecipeItems()) {
  * @returns {{distance: number, angle: number, total: number}} An object containing the deviation from the target position and angle.
  */
 function getDeviation(target) {
-  const p = getCoord();
-  const a = -getPoint().angle || 0.0;
-  const distance = vMag(vSub(p, target)) * 1800.0;
+  const c = getCoord();
+  const a = getAngle();
+  const distance = vMag(vSub(c, target)) * 1800.0;
   const angle = Math.abs(a - target.angle) / 12.0;
   return { distance, angle, total: distance + angle };
 }
@@ -1457,9 +1446,9 @@ function straighten(direction, salt, options = {}) {
       console.log("straighten terminated by end of path.");
       break;
     }
-    const pc1 = getCoord(cp);
-    const pc2 = getCoord(pps[j]);
-    const rd = vecToDir(vSub(pc2, pc1), direction);
+    const c1 = getCoord(cp);
+    const c2 = getCoord(pps[j]);
+    const rd = vecToDir(vSub(c2, c1), direction);
     let grains;
     if (salt == "moon") {
       if (rd < -SaltAngle / 2) {
