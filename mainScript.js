@@ -427,6 +427,33 @@ function logAddIngredient(ingredientId, grindPercent = 1.0) {
 const logSkirt = (grindPercent = 1.0) => logAddIngredient(Ingredients.PhantomSkirt, grindPercent);
 
 /**
+ * Add an ingredient and grind to given length.
+ * @param {number} length The length to grind to.
+ * @param {{ingredientId: import("@potionous/dataset").IngredientId, nextNode: number}} options - An object containing the ID of the ingredient to add and the shift in the ingredient path (next node, previous node or no shifting).
+ */
+function addIngredientByLength(length, options = {}) {
+  const { ingredientId = Ingredients.PhantomSkirt, nextNode = true } = options;
+  const minLength = Ingredients.get(ingredientId).computeLength(0.0);
+  const maxLength = Ingredients.get(ingredientId).computeLength(1.0);
+  if (length < minLength || length > maxLength) {
+    throw errorMsg(
+      "addIngredientByLength",
+      "Length must be between " + minLength + " and " + maxLength + "."
+    );
+  }
+  const plot = computePlot([createAddIngredient(ingredientId, 1.0), createStirCauldron(length)]);
+  let _length = length;
+  if (nextNode == 1) {
+    const cp = plot.committedPoints.at(-1) || Origin;
+    const pps = plot.pendingPoints;
+    const { nextSegment } = getNextSegment(cp, pps, 0);
+    _length += nextSegment;
+  }
+  const percent = (_length - minLength) / (maxLength - minLength);
+  return logAddIngredient(ingredientId, percent);
+}
+
+/**
  * Logs the addition of sun salt and adds it to the current plot.
  * @param {number} grains The amount of sun salt to add in grains.
  */
@@ -675,9 +702,9 @@ function stirToVortexEdgeV2(options = {}) {
     cp = pps[j];
     j += 1;
   }
-  const pc1 = getCoord(cp);
-  const pc2 = getCoord(pps[j]);
-  const ic = intersectCircleG(vortex, pc1, unitV(vSub(pc2, pc1)));
+  const c1 = getCoord(cp);
+  const c2 = getCoord(pps[j]);
+  const ic = intersectCircleG(vortex, c1, unitV(vSub(c2, c1)));
   stir += ic.d2;
   return logAddStirCauldron(stir, { shift: -1 });
 }
@@ -760,7 +787,7 @@ const stirToDangerZoneExit = (preStir = 0.0) =>
  * @param {{x: number, y: number}} target - The coordinate of target effect.
  * @param {object} options - Options for the stirToNearestTarget function.
  * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
- * @param {number} [options.maxStir=Infinity] - The maximal stir length allowed in the optimization.
+ * @param {number} [options.maxStir=Infinity] - The maximal stir length allowed.
  * @returns {{instruction: import("@potionous/instructions").RecipeItem, distance: number}} The added instruction and the optimal distance to the target.
  */
 function stirToTarget(target, options = {}) {
@@ -776,24 +803,24 @@ function stirToTarget(target, options = {}) {
   while (!isLastSegment) {
     const { nextIndex: j, nextSegment, endPath } = getNextSegment(cp, pps, i);
     if (endPath) {
-      isLastSegment = true;
+      break;
     }
     if (currentStir + nextSegment > maxStir) {
       isLastSegment = true;
     }
-    const pc1 = getCoord(cp);
-    const pc2 = getCoord(pps[j]);
-    const unit = unitV(vSub(pc2, pc1));
-    const lastStir = vProd(unit, vSub(target, pc1));
+    const c1 = getCoord(cp);
+    const c2 = getCoord(pps[j]);
+    const unit = unitV(vSub(c2, c1));
+    const lastStir = vProd(unit, vSub(target, c1));
     if (lastStir > nextSegment) {
-      const distance = vMag(vSub(target, pc2));
+      const distance = vMag(vSub(target, c2));
       if (distance < bestDistance) {
         bestStir = currentStir + nextSegment;
         bestDistance = distance;
       }
     } else {
       if (lastStir >= 0) {
-        const lastOptimalDistance = Math.abs(vProd(vRot90(unit), vSub(target, pc1)));
+        const lastOptimalDistance = Math.abs(vProd(vRot90(unit), vSub(target, c1)));
         if (lastOptimalDistance < bestDistance) {
           bestDistance = lastOptimalDistance;
           bestStir = currentStir + lastStir;
@@ -1353,8 +1380,8 @@ function getVortex(x, y) {
   }
   return { x: vortex.x, y: vortex.y, r: VortexRadiusLarge };
 }
-const getVortexC = (point = getCoord()) => getVortex(point.x, point.y);
-const getVortexP = (point = getPoint()) => getVortexC(getCoord(point));
+const getVortexC = (c = getCoord()) => getVortex(c.x, c.y);
+const getVortexP = (p = getPoint()) => getVortexC(getCoord(p));
 
 /**
  * Utilities to get the variable salt counter outside this file.
@@ -1550,6 +1577,8 @@ export {
   logAddSetRotation,
   // Zone detections.
   isVortex,
+  // Grinding subroutines.
+  addIngredientByLength,
   // Stirring subroutines.
   stirIntoVortexV2,
   stirIntoVortex,

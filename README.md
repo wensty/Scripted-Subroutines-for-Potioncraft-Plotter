@@ -163,6 +163,10 @@ Used to detection of certain entities.
 - `isEntityType(expectedEntityTypes)`: test given entity types. Some entity types are pre-defined by `Entity` object.
   - `isVortex`: test vortex entities.
 
+### Grinding subroutines.
+
+- `addIngredientByLength(length, {ingredientId=Ingredients.PhantomSkirt, nextNode=true})`: Add an ingredient and grind to given length.
+
 ### Stirring subroutines.
 
 - `stirIntoVortexV2({preStir?=0.0})`: stir to a different vortex.
