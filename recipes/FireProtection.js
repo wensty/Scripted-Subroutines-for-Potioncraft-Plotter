@@ -31,15 +31,19 @@ import { Entity, SaltNames, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
+const StrongFireProtection = { FireProtection: 3 };
+const FireProtection = { FireProtection: 2 };
+const WeakFireProtection = { FireProtection: 1 };
+
 const recipes = {
   r1: {
     title: "FireProtection",
     desc: "",
     version: 3,
     base: "oil",
-    tier: 3,
     Ingredients: { PhantomSkirt: 1 },
     Salts: { SunSalt: 834 },
+    Effects: StrongFireProtection,
     script: r1,
   },
   r2: {
@@ -47,9 +51,9 @@ const recipes = {
     desc: "",
     version: 3,
     base: "water",
-    tier: 3,
     Ingredients: { PhantomSkirt: 2 },
     Salts: { SunSalt: 1002 },
+    Effects: StrongFireProtection,
     script: r2,
   },
 };
@@ -160,14 +164,6 @@ function r2() {
   derotateToAngle(34.1, { toAngle: false });
   logAddPourSolvent(5);
   console.log(stirIntoVortex(6.2));
-  // for (let a = 50.645; a < 50.655; a += 0.001) {
-  //   setVirtual();
-  //   derotateToAngle(a, { toAngle: false });
-  //   logAddHeatVortex(Infinity);
-  //   console.log(a);
-  //   console.log(stirToTarget(Effects.Water.FireProtection, { preStir: 4.8 }));
-  // }
-  // unsetVirtual();
   derotateToAngle(50.647, { toAngle: false });
   logAddHeatVortex(Infinity);
   console.log(stirToTarget(Effects.Water.FireProtection, { preStir: 5.1 }).distance);
