@@ -9,7 +9,6 @@ import {
   logAddHeatVortex,
   logAddStirCauldron,
   logAddPourSolvent,
-  logAddSetPosition,
   stirIntoVortex,
   stirToTurn,
   stirToZone,
@@ -17,20 +16,19 @@ import {
   stirToTarget,
   derotateToAngle,
   degToRad,
-  radToDeg,
-  vecToDirCoord,
-  getAngleOrigin,
+  vecToDir,
   getAngleEntity,
   getStirDirection,
   checkBase,
   straighten,
+  vSub,
   getMoon,
   getSun,
-  BaseNames,
+  getStir,
+  getCoord,
+  logAddSetPosition,
 } from "../mainScript";
-import { SaltNames, Effects } from "../mainScript";
-
-import { currentPlot } from "@potionous/plot";
+import { SaltNames, BaseNames, Effects } from "../mainScript";
 
 const StrongLightningProtection = { LightningProtection: 3 };
 const LightningProtection = { LightningProtection: 2 };
@@ -63,36 +61,40 @@ function r1() {
   const m1 = 156;
   logAddMoonSalt(m1);
   logSkirt();
-  derotateToAngle(0);
-  logAddStirCauldron(4.6);
-  straighten(getAngleOrigin() - degToRad(3), SaltNames.Sun, { maxStir: 1.35 });
+  logAddPourSolvent(Infinity);
+  logAddStirCauldron(4.38);
+  const c1 = getCoord();
+  const a1 = getStirDirection();
+  straighten(a1, SaltNames.Sun, { maxGrains: 364 });
   logAddStirCauldron(4.8);
+  const c2 = getCoord();
+  console.log("a1: " + a1);
+  console.log("~a1: " + vecToDir(vSub(c2, c1)));
   logAddSunSalt(42);
-  logAddStirCauldron(1.1);
-  const x1 = currentPlot.pendingPoints[0].x;
-  const y1 = currentPlot.pendingPoints[0].y;
-  logAddSunSalt(51);
+  logAddStirCauldron(1.14);
+  console.log("Stir: " + getStir());
+  const c3 = getCoord();
+  logAddSunSalt(54);
   stirToTurn({ preStir: 3.3 });
-  const x2 = currentPlot.pendingPoints[0].x;
-  const y2 = currentPlot.pendingPoints[0].y;
-  const d = vecToDirCoord(x2 - x1, y2 - y1);
+  const c4 = getCoord();
+  const d = vecToDir(vSub(c4, c3));
   straighten(d, SaltNames.Sun, {
     maxGrains: 815 - getSun(), // Empirical.
+    logAuxLine: true,
   });
-  logAddStirCauldron(7.108);
-  const m2 = 86;
-  straighten(degToRad(170), SaltNames.Moon, { maxGrains: m1 + m2 - getMoon() });
+  logAddStirCauldron(7.166);
+  const m2 = 85;
+  straighten(degToRad(169.5), SaltNames.Moon, { maxGrains: m1 + m2 - getMoon(), logAuxLine: true });
   stirToDangerZoneExit();
   stirToZone({ overStir: false });
-  straighten(degToRad(157.1), SaltNames.Sun, {
+  straighten(degToRad(157.3), SaltNames.Sun, {
     maxGrains: 1000 + m2 + 33 - 1 - getSun(),
+    logAuxLine: true,
   });
   stirToDangerZoneExit();
-  logAddStirCauldron(0.044);
+  logAddStirCauldron(0.245);
   logAddSunSalt(1);
-  console.log(
-    "Minimal distance: " + stirToTarget(Effects.Oil.LightningProtection, { preStir: 3.0 }).distance
-  );
+  console.log("Minimal distance: " + stirToTarget(Effects.Oil.LightningProtection).distance);
 }
 
 function r2() {
