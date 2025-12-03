@@ -15,7 +15,6 @@ import {
   heatAndPourToEdge,
   derotateToAngle,
   degToRad,
-  saltToDeg,
   vecToDirCoord,
   getAngleOrigin,
   getAngleEntity,
@@ -23,7 +22,6 @@ import {
   checkBase,
   straighten,
   getSun,
-  setDisplay,
 } from "../mainScript";
 import { SaltNames, Effects } from "../mainScript";
 
@@ -40,7 +38,7 @@ const recipes = {
     version: 3,
     base: "water",
     Ingredients: { PhantomSkirt: 2 },
-    Salts: { MoonSalt: 13, SunSalt: 1819, LifeSalt: 213 },
+    Salts: { MoonSalt: 13, SunSalt: 1819, LifeSalt: 209 },
     Effects: StrongStench,
     script: r1,
   },

@@ -40,9 +40,9 @@ const recipes = {
     version: "betaV3",
     base: BaseNames.Wine,
     Ingredients: { GraspingRoot: 3 },
-    Salts: { Moonsalt: 23, SunSalt: 64 },
+    Salts: { Moonsalt: 23, SunSalt: 62 },
     Effects: StrongLibido,
-    script: () => r2(),
+    script: r3,
   },
 };
 
@@ -77,4 +77,17 @@ function r2() {
   logAddStirCauldron(0.184);
   logAddMoonSalt(1);
   stirToTarget(Effects.Wine.Libido, { preStir: 6.8, maxStir: 0.6 });
+}
+
+function r3() {
+  checkBase(BaseNames.Wine);
+  logAddSunSalt(62);
+  logAddIngredient(Ingredients.GraspingRoot, 0.197);
+  logAddIngredient(Ingredients.GraspingRoot, 0.4769);
+  logAddStirCauldron(1.7);
+  logAddPourSolvent(Infinity);
+  logAddMoonSalt(8);
+  logAddIngredient(Ingredients.GraspingRoot);
+  logAddMoonSalt(15);
+  console.log(stirToTarget(Effects.Wine.Libido, { preStir: 21.0, maxStir: 1.0 }).distance);
 }
