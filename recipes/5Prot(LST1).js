@@ -1,6 +1,3 @@
-/**
- * Full import script.
- */
 import {
   logSkirt,
   logAddMoonSalt,
@@ -20,46 +17,62 @@ import {
   vecToDirCoord,
   getAngleOrigin,
   getAngleEntity,
+  getAngleEffect,
   getStirDirection,
   checkBase,
   straighten,
   getSun,
-  setDisplay,
-  setStirRounding,
 } from "../mainScript";
-import { SaltAngle, DeviationT1, EntityPotionEffect, Effects } from "../mainScript";
+import { DeviationT1, SaltNames, BaseNames, Effects } from "../mainScript";
 
 import { currentPlot } from "@potionous/plot";
 
-function beta() {
-  checkBase("oil");
-  setDisplay(false);
-  setStirRounding(true);
+const LST1 = {
+  AntiMagic: 1,
+  FireProtection: 1,
+  LightningProtection: 1,
+  AcidProtection: 1,
+  FrostProtection: 1,
+};
+
+const recipes = {
+  r1: {
+    title: "5Prots",
+    desc: "Real 195m+2123s.",
+    version: "betaV3",
+    base: BaseNames.Oil,
+    Ingredients: { PhantomSkirt: 4 },
+    Salts: { MoonSalt: 196, SunSalt: 2124 },
+    Effects: LST1,
+    script: r1,
+  },
+};
+
+function r1() {
+  // Your Script here...
+  checkBase(BaseNames.Oil);
   logAddSunSalt(110);
   logSkirt();
   logAddPourSolvent(Infinity);
   stirIntoVortex();
   logAddHeatVortex(Infinity);
-  straighten(degToRad(15.2), "sun", { maxStir: 2.8 });
+  straighten(degToRad(15.2), SaltNames.Sun, { maxStir: 2.8 });
   // winding the swamp
   logAddStirCauldron(6.1);
   logAddSunSalt(39);
   logAddStirCauldron(1.55);
   logAddSunSalt(81);
-  stirToTurn();
-  straighten(degToRad(90), "sun", { maxStir: 0.8 });
+  stirToTurn({ preStir: 1.4 });
+  straighten(degToRad(90), SaltNames.Sun, { maxStir: 0.8 });
   logAddSunSalt(73);
-  straighten(getStirDirection(), "sun", {
-    maxStir: 1,
-    maxGrains: 780 - getSun(),
-  });
+  straighten(getStirDirection(), SaltNames.Sun, { maxGrains: 780 - getSun() });
   // 780 sun into vortex.
-  stirIntoVortex();
+  stirIntoVortex(10.7);
   stirToConsume(0.26);
   heatAndPourToEdge(3, 9);
   const a1 = -21;
   derotateToAngle(a1);
-  logAddHeatVortex(3.04);
+  logAddHeatVortex(3.052);
   // Antimagic
   logAddStirCauldron(Infinity);
   // return to vortex.
@@ -83,24 +96,24 @@ function beta() {
   logAddSunSalt(80);
   logSkirt();
   logAddSunSalt(10);
-  stirToTurn({ preStirLength: 4.0, maxStirLength: 0.1, directionBuffer: 0.01 * SaltAngle });
+  stirToTurn({ preStir: 4.0, directionBuffer: 0 });
   const x2 = currentPlot.pendingPoints[0].x;
   const y2 = currentPlot.pendingPoints[0].y;
   console.log(getStirDirection());
   console.log(vecToDirCoord(x2 - x, y2 - y));
-  straighten(vecToDirCoord(28.91 - x2, 1.7 - y2), "sun", { maxGrains: 345 });
+  straighten(vecToDirCoord(28.91 - x2, 1.7 - y2), SaltNames.Sun, { maxGrains: 345 });
   // Fire protection.
   stirToTier(Effects.Oil.FireProtection, {
     preStir: 7.6,
     deviation: DeviationT1,
     ignoreAngle: true,
   });
-  console.log(getAngleEntity(EntityPotionEffect) + Math.PI);
+  console.log(getAngleEffect() + Math.PI);
   logAddSunSalt(Math.ceil((180.01 + currentPlot.pendingPoints[0].angle) / 0.36));
   logAddPourSolvent(7.8);
   logAddStirCauldron(4);
   stirToTurn();
-  straighten(getStirDirection(), "sun", { maxStir: 1.1, maxGrains: 64 });
+  straighten(getStirDirection(), SaltNames.Sun, { maxStir: 1.1, maxGrains: 64 });
   stirToDangerZoneExit();
   logAddPourSolvent(0.9);
   stirToDangerZoneExit();
@@ -110,18 +123,18 @@ function beta() {
   stirToDangerZoneExit();
   logAddPourSolvent(0.99);
   stirToDangerZoneExit();
-  logAddPourSolvent(0.88);
+  logAddPourSolvent(0.876);
   console.log(getAngleOrigin());
-  stirIntoVortex();
+  stirIntoVortex(2.0);
   console.log(getAngleEntity() + Math.PI / 2);
   logAddHeatVortex(2);
   logAddPourSolvent(0.5);
   derotateToAngle(0);
   logAddHeatVortex(Infinity);
-  straighten(degToRad(-178), "sun", { maxStir: 3.8, maxGrains: 210 });
-  stirToTurn();
+  straighten(degToRad(-178), SaltNames.Sun, { maxStir: 3.8, maxGrains: 210 });
+  stirToTurn({ preStir: 4.7 });
   logAddSunSalt(139);
-  stirIntoVortex();
+  stirIntoVortex(5.4);
   logAddHeatVortex(5.62);
   logAddSunSalt(150);
   // Acid protection.
@@ -136,7 +149,7 @@ function beta() {
   logAddMoonSalt(89);
   logSkirt();
   logAddMoonSalt(46);
-  stirIntoVortex();
+  stirIntoVortex(2.2);
   console.log(getAngleEntity() + Math.PI / 2);
   logAddHeatVortex(0.8);
   pourToVortexEdge();
@@ -157,18 +170,18 @@ function beta() {
   logAddStirCauldron(0.25);
   logAddPourSolvent(Infinity);
   logAddMoonSalt(35);
-  stirIntoVortex();
+  stirIntoVortex(3.1);
   heatAndPourToEdge(3, 3);
   logAddHeatVortex(2.25);
   logAddMoonSalt(26);
-  stirIntoVortex();
+  stirIntoVortex(7.2);
   derotateToAngle(0);
   logAddHeatVortex(Infinity);
   logAddPourSolvent(2.42);
   stirToDangerZoneExit();
   logAddPourSolvent(1.93);
   console.log(getAngleOrigin());
-  stirIntoVortex();
+  stirIntoVortex(2.6);
   console.log(getAngleEntity() - Math.PI / 2);
   logAddHeatVortex(5);
   heatAndPourToEdge(3, 7);
@@ -178,7 +191,7 @@ function beta() {
   logAddStirCauldron(1);
   const x3 = currentPlot.pendingPoints[0].x;
   const y3 = currentPlot.pendingPoints[0].y;
-  straighten(vecToDirCoord(-20.8 - x3, 5.34 - y3), "sun", { maxStir: 1.6 });
+  straighten(vecToDirCoord(-20.8 - x3, 5.34 - y3), SaltNames.Sun, { maxStir: 1.6 });
   stirIntoVortex();
   logAddHeatVortex(4);
   pourToVortexEdge();
