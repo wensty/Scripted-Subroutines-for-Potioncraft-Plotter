@@ -35,7 +35,7 @@ const Origin = {
 
 const LuckyInfinity = 1437;
 const SaltAngle = (2 * Math.PI) / 1000.0; // angle per salt in radian.
-const pourUnitInv = 125.0;
+const PourUnitInv = 125.0;
 const StirUnitInv = 1000.0;
 const VortexRadiusLarge = 2.39;
 const VortexRadiusMedium = 1.99;
@@ -429,28 +429,35 @@ const logSkirt = (grindPercent = 1.0) => logAddIngredient(Ingredients.PhantomSki
 /**
  * Add an ingredient and grind to given length.
  * @param {number} length The length to grind to.
- * @param {{ingredientId: import("@potionous/dataset").IngredientId, nextNode: number}} options - An object containing the ID of the ingredient to add and the shift in the ingredient path (next node, previous node or no shifting).
+ * @param {{ingredientId?: import("@potionous/dataset").IngredientId, shift?: number}} options - An object containing the ID of the ingredient to add and the shift in the ingredient path (next node, previous node or no shifting).
  */
 function addIngredientByLength(length, options = {}) {
-  const { ingredientId = Ingredients.PhantomSkirt, nextNode = true } = options;
-  const minLength = Ingredients.get(ingredientId).computeLength(0.0);
-  const maxLength = Ingredients.get(ingredientId).computeLength(1.0);
+  const { ingredientId = Ingredients.PhantomSkirt, shift = 0 } = options;
+  const maxLength = Ingredients.get(ingredientId).computeLength();
+  const preGrindPercent = Ingredients.get(ingredientId).preGrindPercent;
+  const minLength = maxLength * preGrindPercent;
   if (length < minLength || length > maxLength) {
     throw errorMsg(
       "addIngredientByLength",
       "Length must be between " + minLength + " and " + maxLength + "."
     );
   }
-  const plot = computePlot([createAddIngredient(ingredientId, 1.0), createStirCauldron(length)]);
-  let _length = length;
-  if (nextNode == 1) {
-    const cp = plot.committedPoints.at(-1) || Origin;
-    const pps = plot.pendingPoints;
-    const { nextSegment } = getNextSegment(cp, pps, 0);
-    _length += nextSegment;
+  if (shift == 0)
+    return logAddIngredient(ingredientId, (length - minLength) / (maxLength - minLength));
+  const path = Ingredients.get(ingredientId).computePath(1.0);
+  let l = 0.0;
+  let i = 0;
+  while (true) {
+    let seg = pointDistance(path[i], path[i + 1]);
+    if (l + seg > length) {
+      if (shift == 1)
+        return logAddIngredient(ingredientId, (l + seg - minLength) / (maxLength - minLength));
+      if (shift == -1)
+        return logAddIngredient(ingredientId, (l - minLength) / (maxLength - minLength));
+    }
+    l += seg;
+    i += 1;
   }
-  const percent = (_length - minLength) / (maxLength - minLength);
-  return logAddIngredient(ingredientId, percent);
 }
 
 /**
@@ -514,9 +521,9 @@ function logAddRotationSalt(salt, grains) {
 function logAddHeatVortex(length, shift = 0) {
   var _length;
   if (shift > 0) {
-    _length = Math.max(Math.ceil(length * pourUnitInv) - 0.5, 0) / pourUnitInv;
+    _length = Math.max(Math.ceil(length * PourUnitInv) - 0.5, 0) / PourUnitInv;
   } else {
-    _length = Math.max(Math.floor(length * pourUnitInv) - 0.5, 0) / pourUnitInv;
+    _length = Math.max(Math.floor(length * PourUnitInv) - 0.5, 0) / PourUnitInv;
   }
   if (_length <= 0) return createHeatVortex(0);
   if (!Virtual) {
@@ -578,9 +585,9 @@ function logAddPourSolvent(length, options = {}) {
   var _length = length;
   if (shift) {
     if (shift > 0) {
-      _length = Math.max(Math.ceil((length + buffer) * pourUnitInv) - 0.5, 0) / pourUnitInv;
+      _length = Math.max(Math.ceil((length + buffer) * PourUnitInv) - 0.5, 0) / PourUnitInv;
     } else {
-      _length = Math.max(Math.floor((length - buffer) * pourUnitInv) - 0.5, 0) / pourUnitInv;
+      _length = Math.max(Math.floor((length - buffer) * PourUnitInv) - 0.5, 0) / PourUnitInv;
     }
   }
   if (_length <= 0) return createPourSolvent(0);
