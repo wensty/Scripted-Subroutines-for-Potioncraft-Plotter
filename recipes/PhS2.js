@@ -32,12 +32,13 @@ import {
   getSun,
   getStir,
   getCoord,
+  BaseNames,
 } from "../mainScript";
 import { DeviationT1, SaltNames, Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
-const PST2 = {
+const PhS2 = {
   Strength: 1,
   StoneSkin: 1,
   Swiftness: 1,
@@ -47,19 +48,19 @@ const PST2 = {
 
 const recipes = {
   r1: {
-    title: "PST2",
+    title: "PhS2",
     desc: "",
     version: "betaV3",
-    base: "water",
+    base: BaseNames.Water,
     Ingredients: { PhantomSkirt: 1, GraveTruffle: 1 },
     Salts: { MoonSalt: 36, SunSalt: 683 },
-    Effects: PST2,
+    Effects: PhS2,
     script: r1,
   },
 };
 
 function r1() {
-  checkBase("water");
+  checkBase(BaseNames.Water);
   logSkirt();
   logAddStirCauldron(5.3);
   logAddSunSalt(270);
