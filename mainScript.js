@@ -424,7 +424,15 @@ function logAddIngredient(ingredientId, grindPercent = 1.0) {
   }
   return createAddIngredient(ingredientId, grindPercent);
 }
+
 const logSkirt = (grindPercent = 1.0) => logAddIngredient(Ingredients.PhantomSkirt, grindPercent);
+/**
+ * Logs the addition of multiple ingredients and adds them to the current plot.
+ * @param {import("@potionous/dataset").IngredientId} ingredientId The ID of the ingredient to add.
+ * @param {number[]} grindPercents An array of percentages of the ingredient to grind as decimals (0-1).
+ */
+const logAddIngredients = (ingredientId, grindPercents) =>
+  grindPercents.forEach((element) => logAddIngredient(ingredientId, element));
 
 /**
  * Add an ingredient and grind to given length.
@@ -755,20 +763,28 @@ function stirToTurn(options = {}) {
  * @param {number} [options.preStir=0.0] - The amount of pre-stirring to add.
  * @param {boolean} [options.overStir=false] - Whether to over stir by a small amount.
  * @param {boolean} [options.exitZone=false] - Whether to exit the zone instead of entering it.
+ * @param {boolean} [options.binary_search=false] - Whether to use binary search to find the zone.
  */
 function stirToZone(options = {}) {
-  const { preStir = 0.0, zone = Entity.DangerZone, overStir = false, exitZone = false } = options;
+  const {
+    preStir = 0.0,
+    zone = Entity.DangerZone,
+    overStir = false,
+    exitZone = false,
+    binary_search = false,
+  } = options;
   const plot = getPSPlot(preStir);
   let cp = getPoint(plot);
   const pps = plot.pendingPoints;
   let j = 0;
   let inZone = false;
-  let stir = preStir;
+  let stir_l = preStir;
+  let stir_r = preStir;
   while (true) {
     if (j == pps.length) {
       throw errorMsg("stir to zone", "no given zone found.");
     }
-    stir += pointDistance(cp, pps[j]);
+    stir_r += pointDistance(cp, pps[j]);
     const result = pps[j].bottleCollisions.find(isEntityType(zone));
     if (result) {
       if (!exitZone) {
@@ -780,10 +796,23 @@ function stirToZone(options = {}) {
         break;
       }
     }
+    stir_l += pointDistance(cp, pps[j]);
     cp = pps[j];
     j += 1;
   }
-  return logAddStirCauldron(stir, { shift: overStir ? 1 : -1 });
+  if (binary_search) {
+    while (stir_r - stir_l > 1e-5) {
+      let m = (stir_l + stir_r) / 2;
+      const plot = computePlot(getRecipeItems().concat(createStirCauldron(m)));
+      const cp = getPoint(plot);
+      if (cp.bottleCollisions.find(isEntityType(zone))) {
+        stir_r = m;
+      } else {
+        stir_l = m;
+      }
+    }
+  }
+  return logAddStirCauldron(overStir ? stir_r : stir_l, { shift: overStir ? 1 : -1 });
 }
 const stirToDangerZoneExit = (preStir = 0.0) =>
   stirToZone({ preStir, zone: Entity.DangerZone, exitZone: true, overStir: true });
