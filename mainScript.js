@@ -1601,6 +1601,7 @@ main();
  */
 export {
   logAddIngredient,
+  logAddIngredients,
   logSkirt,
   logAddMoonSalt,
   logAddSunSalt,
