@@ -233,6 +233,7 @@ function r_dexterity() {
  * practical 102m+77s
  */
 function r_light() {
+  checkBase(BaseNames.Water);
   logAddMoonSalt(102);
   logAddIngredients(Ingredients.GoblinMushroom, [0.739, 0.739, 0.58, 1]);
   logAddPourSolvent(Infinity);
@@ -267,4 +268,32 @@ function r_light() {
     logAddHeatVortex(0.1);
     stirToVortexEdge();
   }
+}
+
+function r_mst3() {
+  checkBase(BaseNames.Water);
+  setVirtual();
+  console.log(addIngredientByLength(11.28, { ingredientId: Ingredients.GoblinMushroom, shift: 1 }));
+  unsetVirtual();
+  logAddSunSalt(354);
+
+  logAddIngredients(Ingredients.GoblinMushroom, [0.7686, 0.7686, 1, 0.552, 1]);
+  logAddPourSolvent(Infinity);
+  straighten(degToRad(18.2), SaltNames.Moon, { maxGrains: 155 });
+  setVirtual();
+  const inst = stirToTurn({ directionBuffer: 80 * SaltAngle });
+  console.log(inst);
+  setVirtual();
+  logAddStirCauldron(inst.distance - 0.001);
+  console.log(radToDeg(getStirDirection()) + 90);
+  unsetVirtual();
+  stirIntoVortex(22);
+  console.log(radToDeg(getAngleEntity()) + 180);
+  stirToConsume(3.1);
+  heatAndPourToEdge(0.1, 23);
+  logAddHeatVortex(3.24);
+  derotateToAngle(-5);
+  stirToTurn({ directionBuffer: 100 * SaltAngle });
+  logAddPourSolvent(Infinity);
+  stirToTarget(Effects.Water.Frost, { preStir: 20.5, maxStir: 0.5 });
 }

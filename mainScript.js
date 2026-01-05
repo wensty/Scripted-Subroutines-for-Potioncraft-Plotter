@@ -442,30 +442,35 @@ const logAddIngredients = (ingredientId, grindPercents) =>
 function addIngredientByLength(length, options = {}) {
   const { ingredientId = Ingredients.PhantomSkirt, shift = 0 } = options;
   const maxLength = Ingredients.get(ingredientId).computeLength();
-  const preGrindPercent = Ingredients.get(ingredientId).preGrindPercent;
-  const minLength = maxLength * preGrindPercent;
+  const minLength = Ingredients.get(ingredientId).computeLength(0.0);
   if (length < minLength || length > maxLength) {
     throw errorMsg(
       "addIngredientByLength",
       "Length must be between " + minLength + " and " + maxLength + "."
     );
   }
-  if (shift == 0)
-    return logAddIngredient(ingredientId, (length - minLength) / (maxLength - minLength));
+  let _length = length;
   const path = Ingredients.get(ingredientId).computePath(1.0);
-  let l = 0.0;
+  let s = 0.0;
   let i = 0;
   while (true) {
     let seg = pointDistance(path[i], path[i + 1]);
-    if (l + seg > length) {
-      if (shift == 1)
-        return logAddIngredient(ingredientId, (l + seg - minLength) / (maxLength - minLength));
-      if (shift == -1)
-        return logAddIngredient(ingredientId, (l - minLength) / (maxLength - minLength));
+    if (s + seg > _length) {
+      _length = shift > 0 ? s + seg : s;
+      break;
     }
-    l += seg;
+    s += seg;
     i += 1;
   }
+  let p = (_length - minLength) / (maxLength - minLength);
+  let l = Math.max(p - 0.03, 0.0);
+  let r = Math.min(p + 0.03, 1.0);
+  while (r - l > 1e-9) {
+    let m = l + (r - l) / 2;
+    if (Ingredients.get(ingredientId).computeLength(m) >= _length) r = m;
+    else l = m;
+  }
+  return logAddIngredient(ingredientId, r);
 }
 
 /**
