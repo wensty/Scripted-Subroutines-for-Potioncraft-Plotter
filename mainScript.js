@@ -41,7 +41,7 @@ const VortexRadiusLarge = 2.39;
 const VortexRadiusMedium = 1.99;
 const VortexRadiusSmall = 1.74;
 let Eps = 1e-9;
-let PourRoundBuffer = 7e-5;
+let PourRoundBuffer = 1e-4;
 const DeviationT2 = 600.0;
 const DeviationT3 = 100.0;
 const DeviationT1 = 1.53 * 1800; // effect radius is 0.79, bottle radius is 0.74.
@@ -1482,6 +1482,7 @@ function getDeviation(target) {
  * @param {number} [options.maxStir=Infinity] The maximum distance to be stirred.
  * @param {number} [options.maxGrains=Infinity] The maximum amount of salt to be added.
  * @param {boolean} [options.ignoreReverse=true] If set to false, the function will terminate when a reversed direction is detected.
+ * @param {boolean} [options.fractional=false] If set to true, the function adds fractional salt.
  * @param {boolean} [options.logAuxLine=false] If set to true, the function logs the auxiliary line of straightening to draw.
  */
 function straighten(direction, salt, options = {}) {
@@ -1493,6 +1494,7 @@ function straighten(direction, salt, options = {}) {
     maxStir = Infinity,
     maxGrains = Infinity,
     ignoreReverse = true,
+    fractional = false,
     logAuxLine = false,
   } = options;
   let _logAuxLine = logAuxLine; // log once.
@@ -1519,24 +1521,24 @@ function straighten(direction, salt, options = {}) {
     const rd = vecToDir(vSub(c2, c1), direction);
     let grains;
     if (salt == "moon") {
-      if (rd < -SaltAngle / 2) {
+      if (rd < (fractional ? 0 : -SaltAngle / 2)) {
         if (!ignoreReverse) {
           console.log("Detected reversed relative direction:" + rd);
           break;
         }
         grains = 0;
       } else {
-        grains = Math.round(rd / SaltAngle);
+        grains = fractional ? rd / SaltAngle : Math.round(rd / SaltAngle);
       }
     } else {
-      if (rd > SaltAngle / 2) {
+      if (rd > (fractional ? 0 : SaltAngle / 2)) {
         if (!ignoreReverse) {
           console.log("Detected reversed relative direction:" + rd);
           break;
         }
         grains = 0;
       } else {
-        grains = Math.round(-rd / SaltAngle);
+        grains = fractional ? -rd / SaltAngle : Math.round(-rd / SaltAngle);
       }
     }
     if (grains > 0) {
@@ -1555,12 +1557,20 @@ function straighten(direction, salt, options = {}) {
         // capped grains
         grains = maxGrains - totalGrains;
         totalGrains += grains;
-        instructions.push(logAddRotationSalt(salt, grains));
+        instructions.push(
+          fractional
+            ? logAddSetRotation(getAngle() + (salt == SaltNames.Sun ? 0.36 : -0.36) * grains)
+            : logAddRotationSalt(salt, grains)
+        );
         console.log("Straignten terminated by maximal grains of salt added.");
         break;
       } else {
         totalGrains += grains;
-        instructions.push(logAddRotationSalt(salt, grains));
+        instructions.push(
+          fractional
+            ? logAddSetRotation(getAngle() + (salt == SaltNames.Sun ? 0.36 : -0.36) * grains)
+            : logAddRotationSalt(salt, grains)
+        );
         // recalculate the new plotter after stir and salt.
         plot = getPlot();
         cp = getPoint();

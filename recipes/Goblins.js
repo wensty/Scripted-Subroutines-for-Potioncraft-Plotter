@@ -297,3 +297,23 @@ function r_mst3() {
   logAddPourSolvent(Infinity);
   stirToTarget(Effects.Water.Frost, { preStir: 20.5, maxStir: 0.5 });
 }
+
+function r_fireprotection() {
+  checkBase(BaseNames.Oil);
+  logAddSunSalt(334);
+  logAddIngredients(Ingredients.GoblinMushroom, [0.834, 0.747]);
+  derotateToAngle(32, { toAngle: false });
+  logAddIngredients(Ingredients.GoblinMushroom, [0.761]);
+  derotateToAngle(8.4, { toAngle: false });
+  logAddIngredient(Ingredients.GoblinMushroom);
+  logAddPourSolvent(Infinity);
+  stirIntoVortex(3.7);
+  stirToConsume(3.98);
+  logAddHeatVortex(Infinity);
+  const target = 11;
+  stirToTurn({ preStir: 13 });
+  const d = getStirDirection();
+  straighten(d, SaltNames.Moon, { preStir: 0, maxGrains: target + 33 });
+  straighten(d, SaltNames.Sun, { preStir: 3, maxGrains: target });
+  logAddStirCauldron(Infinity);
+}

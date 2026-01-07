@@ -149,22 +149,22 @@ function r2() {
   logAddSunSalt(1002 - getSun());
   derotateToAngle(21.5, { toAngle: false });
   logAddHeatVortex(Infinity);
-  logAddPourSolvent(1.53);
+  logAddPourSolvent(1.54);
   console.log(getAngleOrigin());
   const { x, y } = getCoord();
   console.log(vecToDirCoord(43.02 - x, 22.83 - y) - Math.PI / 2);
-  console.log(stirIntoVortex(1.8));
+  stirIntoVortex(1.8);
   console.log(getAngleEntity() + Math.PI / 2);
   logAddHeatVortex(0.4);
   pourToVortexEdge();
   heatAndPourToEdge(0.3, 5);
-  logAddHeatVortex(4.9);
+  logAddHeatVortex(4.788);
   console.log(getAngleOrigin());
   console.log(getHeatDirection() + Math.PI);
   derotateToAngle(34.1, { toAngle: false });
-  logAddPourSolvent(5);
-  console.log(stirIntoVortex(6.2));
-  derotateToAngle(50.647, { toAngle: false });
+  logAddPourSolvent(5.1);
+  stirIntoVortex(6.2);
+  derotateToAngle(50.572, { toAngle: false });
   logAddHeatVortex(Infinity);
   console.log(stirToTarget(Effects.Water.FireProtection, { preStir: 5.1 }).distance);
 }
