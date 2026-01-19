@@ -1676,6 +1676,7 @@ export {
   getDeviation,
   getPoint,
   getCoord,
+  getAngle,
   // Complex subroutines.
   straighten,
   // vector utilities.
