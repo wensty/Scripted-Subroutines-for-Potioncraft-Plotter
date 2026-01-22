@@ -1,15 +1,26 @@
 import {
   logAddIngredient,
+  logAddSunSalt,
   logAddHeatVortex,
+  logAddStirCauldron,
+  logAddPourSolvent,
   stirIntoVortex,
   stirToVortexEdge,
+  stirToDangerZoneExit,
+  stirToTarget,
   stirToConsume,
   pourToVortexEdge,
   heatAndPourToEdge,
-  stirToTarget,
-  Effects,
+  derotateToAngle,
+  degToRad,
+  radToDeg,
+  getAngleEntity,
+  getStirDirection,
   checkBase,
+  straighten,
+  getMoon,
 } from "../mainScript";
+import { SaltNames, BaseNames, Effects } from "../mainScript";
 
 import { Ingredients } from "@potionous/dataset";
 
@@ -29,12 +40,12 @@ const recipes = {
     script: r1,
   },
   r2: {
-    title: "StoneSkin",
-    desc: "",
-    version: 3,
-    base: "water",
+    title: "StoneSkin-classic",
+    desc: "chunk version",
+    version: "BetaV3",
+    base: BaseNames.Water,
     Ingredients: { DryadsSaddle: 2 },
-    Salts: { MoonSalt: 27 },
+    Salts: { MoonSalt: 25, addSunSalt: 2 },
     Effects: StrongStoneSkin,
     script: r2,
   },
@@ -59,25 +70,23 @@ function r1() {
   logAddHeatVortex(1.4);
   stirToTarget(Effects.Water.StoneSkin);
 }
-
 function r2() {
-  checkBase("water");
-  const target = 27;
+  checkBase(BaseNames.Water);
   logAddIngredient(Ingredients.DryadsSaddle);
-  // logAddStirCauldron(0.)
-  stirToTurn({ preStir: 0.27, directionBuffer: 0 });
+  logAddStirCauldron(0.301);
+  console.log("<=:" + (radToDeg(getStirDirection()) + 270));
   logAddPourSolvent(Infinity);
-  const d1 = getStirDirection();
-  const angle = 171.28;
-  straighten(degToRad(angle), SaltNames.Moon, { preStir: 3, maxGrains: target });
+  const target = 25;
+  const total = 27;
+  straighten(degToRad(170.15), SaltNames.Moon, { preStir: 3, maxGrains: target });
   logAddIngredient(Ingredients.DryadsSaddle);
-  stirToTurn({ preStir: 7.4, directionBuffer: 200 * SaltAngle });
-  stirIntoVortex(1.0);
-  console.log("~d: " + (angle - 180));
-  console.log("<d: " + (radToDeg(d1) + 90));
-  console.log("d: " + radToDeg(getAngleEntity()));
+  stirIntoVortex(9);
+  console.log(radToDeg(getAngleEntity()) + 180);
   derotateToAngle(0);
   logAddHeatVortex(Infinity);
-  stirToDangerZoneExit(3);
+  logAddSunSalt(total - getMoon());
+  stirToDangerZoneExit();
+  derotateToAngle(0);
   logAddHeatVortex(Infinity);
+  logAddPourSolvent(0.19);
 }

@@ -61,6 +61,10 @@ import {
   // Extraction of other informations.
   checkBase,
   getVortex,
+  getDeviation,
+  getPoint,
+  getCoord,
+  getAngle,
   // Complex subroutines.
   straighten,
   // vector utilities.
@@ -80,13 +84,10 @@ import {
   getSun,
   getStir,
   getRecipeStir,
-  getDeviation,
   setVirtual,
   unsetVirtual,
   getRecipeItems,
   getPlot,
-  getPoint,
-  getCoord,
   setEps,
   setPourRoundBuffer,
   setAuxLineLength,

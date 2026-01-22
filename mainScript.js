@@ -1465,7 +1465,7 @@ function getDeviation(target) {
   const c = getCoord();
   const a = getAngle();
   const distance = vMag(vSub(c, target)) * 1800.0;
-  const angle = Math.abs(a - target.angle) / 12.0;
+  const angle = (Math.abs(a - target.angle) * 100.0) / 12.0;
   return { distance, angle, total: distance + angle };
 }
 
@@ -1676,6 +1676,7 @@ export {
   getDeviation,
   getPoint,
   getCoord,
+  getAngle,
   // Complex subroutines.
   straighten,
   // vector utilities.
