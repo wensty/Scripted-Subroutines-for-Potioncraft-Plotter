@@ -3,8 +3,7 @@ import { pointDistance } from "@potionous/common";
 import {
   addIngredient,
   addVoidSalt,
-  addMoonSalt,
-  addSunSalt,
+  addRotationSalt,
   addHeatVortex,
   addStirCauldron,
   addPourSolvent,
@@ -18,6 +17,7 @@ import {
   createStirCauldron,
   createSetPosition,
   createSetRotation,
+  createAddRotationSalt,
 } from "@potionous/instructions";
 
 import { Ingredients, PotionBases } from "@potionous/dataset";
@@ -444,10 +444,7 @@ function addIngredientByLength(length, options = {}) {
   const maxLength = Ingredients.get(ingredientId).computeLength();
   const minLength = Ingredients.get(ingredientId).computeLength(0.0);
   if (length < minLength || length > maxLength) {
-    throw errorMsg(
-      "addIngredientByLength",
-      "Length must be between " + minLength + " and " + maxLength + "."
-    );
+    throw errorMsg("addIngredientByLength", "Length must be between " + minLength + " and " + maxLength + ".");
   }
   let _length = length;
   const path = Ingredients.get(ingredientId).computePath(1.0);
@@ -474,57 +471,53 @@ function addIngredientByLength(length, options = {}) {
 }
 
 /**
- * Logs the addition of sun salt and adds it to the current plot.
- * @param {number} grains The amount of sun salt to add in grains.
- */
-function logAddSunSalt(grains) {
-  if (grains <= 0) return createAddSunSalt(0);
-  if (!Virtual) {
-    displayStep("Adding " + grains + " grains of sun salt");
-    Step += 1;
-    TotalSun += grains;
-    addSunSalt(grains);
-  } else {
-    VTotalSun += grains;
-    VRecipeItems = VRecipeItems.concat(createAddSunSalt(grains));
-    updateVirtualPlot();
-  }
-  return createAddSunSalt(grains);
-}
-
-/**
- * Logs the addition of moon salt and adds it to the current plot.
- * @param {number} grains The amount of moon salt to add in grains.
- */
-function logAddMoonSalt(grains) {
-  if (grains <= 0) return createAddMoonSalt(0);
-  if (!Virtual) {
-    displayStep("Adding " + grains + " grains of moon salt");
-    Step += 1;
-    TotalMoon += grains;
-    addMoonSalt(grains);
-  } else {
-    VTotalMoon += grains;
-    VRecipeItems = VRecipeItems.concat(createAddMoonSalt(grains));
-    updateVirtualPlot();
-  }
-  return createAddMoonSalt(grains);
-}
-
-/**
  * Logs the addition of rotation salt and adds it to the current plot.
- * @param {string} salt The type of rotation salt to add ("sun" or "moon").
+ * @param {string} salt The type of rotation salt to add ("moon" or "sun").
  * @param {number} grains The amount of salt to add in grains.
+ * @param {{fractional?: boolean}} [options] - An object containing the option to add fractional rotation salt.
  */
-function logAddRotationSalt(salt, grains) {
-  if (salt == "moon") {
-    return logAddMoonSalt(grains);
+function logAddRotationSalt(salt, grains, options = {}) {
+  const fractional = options.fractional || false;
+  if (salt != SaltNames.Moon && salt != SaltNames.Sun) {
+    throw errorMsg("logAddRotationSalt", "Unknown salt type: " + salt + ".");
   }
-  if (salt == "sun") {
-    return logAddSunSalt(grains);
+  let _grains = Math.max(grains, 0);
+  _grains = fractional ? _grains : Math.floor(_grains);
+  if (Virtual) {
+    const inst = fractional
+      ? createSetRotation(-(getAngle() + saltToDeg(salt, _grains)))
+      : createAddRotationSalt(salt, _grains);
+    if (salt == SaltNames.Moon) {
+      VTotalMoon += _grains;
+    }
+    if (salt == SaltNames.Sun) {
+      VTotalSun += _grains;
+    }
+    VRecipeItems = VRecipeItems.concat(inst);
+    updateVirtualPlot();
+    return inst;
+  } else {
+    displayStep("Adding " + _grains + " grains of " + salt + " salt");
+    Step += 1;
+    if (salt == SaltNames.Moon) {
+      TotalMoon += _grains;
+    }
+    if (salt == SaltNames.Sun) {
+      TotalSun += _grains;
+    }
+    if (fractional) {
+      addSetRotation(-(getAngle() + saltToDeg(salt, _grains)));
+      return createSetRotation(-(getAngle() + saltToDeg(salt, _grains)));
+    } else {
+      addRotationSalt(salt, _grains);
+      return createAddRotationSalt(salt, _grains);
+    }
   }
-  throw errorMsg("logAddRotationSalt", "Unknown salt type: " + salt + ".");
 }
+/** @type {(grains: number, options?: {fractional?: boolean}) => import("@potionous/instructions").RecipeItem} */
+const logAddMoonSalt = (grains, options = {}) => logAddRotationSalt(SaltNames.Moon, grains, options);
+/** @type {(grains: number, options?: {fractional?: boolean}) => import("@potionous/instructions").RecipeItem} */
+const logAddSunSalt = (grains, options = {}) => logAddRotationSalt(SaltNames.Sun, grains, options);
 
 /**
  * Logs the addition of heat to a vortex and adds it to the current plot.
@@ -889,12 +882,7 @@ function stirToTarget(target, options = {}) {
  * @param {number} [options.afterStir=1e-13] - The added length to ensure entrance.
  */
 function stirToTier(target, options = {}) {
-  const {
-    preStir = 0.0,
-    deviation = DeviationT2,
-    ignoreAngle = false,
-    afterStir = 1e-13,
-  } = options;
+  const { preStir = 0.0, deviation = DeviationT2, ignoreAngle = false, afterStir = 1e-13 } = options;
   const plot = getPSPlot(preStir);
   let cp = getPoint(plot);
   const pps = plot.pendingPoints;
@@ -916,11 +904,7 @@ function stirToTier(target, options = {}) {
       throw errorMsg("stirring to tier", "cannot reach target tier.");
     }
     const np = pps[j];
-    const ic = intersectCircle(
-      { x: target.x, y: target.y, r: tierRadius },
-      cp,
-      unitV(vSub(np, cp))
-    );
+    const ic = intersectCircle({ x: target.x, y: target.y, r: tierRadius }, cp, unitV(vSub(np, cp)));
     if (ic != undefined && ic.d1 >= 0.0 && ic.d1 < pointDistance(cp, np)) {
       stir += ic.d1;
       return logAddStirCauldron(stir + afterStir, { shift: 0 });
@@ -1036,13 +1020,7 @@ function heatAndPourToEdge(maxHeat, repeats) {
  * @param {boolean} [options.exitZone=false] - Whether to exit the zone instead of entering it.
  */
 function pourToZoneV2(options = {}) {
-  const {
-    zone = Entity.DangerZone,
-    prePour = 0.0,
-    maxPour = Infinity,
-    overPour = false,
-    exitZone = false,
-  } = options;
+  const { zone = Entity.DangerZone, prePour = 0.0, maxPour = Infinity, overPour = false, exitZone = false } = options;
   const detector = isEntityType(zone);
   /** @type {import("@potionous/instructions").RecipeItem[]} */
   let instructions = [];
@@ -1122,19 +1100,10 @@ function pourUntilAngle(targetAngle, options = {}) {
   const cp = getPoint();
   const ca = getAngle(cp);
   if (targetAngle * (targetAngle - ca) <= 0) {
-    const {
-      minPour = 0.0,
-      maxPour = Infinity,
-      eps1 = 4e-3,
-      eps2 = 1e-5,
-      buffer = 0.03,
-      overPour = true,
-    } = options;
+    const { minPour = 0.0, maxPour = Infinity, eps1 = 4e-3, eps2 = 1e-5, buffer = 0.03, overPour = true } = options;
     const dist = vMag(getCoord(cp));
     let toOrigin = false;
-    const _angleAtOrigin = getAngle(
-      getPoint(computePlot(getRecipeItems().concat(createPourSolvent(dist))))
-    );
+    const _angleAtOrigin = getAngle(getPoint(computePlot(getRecipeItems().concat(createPourSolvent(dist)))));
     /** @type {number} */ var l;
     /** @type {number} */ var r;
     /** @type {number} */ var eps;
@@ -1401,21 +1370,15 @@ function getTangent(minStir) {
  * coordinates and the radius of the target vortex.
  */
 function getVortex(x, y) {
-  const vortex = getEntityCoord(
-    getPoint(computePlot([createSetPosition(x, y)])).bottleCollisions.find(isVortex)
-  );
+  const vortex = getEntityCoord(getPoint(computePlot([createSetPosition(x, y)])).bottleCollisions.find(isVortex));
   if (vortex == undefined) {
     throw errorMsg("getting target vortex radius", "no vortex at target position.");
   }
-  let small = getPoint(
-    computePlot([createSetPosition(vortex.x + 1.8, vortex.y)])
-  ).bottleCollisions.find(isVortex);
+  let small = getPoint(computePlot([createSetPosition(vortex.x + 1.8, vortex.y)])).bottleCollisions.find(isVortex);
   if (small === undefined || small.x != vortex.x || small.y != vortex.y) {
     return { x: vortex.x, y: vortex.y, r: VortexRadiusSmall };
   }
-  let medium = getPoint(
-    computePlot([createSetPosition(vortex.x + 2.2, vortex.y)])
-  ).bottleCollisions.find(isVortex);
+  let medium = getPoint(computePlot([createSetPosition(vortex.x + 2.2, vortex.y)])).bottleCollisions.find(isVortex);
   if (medium === undefined || medium.x != vortex.x || medium.y != vortex.y) {
     return { x: vortex.x, y: vortex.y, r: VortexRadiusMedium };
   }
@@ -1557,20 +1520,12 @@ function straighten(direction, salt, options = {}) {
         // capped grains
         grains = maxGrains - totalGrains;
         totalGrains += grains;
-        instructions.push(
-          fractional
-            ? logAddSetRotation(getAngle() + (salt == SaltNames.Sun ? 0.36 : -0.36) * grains)
-            : logAddRotationSalt(salt, grains)
-        );
+        instructions.push(logAddRotationSalt(salt, grains, { fractional }));
         console.log("Straignten terminated by maximal grains of salt added.");
         break;
       } else {
         totalGrains += grains;
-        instructions.push(
-          fractional
-            ? logAddSetRotation(getAngle() + (salt == SaltNames.Sun ? 0.36 : -0.36) * grains)
-            : logAddRotationSalt(salt, grains)
-        );
+        instructions.push(logAddRotationSalt(salt, grains, { fractional }));
         // recalculate the new plotter after stir and salt.
         plot = getPlot();
         cp = getPoint();
@@ -1589,9 +1544,7 @@ function straighten(direction, salt, options = {}) {
       i = j;
     }
   }
-  console.log(
-    "Added " + totalGrains + " grains of " + salt + " salt in total while straightening."
-  );
+  console.log("Added " + totalGrains + " grains of " + salt + " salt in total while straightening.");
   return instructions;
 }
 
