@@ -29,7 +29,7 @@ const recipes = {
     base: "water",
     tier: 3,
     Ingredients: { PhantomSkirt: 1 },
-    Salts: { MoonSalt: 234 },
+    Salts: { SunSalt: 210 },
     Effects: { Light: 1 },
     script: () => s1(),
   },
