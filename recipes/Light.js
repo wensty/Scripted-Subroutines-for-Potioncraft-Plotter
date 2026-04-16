@@ -2,34 +2,31 @@ import {
   logSkirt,
   logAddSunSalt,
   logAddHeatVortex,
-  logAddStirCauldron,
   logAddPourSolvent,
   stirIntoVortex,
+  stirToTurn,
   stirToTarget,
   derotateToAngle,
-  degToRad,
   radToDeg,
-  vecToDirCoord,
   getAngleEntity,
   getStirDirection,
   getHeatDirection,
   checkBase,
+  getDeviation,
   straighten,
   getSun,
 } from "../mainScript";
 import { SaltNames, Effects } from "../mainScript";
 
-import { currentPlot } from "@potionous/plot";
-
 const recipes = {
   r1: {
     title: "Light",
     desc: "Light",
-    version: 3,
+    version: "betaV3",
     base: "water",
     tier: 3,
     Ingredients: { PhantomSkirt: 1 },
-    Salts: { SunSalt: 210 },
+    Salts: { SunSalt: 206 },
     Effects: { Light: 1 },
     script: () => s1(),
   },
@@ -37,29 +34,29 @@ const recipes = {
 
 function s1() {
   checkBase("water");
-  logAddSunSalt(20);
+  logAddSunSalt(13);
   logSkirt();
-  logAddStirCauldron(5.25);
+  // logAddStirCauldron(5.35)
+  stirToTurn({ preStir: 5.33, directionBuffer: 0 });
   logAddPourSolvent(Infinity);
-  console.log("a1: " + radToDeg(getStirDirection()));
-  stirIntoVortex(5.5);
-  console.log("a2~a1: " + (radToDeg(getAngleEntity()) - 90));
-  logAddHeatVortex(4.3);
-  logAddPourSolvent(1.268);
-  logAddHeatVortex(3.69);
-  console.log("a3:" + (radToDeg(getHeatDirection()) - 90));
-  straighten(degToRad(-51.25), SaltNames.Sun, { maxGrains: 210 - getSun(), preStir: 4.5 });
-  stirIntoVortex(4.7);
-  console.log("a4~>a3: " + (radToDeg(getAngleEntity()) - 180));
-  derotateToAngle(31.7, { toAngle: false });
+  const d1 = getStirDirection();
+  stirIntoVortex();
+  console.log("d1: " + radToDeg(d1));
+  console.log("~>d1: " + (radToDeg(getAngleEntity()) - 90));
+  logAddHeatVortex(4.5);
+  logAddPourSolvent(1.31);
+  logAddHeatVortex(3.62);
+  const d2 = getHeatDirection();
+  straighten(d2 - Math.PI / 2, SaltNames.Sun, { maxGrains: 206 - getSun(), preStir: 5 });
+  stirIntoVortex(5);
+  console.log("d2: " + radToDeg(d2));
+  console.log("~d2: " + (radToDeg(getAngleEntity()) - 90));
+  derotateToAngle(34);
   logAddHeatVortex(Infinity);
-  const { x: x1, y: y1 } = currentPlot.pendingPoints[0];
-  stirIntoVortex(4.3);
-  const { x: x2, y: y2 } = currentPlot.pendingPoints[0];
-  console.log("d1: " + radToDeg(vecToDirCoord(x2 - x1, y2 - y1)));
-  console.log("d2~d1: " + radToDeg(vecToDirCoord(-26.28 - x1, 6.25 - y1)));
+  stirIntoVortex(4.5);
   derotateToAngle(0);
   logAddHeatVortex(Infinity);
   logAddPourSolvent(1.36);
-  stirToTarget(Effects.Water.Light, { preStir: 0.8, maxStir: 1.0 });
+  stirToTarget(Effects.Water.Light, { preStir: 1.0, maxStir: 0.5 });
+  console.log(getDeviation(Effects.Water.Light));
 }
