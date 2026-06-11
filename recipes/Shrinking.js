@@ -41,12 +41,23 @@ const recipes = {
     title: "Shrinking",
     desc: "Shrinking",
     version: 3,
-    base: "water",
+    base: BaseNames.Oil,
     tier: 3,
-    Ingredients: { PhantomSkirt: 1 },
+    Ingredients: { PhantomSkirt: 1, Watercap: 1 },
     Salts: { SunSalt: 967 },
     Effects: StrongShrinking,
     script: () => r1(),
+  },
+  r2: {
+    title: "Shrinking",
+    desc: "Shrinking",
+    version: 3,
+    base: BaseNames.Water,
+    tier: 3,
+    Ingredients: { PhantomSkirt: 2 },
+    Salts: { SunSalt: 1002, LifeSalt: 125 },
+    Effects: StrongShrinking,
+    script: () => r2(),
   },
 };
 
@@ -98,4 +109,37 @@ function r1() {
   logAddSunSalt(1);
   console.log(stirToTarget(Effects.Oil.Shrinking));
   logAddSunSalt(3);
+}
+
+function r2() {
+  checkBase(BaseNames.Water);
+  const pre1 = 243;
+  logAddSunSalt(pre1);
+  logSkirt();
+  logAddSunSalt(13);
+  stirToTurn({ preStir: 4.53, directionBuffer: 0 });
+  const d1 = getAngleOrigin();
+  straighten(d1 + degToRad(0.4), SaltNames.Sun, { maxGrains: 258 + pre1 - getSun() });
+  stirToTurn({ preStir: 11.2 });
+  logAddHeatVortex(4);
+  logAddSunSalt(501 - getSun());
+  pourToVortexEdge();
+  heatAndPourToEdge(1, 9);
+  logAddHeatVortex(4.2);
+  derotateToAngle(-45);
+  logSkirt();
+  derotateToAngle(0);
+  stirToTurn({ preStir: 14 });
+  logAddPourSolvent(1.4);
+  stirToDangerZoneExit(6.4);
+  logAddSunSalt(225);
+  stirToZone({ exitZone: true, overStir: false });
+  console.log(currentPlot.pendingPoints[0].health / 0.004);
+  stirToTurn();
+  logAddSunSalt(276);
+  logAddStirCauldron(12.9);
+  derotateToAngle(-140);
+  logAddHeatVortex(Infinity);
+  logAddPourSolvent(0.79);
+  stirToTarget(Effects.Water.Shrinking, { preStir: 5.2 });
 }
