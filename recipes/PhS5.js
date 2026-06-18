@@ -37,9 +37,9 @@ const recipes = {
   r1: {
     title: "PhS5",
     desc: "PhS5",
-    version: 4,
+    version: "BetaV3",
     base: BaseNames.Water,
-    Ingredients: { PhantomSkirt: 1 },
+    Ingredients: { PhantomSkirt: 2 },
     Salts: { SunSalt: 1035 },
     Effects: PhS5,
     script: () => r1(),
