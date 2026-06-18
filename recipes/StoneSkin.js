@@ -1,5 +1,6 @@
 import {
   logAddIngredient,
+  logAddMoonSalt,
   logAddSunSalt,
   logAddHeatVortex,
   logAddStirCauldron,
@@ -89,4 +90,31 @@ function r2() {
   derotateToAngle(0);
   logAddHeatVortex(Infinity);
   logAddPourSolvent(0.19);
+}
+
+/**
+ * 88moon=66+22.
+ */
+function r3() {
+  const target = 66;
+  logAddIngredient(Ingredients.Goldthorn);
+  logAddStirCauldron(0.012);
+  logAddPourSolvent(Infinity);
+  logAddMoonSalt(target);
+  const a1 = radToDeg(getStirDirection()) + 90;
+  stirIntoVortex(6.0);
+  console.log("a1: " + a1);
+  console.log(">a1: " + radToDeg(getAngleEntity()));
+
+  derotateToAngle(0);
+  logAddHeatVortex(Infinity);
+  logAddStirCauldron(4.76);
+  logAddHeatVortex(3);
+  stirToConsume(6.401);
+  logAddHeatVortex(Infinity);
+  logAddMoonSalt(22);
+  stirToDangerZoneExit(3.0);
+  logAddPourSolvent(0.66);
+  stirToTarget(Effects.Water.StoneSkin, { preStir: 1.8, maxStir: 0.8 });
+  console.log(getDeviation(Effects.Water.StoneSkin).total);
 }
