@@ -317,3 +317,27 @@ function r_fireprotection() {
   straighten(d, SaltNames.Sun, { preStir: 3, maxGrains: target });
   logAddStirCauldron(Infinity);
 }
+
+function r_wildgrowth() {
+  const target = 223;
+  logAddSunSalt(target);
+  logAddIngredients(Ingredients.GoblinMushroom, [0.755, 0.83, 1]);
+  derotateToAngle(30.2, { toAngle: false });
+  stirIntoVortex(11.2);
+  derotateToAngle(17, { toAngle: false });
+  logAddHeatVortex(Infinity);
+  stirIntoVortex(3.2);
+  stirToConsume(4.35);
+
+  logAddHeatVortex(4);
+  derotateToAngle(0);
+  pourToVortexEdge();
+  heatAndPourToEdge(1, 10);
+  logAddPourSolvent(1.98);
+  stirIntoVortex(3);
+
+  logAddHeatVortex(6);
+  pourToVortexEdge();
+  heatAndPourToEdge(1, 10);
+  logAddHeatVortex(1.47);
+}
