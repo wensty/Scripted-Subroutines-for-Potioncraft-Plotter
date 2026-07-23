@@ -41,6 +41,9 @@ const recipes = {
   },
 };
 
+/**
+ * 405.2 moon angle: add skirt.
+ */
 function r1() {
   checkBase(BaseNames.Oil);
   logAddMoonSalt(0);

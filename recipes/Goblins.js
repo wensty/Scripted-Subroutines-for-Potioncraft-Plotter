@@ -341,3 +341,48 @@ function r_wildgrowth() {
   heatAndPourToEdge(1, 10);
   logAddHeatVortex(1.47);
 }
+
+/**
+ * 334s. minimal to oil NE vortex.
+ */
+function r_shrinking() {
+  checkBase(BaseNames.Oil);
+  logAddSunSalt(334); // enter vortex.
+  logAddIngredient(Ingredients.GoblinMushroom, 0.84);
+  logAddIngredient(Ingredients.GoblinMushroom, 0.75);
+  derotateToAngle(19.4, { toAngle: false });
+  logAddIngredient(Ingredients.GoblinMushroom, 0.768);
+  derotateToAngle(2, { toAngle: false });
+  logAddIngredients(Ingredients.GoblinMushroom, [0.768, 0.768, 0.768, 0.768]);
+  derotateToAngle(0);
+  stirIntoVortex(3.7);
+  stirToConsume(3.94);
+  logAddHeatVortex(Infinity);
+}
+
+/**
+ * 174m+342s
+ */
+function r_rage() {
+  checkBase(BaseNames.Water);
+  const target1 = 131;
+  logAddMoonSalt(target1);
+  logAddIngredients(Ingredients.GoblinMushroom, [0.78, 0.83]);
+  derotateToAngle(86 * 0.36, { toAngle: false });
+  logAddIngredients(Ingredients.GoblinMushroom, [0.6, 1]);
+  derotateToAngle(0);
+  logAddSunSalt(273 - target1);
+  logAddStirCauldron(10.407);
+  console.log(getAngleOrigin() - Math.PI / 2);
+  console.log(getHeatDirection());
+  logAddHeatVortex(Infinity);
+  logAddSunSalt(200);
+  stirToDangerZoneExit(3);
+  // straighten(degToRad(-55),SaltNames.Moon,{maxGrains:41}
+  logAddMoonSalt(43);
+  // stirToTurn({preStir:5,directionBuffer:200*SaltAngle})
+  stirIntoVortex(12.0);
+  stirToConsume(1);
+  derotateToAngle(12.8);
+  logAddHeatVortex(Infinity);
+}
