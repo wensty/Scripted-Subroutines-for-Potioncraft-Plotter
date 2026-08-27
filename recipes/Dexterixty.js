@@ -17,6 +17,7 @@
   // Complex subroutines.
   straighten,
   getSun,
+  checkBase,
 } from "../mainScript";
 import { SaltNames, BaseNames, Effects } from "../mainScript";
 
@@ -53,4 +54,20 @@ function r1() {
   logAddHeatVortex(5.45);
   stirToConsume(8, 1);
   stirToTarget(Effects.Water.Dexterity, { preStir: 7.4, maxStir: 0.6 });
+}
+
+function r2() {
+  checkBase(BaseNames.Water);
+  logAddSunSalt(7);
+  logAddIngredient(Ingredients.Waterbloom, 0.92);
+  logAddIngredient(Ingredients.Tangleweed, 0.922);
+  logAddIngredient(Ingredients.Icefruit, 1);
+  logAddStirCauldron(0.16);
+  logAddPourSolvent(Infinity);
+  stirToTurn({ preStir: 31.4 });
+  stirToTurn();
+  logAddHeatVortex(5);
+  pourToVortexEdge();
+  heatAndPourToEdge(1, 11);
+  logAddHeatVortex(5.3);
 }

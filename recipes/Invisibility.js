@@ -24,27 +24,30 @@ const recipes = {
     Version: 3,
     base: BaseNames.Oil,
     Ingredients: { Lifeleaf: 2, Goodberry: 1 },
-    Salts: { MoonSalt: 359 },
+    Salts: { MoonSalt: 357 },
     Effect: StrongInvisibility,
     script: () => r1,
   },
 };
 
 function r1() {
-  checkBase("oil");
+  checkBase(BaseNames.Oil);
   logAddIngredient(Ingredients.Lifeleaf);
   logAddIngredient(Ingredients.Goodberry);
-  const pre = 87;
-  const dir = -8;
+  const pre = 89;
+  const dir = -3;
   logAddMoonSalt(pre);
   logAddIngredient(Ingredients.Lifeleaf);
-  straighten(degToRad(dir), SaltNames.Moon, { maxGrains: 343 - pre });
+  straighten(degToRad(dir), SaltNames.Moon, { maxGrains: 342 - pre });
   stirIntoVortex();
-  logAddHeatVortex(3.8);
+  logAddHeatVortex(3.74);
+  console.log(getHeatDirection());
+  console.log(getStirDirection());
   stirIntoVortex(7.3);
-  logAddHeatVortex(5.5);
+  logAddHeatVortex(5.8);
   logAddStirCauldron(1.3);
   logAddHeatVortex(Infinity);
-  straighten(degToRad(70), SaltNames.Moon, { maxGrains: 16, preStir: 5 });
+  straighten(degToRad(37), SaltNames.Moon, { maxGrains: 15, preStir: 5 });
   stirToTarget(Effects.Oil.Invisibility, { preStir: 4.4 });
+  console.log(getDeviation(Effects.Oil.Invisibility));
 }
