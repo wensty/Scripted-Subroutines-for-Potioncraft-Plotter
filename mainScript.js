@@ -87,7 +87,7 @@ let VRemainingPath = 0;
  */
 function setVirtual() {
   if (!Virtual) {
-    console.log("Virtual mode enabled.");
+    if (Display) console.log("Virtual mode enabled.");
     Virtual = true;
   }
   VRecipeItems = currentRecipeItems;
@@ -103,7 +103,7 @@ function setVirtual() {
  * To re-enable virtual mode, call `setVirtual()`.
  */
 function unsetVirtual() {
-  console.log("Virtual mode disabled.");
+  if (Display) console.log("Virtual mode disabled.");
   Virtual = false;
 }
 const getRecipeItems = () => (Virtual ? VRecipeItems : currentRecipeItems);
